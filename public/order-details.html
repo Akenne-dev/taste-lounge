@@ -1,0 +1,482 @@
+<!doctype html>
+<html>
+<head>
+  <title>Order Receipt</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <link rel="shortcut icon"
+    href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+    type="image/x-icon">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+  <style>
+    body { font-family: Inter; background:bisque; padding:20px }
+    .receipt {
+      background: white;
+      padding:20px;
+      border-radius:12px;
+      max-width:600px;
+      margin:auto;
+      box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.362);
+    }
+    h2 { color:red }
+    .row { display:flex; justify-content:space-between; margin:6px 0 }
+    .item { border-bottom:1px dashed #ddd; padding:6px 0 }
+    .total { font-weight:700; font-size:18px }
+    .log img{
+      height: 70px;
+      width: 70px;
+      object-fit: cover;
+    }
+    .log{
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+    }
+
+  .cancel {
+  background-color: transparent;
+  display: flex;
+  color: red;
+  font-size: 1.5rem;
+  outline: none;
+  border: none;
+  font-weight: 900;
+}
+/* Action Buttons Container */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+/* Base Button Style */
+.btn {
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  min-width: 160px;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* Primary Button */
+.btn-primary {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: #fff;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: linear-gradient(135deg, #3f87ff, #2b59ff);
+  color: #fff;
+}
+
+/* Hover */
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Active (click) */
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* Focus (accessibility) */
+.btn:focus {
+  outline: 3px solid rgba(0, 0, 0, 0.2);
+}
+ /* ==============================
+   MOBILE HAMBURGER
+============================== */
+    .hamburger {
+      font-size: 32px;
+      cursor: pointer;
+      color: var(--red);
+      display: none;
+    }
+
+    /* ==============================
+   MOBILE SLIDE MENU
+============================== */
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 260px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      padding: 25px;
+      z-index: 4000;
+      transition: .3s ease;
+    }
+
+    .mobile-menu .close-btn {
+      font-size: 35px;
+      cursor: pointer;
+      color: var(--red);
+      margin-bottom: 20px;
+    }
+
+    .mobile-menu a {
+      display: block;
+      font-size: 19px;
+      padding: 10px 0;
+      font-weight: 600;
+      color: var(--black);
+    }
+        body.dark .mobile-menu a  {
+      color: white !important;
+
+    }
+
+    .mobile-menu a:hover {
+      color: var(--red);
+    }
+
+/* 📱 Mobile */
+@media (max-width: 480px) {
+  .btn {
+    width: 100%;
+    font-size: 15px;
+    padding: 14px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+<div class="receipt" id="receipt">
+  <div>X</div>
+</div>
+
+</body>
+</html>
+
+
+<script>
+/* =========================
+   FIREBASE INIT
+========================= */
+firebase.initializeApp({
+  apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
+  authDomain: "taste-lounge-3075.firebaseapp.com",
+  projectId: "taste-lounge-3075"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* =========================
+   GET ORDER ID
+========================= */
+const params = new URLSearchParams(window.location.search);
+const orderId = params.get("id");
+const receiptEl = document.getElementById("receipt");
+
+if (!orderId) {
+  receiptEl.innerHTML = "<p>Invalid order.</p>";
+}
+
+/* =========================
+   AUTH + SECURITY CHECK
+========================= */
+
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    window.location.href = "log-in.html";
+    return;
+  }
+
+  const snap = await db.collection("orders").doc(orderId).get();
+
+  if (!snap.exists) {
+    receiptEl.innerHTML = "<p>Order not found.</p>";
+    return;
+  }
+
+  const order = snap.data();
+
+  /* ✅ SAVE GLOBALLY FOR PDF + REORDER */
+window.currentOrder = order;
+// window.currentOrderId = snap.id;
+window.currentOrderShortId = snap.id.slice(0,4).toUpperCase();
+window.currentOrderDate = order.createdAt?.toDate
+  ? order.createdAt.toDate().toLocaleString()
+  : "";
+
+  // 🔐 SECURE ACCESS
+  if (order.userId !== user.uid) {
+    receiptEl.innerHTML = "<p>Access denied.</p>";
+    return;
+  }
+
+  // ✅ SAVE GLOBALLY FOR RE-ORDER & PDF
+  window.currentOrder = {
+    id: snap.id,
+    ...order
+  };
+
+  renderReceipt(window.currentOrder);
+});
+
+
+
+
+/* =========================
+   RENDER RECEIPT
+========================= */
+
+function renderReceipt(o) {
+  // 📅 Order date
+  const orderDate = o.createdAt?.toDate
+    ? o.createdAt.toDate().toLocaleString()
+    : "";
+
+  // 🧾 Delivery info (supports BOTH formats)
+  const delivery = o.delivery || o.deliveryInfo || {};
+
+  receiptEl.innerHTML = `
+    <!-- 🔴 BRANDING -->
+    <button type="submit" onclick="cancel()" class="cancel">x</button>
+    <div class="log"><img src="taste-lounge-logo.png" alt="">
+    <p style="font-weight:600;">Thanks for your patronage </p>
+    </div>
+
+    <hr>
+
+    <!-- 🔴 ORDER META -->
+    <p><strong>Order: #</strong>${o.id ? o.id.slice(0,4).toUpperCase() : "-"}</p>
+    <p><strong>Date: </strong>${orderDate}</p>
+
+    <hr>
+
+    <!-- 🔴 CUSTOMER DETAILS -->
+    <p><strong>Name:</strong> ${delivery.name || "-"}</p>
+    <p><strong>Phone:</strong> ${delivery.phone || "-"}</p>
+    <p><strong>Address:</strong> ${delivery.address || "-"}</p>
+
+    <hr>
+
+    <!-- 🔴 ITEMS -->
+    ${o.items.map(i => {
+      const qty = i.qty ?? i.quantity ?? 1;
+      const price = Number(i.price) || 0;
+      const total = price * qty;
+
+      return `
+        <div class="row">
+          <span>${i.name} × ${qty}</span>
+          <span>₦${total}</span>
+        </div>
+      `;
+    }).join("")}
+
+    <hr>
+
+    <!-- 🔴 PRICING -->
+    <div class="row">
+      <span>Subtotal</span>
+      <span>₦${Number(o.pricing?.subtotal) || 0}</span>
+    </div>
+
+    <div class="row">
+      <span>Delivery</span>
+      <span>₦${Number(o.pricing?.delivery) || 0}</span>
+    </div>
+
+    <div class="row total">
+      <span>Total</span>
+      <span>₦${Number(o.pricing?.total) || 0}</span>
+    </div>
+
+    <br>
+
+
+    <!-- 🔴 ACTIONS -->
+<div class="action-buttons">
+  <button class="btn btn-primary" onclick="downloadPDF()">
+    ⬇ Download PDF
+  </button>
+  <button class="btn btn-secondary" onclick="reOrder()">
+    🔁 Re-order
+  </button>
+</div>
+
+  `;
+}
+
+/* =====================================================
+   ❌ CANCEL BUTTON
+===================================================== */
+function cancel() {
+  window.location.href = "orders.html";
+}
+
+
+function reOrder() {
+  if (!window.currentOrder) return;
+  
+
+  const cartItems = window.currentOrder.items.map(i => ({
+    name: i.name,
+    price: Number(i.price),
+    quantity: i.qty ?? i.quantity ?? 1
+  }));
+
+  localStorage.setItem("cart", JSON.stringify(cartItems));
+
+  // optional: scroll user straight to cart
+  window.location.href = "cart.html";
+}
+
+
+
+/* =========================
+   PDF DOWNLOAD (CLIENT)
+========================= */
+function formatMoney(n) {
+  return Number(n || 0).toLocaleString();
+}
+
+
+
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  const RED = "#d32f2f";
+  let y = 20;
+
+
+  /* ===== BRAND HEADER ===== */
+  pdf.setTextColor(RED);
+  pdf.setFontSize(22);
+  pdf.text("TASTE LOUNGE", 105, y, { align: "center" });
+
+  y += 8;
+  pdf.setFontSize(11);
+  pdf.text("Thanks for your patronage ", 105, y, { align: "center" });
+
+  y += 10;
+  pdf.setDrawColor("#000");
+  pdf.line(10, y, 200, y);
+
+  y += 10;
+
+  /* ===== ORDER META (FIXED) ===== */
+  pdf.setTextColor("#000");
+  pdf.setFontSize(11);
+
+  // pdf.text(`Order #: ${window.currentOrderId || ""}`, 10, y);
+  pdf.text(`Order: #${window.currentOrderShortId}`, 10, y);
+
+  y += 6;
+  pdf.text(`Date: ${window.currentOrderDate || ""}`, 10, y);
+
+    y += 10;
+  // pdf.setDrawColor(RED);
+  pdf.setDrawColor("#000");
+  pdf.line(10, y, 200, y);
+
+  y += 8;
+
+  /* ===== CUSTOMER INFO ===== */
+  const d =
+    window.currentOrder.delivery ||
+    window.currentOrder.deliveryInfo ||
+    {};
+
+  pdf.text(`Name: ${d.name || "-"}`, 10, y); y += 6;
+  pdf.text(`Phone: ${d.phone || "-"}`, 10, y); y += 6;
+  pdf.text(`Address: ${d.address || "-"}`, 10, y);
+
+      y += 10;
+  pdf.setDrawColor("#000");
+  pdf.line(10, y, 200, y);
+
+  y += 10;
+
+  /* ===== ITEMS HEADER ===== */
+  pdf.setFont(undefined, "bold");
+  pdf.text("Item", 10, y);
+  pdf.text("Amount", 190, y, { align: "right" });
+  pdf.setFont(undefined, "normal");
+
+  y += 6;
+
+  /* ===== ITEMS LIST (PERFECT ALIGNMENT) ===== */
+  (window.currentOrder.items || []).forEach(i => {
+    if (y > 270) {
+      pdf.addPage();
+      y = 20;
+    }
+
+    const qty = i.qty ?? i.quantity ?? 1;
+    const price = Number(i.price) || 0;
+    const total = price * qty;
+
+    pdf.text(`${i.name} × ${qty}`, 10, y);
+    // pdf.text(`NGN ${total}`, 190, y, { align: "right" });
+    pdf.text(`NGN ${formatMoney(total)}`, 190, y, { align: "right" });
+
+    y += 6;
+  });
+
+      //  y += 10;
+
+  pdf.setDrawColor("#000");
+  pdf.line(10, y, 200, y);
+
+  y += 10;
+
+
+  /* ===== TOTALS ===== */
+  const p = window.currentOrder.pricing || {};
+
+  pdf.setFont(undefined, "normal");
+  pdf.text("Subtotal", 10, y);
+  // pdf.text(`NGN ${p.subtotal || 0}`, 190, y, { align: "right" });
+  pdf.text(`NGN ${formatMoney(p.subtotal)}`, 190, y, { align: "right" });
+
+  y += 6;
+
+  pdf.text("Delivery", 10, y);
+  // pdf.text(`NGN ${p.delivery || 0}`, 190, y, { align: "right" });
+  pdf.text(`NGN ${formatMoney(p.subtotal) || 0}`, 190, y, { align: "right" });
+
+  y += 6;
+
+  pdf.setFont(undefined, "bold");
+  pdf.text("Total", 10, y);
+  // pdf.text(`NGN ${p.total || 0}`, 190, y, { align: "right" });
+  pdf.text(`NGN ${formatMoney(p.total) || 0}`, 190, y, { align: "right" });
+
+
+  y += 10;
+
+  /* ===== FOOTER ===== */
+  pdf.setFontSize(10);
+  pdf.setTextColor("#555");
+  pdf.text("Powered by Taste Lounge", 105, y, { align: "center" });
+
+  pdf.save("Taste-Lounge-Receipt.pdf");
+}
+
+</script>
+

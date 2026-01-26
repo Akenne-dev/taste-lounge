@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paystack Checkout</title>
+
+      <link rel="shortcut icon"
+        href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+        type="image/x-icon">
+
+  <!-- Paystack -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <!-- Firebase v8 (MATCH YOUR LOGIN PAGE) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+
+  <style>
+
+    body{
+      overflow: hidden;
+      height: 100vh;
+    }
+    /* PAGE CENTERING */
+.checkout-wrapper {
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 25px;
+}
+
+/* CARD */
+.paystack-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  padding: 3rem 2rem; /* Use rem for better scaling */
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 15px 80px rgba(0,0,0,0.2);
+  animation: slideUp 0.5s ease;
+}
+
+/* TEXT */
+.paystack-card h2 {
+  color: #ff0000;
+  font-size: 2rem; /* Use rem for better scaling */
+  margin-bottom: 1rem;
+}
+
+.paystack-card p {
+  font-size: 1.2rem; /* Slightly larger font */
+  color: #555;
+  margin-bottom: 1.5rem; /* Adjust margin for better spacing */
+}
+
+/* BUTTON */
+.pay-btn {
+  width: 100%;
+  padding: 1rem; /* Use rem */
+  border-radius: 14px;
+  border: none;
+  background: #ff0000;
+  color: #fff;
+  font-size: 1.1rem; /* Slightly larger font */
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pay-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255,0,0,0.4);
+}
+
+.pay-btn:active {
+  transform: scale(0.98);
+}
+
+.cancel {
+  background-color: transparent;
+  display: flex;
+  color: red;
+  font-size: 2rem; /* Larger cancel button text */
+  outline: none;
+  border: none;
+  font-weight: 900;
+}
+
+/* ICON */
+.pay-btn i {
+  font-size: 1.3rem; /* Slightly larger icon */
+}
+
+/* ANIMATION */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+  .paystack-card {
+    padding: 3rem 2.5rem; /* Increased padding for mobile */
+    padding: 10rem 8rem; /* Increased padding for mobile */
+    max-width: 99%; /* Allow card to take up more space */
+  }
+
+  .paystack-card h2 {
+    font-size: 1.9rem; /* Adjusted font size */
+  }
+
+  .paystack-card p {
+    font-size: 1.8rem; /* Larger text for better readability */
+  }
+
+  .pay-btn {
+    font-size: 1.5rem; /* Larger button text */
+  }
+
+  .cancel {
+    font-size: 2.5rem; /* Larger cancel button text on mobile */
+  }
+  #payment-success h2{
+    font-size: 90px;
+  }
+    #payment-success p{
+    font-size: 80px;
+  }
+}
+/* Paystack mobile fix */
+iframe[src*="paystack"] {
+  min-height: 90vh !important;
+  width: 100% !important;
+}
+
+
+
+  </style>
+
+</head>
+<body>
+  
+<canvas id="confetti-canvas" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+"></canvas>
+<!-- <audio id="successSound" preload="auto">
+  <source src="success.mp3" type="audio/mpeg">
+</audio> -->
+
+<div id="payment-success" style="display:none; text-align:center;">
+  <h2 style="color:green; font-size: 30px;">Payment Successful 🎉</h2>
+  <p style="font-size: 20px;">Redirecting to your orders...</p>
+</div>
+
+<div id="loading-state" style="display:none; text-align:center;">
+  <h2 style="color: green; font-size: 30px;">Processing payment...</h2>
+</div>
+
+
+
+    <div class="checkout-wrapper">
+  <form id="paystackForm" class="paystack-card">
+    <button type="submit" onclick="cancel()" class="cancel">x</button>
+    <h2>Complete Your Payment</h2>
+    <p>Secure checkout powered by Paystack</p>
+
+    <button type="submit" class="pay-btn">
+      <i class="fa-solid fa-lock"></i> Pay with Paystack
+    </button>
+  </form>
+</div>
+
+
+
+</body>
+</html>
+
+
+
+
+<script>
+/* =====================================================
+   🔥 FIREBASE INITIALIZATION
+===================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
+  authDomain: "taste-lounge-3075.firebaseapp.com",
+  projectId: "taste-lounge-3075",
+  storageBucket: "taste-lounge-3075.firebasestorage.app",
+  messagingSenderId: "923805907944",
+  appId: "1:923805907944:web:8c054c78c5cbd75929c25d"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* =====================================================
+   🔐 AUTH STATE
+===================================================== */
+let loggedInUser = null;
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    loggedInUser = user;
+    console.log("AUTH OK:", user.email);
+  } else {
+    window.location.href = "log-in.html";
+  }
+});
+
+/* =====================================================
+   ❌ CANCEL BUTTON
+===================================================== */
+function cancel() {
+  window.location.href = "checkout.html";
+}
+
+/* =====================================================
+   💳 PAYSTACK
+===================================================== */
+document
+  .getElementById("paystackForm")
+  .addEventListener("submit", payWithPaystack);
+
+function payWithPaystack(e) {
+  e.preventDefault();
+
+  if (!loggedInUser) return alert("Auth not ready");
+
+  const totalAmount = Number(localStorage.getItem("cartTotal"));
+
+  if (!totalAmount || totalAmount <= 0) {
+    return alert("Invalid cart amount");
+  }
+
+  const handler = PaystackPop.setup({
+    key: "pk_test_7dd9e5a2b95884c8f99582ea5a6653007b338e6f",
+    email: loggedInUser.email,
+    amount: totalAmount * 100,
+    currency: "NGN",
+    ref: "TL_" + Date.now(),
+
+    callback: function (response) {
+      console.log("PAYMENT SUCCESS:", response.reference);
+      handleSuccessfulPayment(response);
+    },
+
+    onClose: function () {
+      console.log("Payment closed");
+    }
+  });
+
+  handler.openIframe();
+}
+
+/* =====================================================
+   ✅ PAYMENT SUCCESS (NON-BLOCKING)
+===================================================== */
+
+async function handleSuccessfulPayment(res) {
+  const pending = JSON.parse(localStorage.getItem("pendingOrder"));
+  if (!pending) return alert("Order data missing");
+
+  const user = firebase.auth().currentUser;
+  if (!user) return alert("Auth lost");
+
+  try {
+
+        // ✅ SHOW LOADING STATE immediately after payment success
+    document.getElementById("loading-state").style.display = "block";
+    document.getElementById("paystackForm").style.display = "none"; // Hide the Paystack form
+
+    // ✅ CREATE ORDER ONLY AFTER PAYMENT SUCCESS
+    await db.collection("orders").add({
+      userId: user.uid,
+      items: pending.items,
+      pricing: pending.pricing,
+      delivery: pending.delivery,
+
+      payment: {
+        reference: res.reference,
+        status: "success",
+        paidAt: firebase.firestore.FieldValue.serverTimestamp()
+      },
+
+      status: { current: "paid" },
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // ✅ CLEAN UP
+    localStorage.removeItem("cart");
+    localStorage.removeItem("cartTotal");
+    localStorage.removeItem("deliveryDraft");
+    localStorage.removeItem("pendingOrder");
+
+        // 🔥 THIS IS THE MISSING PIECE
+    await clearUserCart();
+
+    // ✅ UI + REDIRECT
+    showPaymentSuccess();
+    setTimeout(() => {
+      window.location.href = "orders.html";
+    }, 2000);
+
+  } catch (err) {
+    console.error("ORDER SAVE FAILED:", err);
+    alert("Payment succeeded but order failed. Contact support.");
+  }
+}
+
+
+async function clearUserCart() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  try {
+    await db.collection("users")
+      .doc(user.uid)
+      .set({ cart: [] }, { merge: true });
+
+    // 🔥 FORCE RESET EVERYWHERE
+    localStorage.clear();
+
+    console.log("🧹 Cart cleared everywhere");
+
+  } catch (err) {
+    console.error("Failed to clear cart:", err);
+  }
+}
+
+
+
+/* =====================================================
+   🎉 SUCCESS UI
+===================================================== */
+function showPaymentSuccess() {
+    document.getElementById("loading-state").style.display = "none";
+  document.getElementById("paystackForm").style.display = "none";
+
+  const successDiv = document.getElementById("payment-success");
+  successDiv.style.display = "block";
+
+  const sound = document.getElementById("successSound");
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+  }
+
+  if (navigator.vibrate) {
+    navigator.vibrate([200, 100, 200]);
+  }
+
+  const canvas = document.getElementById("confetti-canvas");
+  if (!canvas) return;
+
+  const myConfetti = confetti.create(canvas, { resize: true });
+  const end = Date.now() + 6000;
+
+  (function frame() {
+    myConfetti({
+      particleCount: 6,
+      angle: 60,
+      spread: 70,
+      origin: { x: 0, y: 0.7 }
+    });
+
+    myConfetti({
+      particleCount: 6,
+      angle: 120,
+      spread: 70,
+      origin: { x: 1, y: 0.7 }
+    });
+
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+}
+</script>
+
+
+
+

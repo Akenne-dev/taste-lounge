@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Log In | Taste Lounge</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon"
+        href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+        type="image/x-icon">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
+</head>
+<style>
+    :root {
+        --yellow: #FBC02D;
+        --red: #C62828;
+        --cream: #FFF6E9;
+        --beige: #F4E3C1;
+        --brown: #4E342E;
+        --black: #1A1A1A;
+        --white: #FFFFFF;
+        --orange-glow: #FF7043;
+        --red-glow: #E53935;
+        --red: #C62828;
+        --white: #fff;
+        --black: #111;
+        --bg: #f9f9f9;
+    }
+
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        overflow-x: hidden;
+        background-color: var(--beige);
+    }
+
+    .wave {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        height: 100%;
+        z-index: -1;
+    }
+
+    .container {
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 7rem;
+        padding: 0 2rem;
+    }
+
+    .img {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .login-content {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        text-align: center;
+    }
+
+    .img img {
+        width: 600px;
+    }
+
+    form {
+        width: 360px;
+    }
+
+    .login-content img {
+        height: 150px;
+    }
+
+    .login-content h2 {
+        margin: 15px 0;
+        color: #333;
+        text-transform: uppercase;
+        font-size: 2.9rem;
+    }
+
+    .login-content .input-div {
+        position: relative;
+        display: grid;
+        grid-template-columns: 7% 93%;
+        margin: 25px 0;
+        padding: 5px 0;
+        border-bottom: 2px solid #d9d9d9;
+    }
+
+    .login-content .input-div.one {
+        margin-top: 0;
+    }
+
+    .i {
+        color: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .i i {
+        transition: .3s;
+    }
+
+    .input-div>div {
+        position: relative;
+        height: 45px;
+    }
+
+    .input-div>div>h5 {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #000;
+        font-size: 18px;
+        transition: .3s;
+    }
+
+    .input-div:before,
+    .input-div:after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        width: 0%;
+        height: 2px;
+        background-color: #38d39f;
+        transition: .4s;
+    }
+
+    .input-div:before {
+        right: 50%;
+    }
+
+    .input-div:after {
+        left: 50%;
+    }
+
+    .input-div.focus:before,
+    .input-div.focus:after {
+        width: 50%;
+    }
+
+    .input-div.focus>div>h5 {
+        top: -5px;
+        font-size: 15px;
+    }
+
+    .input-div.focus>.i>i {
+        color: #38d39f;
+    }
+
+    .input-div>div>input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        outline: none;
+        background: none;
+        padding: 0.5rem 0.7rem;
+        font-size: 1.2rem;
+        color: #555;
+        font-family: 'poppins', sans-serif;
+    }
+
+    .input-div.pass {
+        margin-bottom: 4px;
+    }
+
+    a {
+        text-decoration: none;
+        color: red;
+        font-size: 0.9rem;
+        transition: .3s;
+    }
+
+    a:hover {
+        color: #38d39f;
+    }
+
+    .btn {
+        display: block;
+        width: 100%;
+        height: 50px;
+        border-radius: 25px;
+        outline: none;
+        border: none;
+        background-image: linear-gradient(to right, #c30b0b, #ff0000, #c41010);
+        background-size: 200%;
+        font-size: 1.2rem;
+        color: #fff;
+        font-family: 'Poppins', sans-serif;
+        text-transform: uppercase;
+        margin: 1rem 0;
+        cursor: pointer;
+        transition: .5s;
+    }
+
+    .btn:hover {
+        background-position: right;
+    }
+
+    .login-message {
+        font-size: 24px;
+        font-weight: 700;
+        color: red;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.5s ease;
+        white-space: nowrap;
+    }
+
+    .login-message.active {
+        opacity: 1;
+        transform: translateY(0);
+        animation: glowPulse 1.5s infinite alternate;
+    }
+    .modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 300px;
+ animation: pop 0.35s ease;
+
+}
+@keyframes pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}    
+.modal-content h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-family: "Poppins", sans-serif;
+}                        
+.close {
+  float: right;
+  cursor: pointer;
+  font-size: 22px;
+}
+#sendResetBtn{
+    border: 2px solid grey;
+    padding: 7px;
+    width: 55%;
+    border-radius: 10px;
+    background-color: whitesmoke;
+}
+/* ⭐ STYLED INPUT */
+#resetEmail {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 2px solid #ff7ca3;
+  border: 2px solid red;
+  outline: none;
+  background: #fff;
+  color: #333;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* ⭐ FIX PLACEHOLDER */
+#resetEmail::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+/* ⭐ BEAUTIFUL BUTTON */
+#sendResetBtn {
+  width: 100%;
+  padding: 12px;
+  background: red;
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  margin-top: 10px;
+}
+
+#sendResetBtn:hover {
+  background: #ff4c85;
+}
+/* .forgot{
+    color: #0367a6;
+    font-size: 16px;
+    border:2px solid rgb(0, 238, 255);
+    text-decoration: none;
+    padding: 5px;
+} */
+
+
+
+    @media screen and (max-width: 1050px) {
+        .container {
+            grid-gap: 5rem;
+        }
+    }
+
+    @media screen and (max-width: 1000px) {
+        form {
+            width: 290px;
+        }
+
+        .login-content h2 {
+            font-size: 2.4rem;
+            margin: 8px 0;
+        }
+
+        .img img {
+            width: 400px;
+        }
+    }
+
+
+    /* 📱 PERFECT RESPONSIVE MOBILE VIEW */
+    @media screen and (max-width: 900px) {
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            /* No scrolling */
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+
+        /* Use WAVE IMAGE as full blurred background */
+        .wave {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+            filter: blur(4px) brightness(1);
+            /* Glass blur */
+        }
+
+        /* Remove the rice image section */
+        .img {
+            display: none !important;
+        }
+
+        .container {
+            grid-template-columns: 1fr;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        .login-content {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            /* padding: 0 20px; */
+            margin: 10px 20px 0px 20px;
+            /* backdrop-filter: blur(12px); */
+
+        }
+
+        form {
+            width: 90%;
+            max-width: 330px;
+        }
+
+        .login-content img {
+            height: 120px;
+        }
+
+        .title {
+            font-size: 2.2rem;
+        }
+
+        .i,
+        .input-div>div>h5,
+        .input-div>div>input,
+        .login-content h2,
+        p {
+            color: #fff;
+
+        }
+            .login-message {
+        font-size: 20px;
+        font-weight: 600;
+    }
+}
+
+    /* ----------- FIX FOR LARGE TABLETS & SURFACE PRO (900px–1300px) ----------- */
+    @media screen and (max-width: 1300px) {
+        .container {
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 3rem;
+            padding: 0 1.5rem;
+            height: auto;
+        }
+
+        .img img {
+            width: 350px;
+            max-width: 100%;
+        }
+
+        .login-content h2 {
+            font-size: 2.3rem;
+        }
+
+        form {
+            width: 300px;
+        }
+    }
+
+    /* ----------- FIX FOR IPAD PRO & TABLETS (768px–900px) ----------- */
+    @media screen and (max-width: 900px) {
+        .container {
+            grid-template-columns: 1fr;
+            height: auto;
+            padding-top: 50px;
+        }
+
+        .img {
+            justify-content: center;
+        }
+
+        .img img {
+            width: 320px;
+            max-width: 90%;
+        }
+
+        form {
+            width: 80%;
+            max-width: 340px;
+        }
+    }
+
+    /* ----------- FIX FOR SMALL TABLETS & OLD PHONES (600px–767px) ----------- */
+    @media screen and (max-width: 767px) {
+        .container {
+            padding-top: 20px;
+        }
+
+        .login-content img {
+            height: 100px;
+        }
+
+        .input-div>div>h5 {
+            font-size: 16px;
+        }
+
+        .input-div>div>input {
+            font-size: 1rem;
+        }
+    }
+
+    /* ----------- PERFECT FIX FOR ALL PHONES INCLUDING iPhone 4 ----------- */
+    @media screen and (max-width: 480px) {
+        body {
+            overflow-y: auto;
+            height: auto;
+        }
+
+        .container {
+            height: auto;
+            padding: 30px 0;
+        }
+
+        .login-content {
+            padding: 0 15px;
+        }
+
+        form {
+            width: 100%;
+            max-width: 310px;
+        }
+
+        .login-content h2 {
+            font-size: 2rem;
+        }
+    }
+
+    /* ----------- EXTREME SMALL DEVICES FIX (iPhone 4, iPhone SE old) ----------- */
+    @media screen and (max-width: 360px) {
+        .login-content img {
+            height: 80px;
+        }
+
+        .input-div>div>input {
+            font-size: 0.9rem;
+        }
+
+        .login-content h2 {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+</head>
+
+<body>
+    <img class="wave" src="golden-crispy-french-fries-basket_23-2151997993.jpg">
+    <div class="container">
+        <div class="img">
+            <img
+                src="https://static.vecteezy.com/system/resources/previews/048/412/062/non_2x/jollof-rice-isolated-on-transparent-background-free-png.png">
+        </div>
+        <div class="login-content">
+            <form>
+                    <p id="text" class="login-message"></p>
+                <img src="taste-lounge-logo.png">
+                <h2 class="title">Welcome</h2>
+                <div class="input-div pass">
+                    <div class="i">
+                        <i class="fa-solid fa-envelope"></i>
+
+                    </div>
+                    <div class="div">
+                        <h5>Email</h5>
+                        <input type="email" class="input" id="email">
+                    </div>
+                </div>
+                <div class="input-div pass">
+                    <div class="i">
+                        <i class="fas fa-eye" id="togglePassword" onclick="showPass()"></i>
+                    </div>
+                    <div class="div">
+                        <h5>Password</h5>
+                        <input type="password" class="input" id="password">
+                    </div>
+                </div>
+                <p>Don't have an account? <a href="sign-in.html">Sign Up</a></p>
+                <button onclick="logIn()" type="button" id="signUpBtn" class="btn" value="Log In">Log In</button>
+                        <p class="forgot">
+  <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+</p>
+    <div id="resetModal" class="modal">
+  <div class="modal-content">
+    <span id="closeReset" class="close">&times;</span>
+    <h3>Reset Your Password</h3>
+    <input type="email" id="resetEmail" placeholder="Enter your email"/>
+    <button id="sendResetBtn">Send Reset Link</button>
+  </div>
+</div>
+
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>
+
+<!-- REAL -->
+<script>
+
+    const inputs = document.querySelectorAll(".input");
+    function addcl() {
+        let parent = this.parentNode.parentNode;
+        parent.classList.add("focus");
+    }
+
+    function remcl() {
+        let parent = this.parentNode.parentNode;
+        if (this.value == "") {
+            parent.classList.remove("focus");
+        }
+    }
+    inputs.forEach(input => {
+        input.addEventListener("focus", addcl);
+        input.addEventListener("blur", remcl);
+    });
+
+    // FIREBASE?
+    const firebaseConfig = {
+        apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
+        authDomain: "taste-lounge-3075.firebaseapp.com",
+        projectId: "taste-lounge-3075",
+        storageBucket: "taste-lounge-3075.firebasestorage.app",
+        messagingSenderId: "923805907944",
+        appId: "1:923805907944:web:8c054c78c5cbd75929c25d"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+
+    // passwordtogglelock
+    function showPass() {
+        let input = document.getElementById("password");
+        let icon = document.getElementById("togglePassword");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+
+
+
+    // LOGIN FUNCTION
+  function logIn() {
+    setTimeout(() => {
+
+      if (password.value.trim().length < 8) {
+        alert('password must be at least 8 characters')
+        return
+      }
+
+      let load = document.getElementById('signUpBtn');
+      load.textContent = 'Loading...';
+      load.disabled = true
+
+
+      firebase.auth().signInWithEmailAndPassword(email.value.trim(), password.value.trim())
+        .then((userCredential) => {
+          // Signed in
+          text.innerHTML = "Log in successful! Redirecting...";
+          text.classList.add('active');
+
+                      setTimeout(() => {
+            location.href = "foods.html";
+          }, 3000)
+
+        })
+        .catch((error) => {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          alert(errorMessage)
+          
+         load.textContent= 'Log In'
+          load.disabled = false
+        });
+    }, 1500)
+
+  }
+
+
+// OPEN MODAL
+document.getElementById("forgotPasswordLink").onclick = () => {
+    document.getElementById("resetModal").style.display = "flex";
+};
+
+// CLOSE MODAL
+document.getElementById("closeReset").onclick = () => {
+    document.getElementById("resetModal").style.display = "none";
+};
+
+// SEND PASSWORD RESET EMAIL (Firebase v8)
+document.getElementById("sendResetBtn").onclick = () => {
+    const email = document.getElementById("resetEmail").value;
+
+    if (!email) {
+        alert("Enter your email first!");
+        return;
+    }
+
+    firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+            alert("Password reset link sent! Check your email.");
+            document.getElementById("resetModal").style.display = "none";
+        })
+.catch((error) => {
+    console.log("RESET ERROR:", error.code);
+
+    if (error.code === "auth/user-not-found") {
+        alert("User does not exist");
+    } else if (error.code === "auth/invalid-email") {
+        alert("Invalid email format");
+    } else {
+        alert(error.message);
+    }
+});
+
+};
+
+</script>
+
+
+
+
+
+
+
+<!-- NONESENSE Admin -->
+<!-- <script>
+
+    const inputs = document.querySelectorAll(".input");
+    function addcl() {
+        let parent = this.parentNode.parentNode;
+        parent.classList.add("focus");
+    }
+
+    function remcl() {
+        let parent = this.parentNode.parentNode;
+        if (this.value == "") {
+            parent.classList.remove("focus");
+        }
+    }
+    inputs.forEach(input => {
+        input.addEventListener("focus", addcl);
+        input.addEventListener("blur", remcl);
+    });
+
+    // FIREBASE?
+    const firebaseConfig = {
+        apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
+        authDomain: "taste-lounge-3075.firebaseapp.com",
+        projectId: "taste-lounge-3075",
+        storageBucket: "taste-lounge-3075.firebasestorage.app",
+        messagingSenderId: "923805907944",
+        appId: "1:923805907944:web:8c054c78c5cbd75929c25d"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+
+    // passwordtogglelock
+    function showPass() {
+        let input = document.getElementById("password");
+        let icon = document.getElementById("togglePassword");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+
+
+
+    // LOGIN FUNCTION
+  function logIn() {
+    setTimeout(() => {
+
+      if (password.value.trim().length < 8) {
+        alert('password must be at least 8 characters')
+        return
+      }
+
+      let load = document.getElementById('signUpBtn');
+      load.textContent = 'Loading...';
+      load.disabled = true
+
+
+      firebase.auth().signInWithEmailAndPassword(email.value.trim(), password.value.trim())
+        .then((userCredential) => {
+
+            firebase.firestore()
+  .collection("users")
+  .doc(userCredential.user.uid)
+  .set({
+    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+          // Signed in
+          text.innerHTML = "Log in successful! Redirecting...";
+          text.classList.add('active');
+
+                      setTimeout(() => {
+            location.href = "foods.html";
+          }, 3000)
+
+        })
+        .catch((error) => {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          alert(errorMessage)
+          
+         load.textContent= 'Log In'
+          load.disabled = false
+        });
+    }, 1500)
+
+  }
+
+
+// OPEN MODAL
+document.getElementById("forgotPasswordLink").onclick = () => {
+    document.getElementById("resetModal").style.display = "flex";
+};
+
+// CLOSE MODAL
+document.getElementById("closeReset").onclick = () => {
+    document.getElementById("resetModal").style.display = "none";
+};
+
+// SEND PASSWORD RESET EMAIL (Firebase v8)
+document.getElementById("sendResetBtn").onclick = () => {
+    const email = document.getElementById("resetEmail").value;
+
+    if (!email) {
+        alert("Enter your email first!");
+        return;
+    }
+
+    firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+            alert("Password reset link sent! Check your email.");
+            document.getElementById("resetModal").style.display = "none";
+        })
+.catch((error) => {
+    console.log("RESET ERROR:", error.code);
+
+    if (error.code === "auth/user-not-found") {
+        alert("User does not exist");
+    } else if (error.code === "auth/invalid-email") {
+        alert("Invalid email format");
+    } else {
+        alert(error.message);
+    }
+});
+
+};
+
+</script> -->
+
+
+
