@@ -1,593 +1,589 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Volt Airways | Fly Faster</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-        <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
     <style>
-        :root {
-            --primary: #D90429;
-            --secondary: #2B2D42;
-            --accent: #8D99AE;
-            --bg: #EDF2F4;
-        }
+      :root {
+        --primary: #d90429;
+        --secondary: #2b2d42;
+        --accent: #8d99ae;
+        --bg: #edf2f4;
+      }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-        }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
 
-        body {
-            background: var(--bg);
-            color: var(--secondary);
-            line-height: 1.6;
-        }
+      body {
+        background: var(--bg);
+        color: var(--secondary);
+        line-height: 1.6;
+      }
 
-        header {
-            background: linear-gradient(rgba(43, 45, 66, 0.4), rgba(43, 45, 66, 0.4)),
-                url('airplane.jpg') center/cover no-repeat;
-            color: white;
-            padding: 100px 5%;
-        }
+      header {
+        background:
+          linear-gradient(rgba(43, 45, 66, 0.4), rgba(43, 45, 66, 0.4)),
+          url("airplane.jpg") center/cover no-repeat;
+        color: white;
+        padding: 100px 5%;
+      }
 
-        .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 80px;
-        }
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 80px;
+      }
 
-        .logo {
-            font-size: 38px;
-            font-weight: 700;
-            color: var(--primary);
-        }
+      .logo {
+        font-size: 38px;
+        font-weight: 700;
+        color: var(--primary);
+      }
 
-        .nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 25px;
-            font-weight: 500;
-        }
+      .nav a {
+        color: white;
+        text-decoration: none;
+        margin-left: 25px;
+        font-weight: 500;
+      }
 
-        .hero {
-            max-width: 700px;
-        }
+      .hero {
+        max-width: 700px;
+      }
 
+      .hero h1 {
+        font-size: 52px;
+        margin-bottom: 20px;
+      }
+
+      .hero p {
+        font-size: 18px;
+        margin-bottom: 30px;
+        color: #f1f1f1;
+      }
+
+      .btn {
+        display: inline-block;
+        background: var(--primary);
+        color: white;
+        padding: 14px 32px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+      }
+
+      .btn:hover {
+        background: #b00321;
+        transform: translateY(-2px);
+      }
+
+      .search-box {
+        background: white;
+        margin: -60px auto 60px;
+        max-width: 1100px;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .search-box div {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .search-box label {
+        font-size: 13px;
+        color: var(--accent);
+        margin-bottom: 6px;
+      }
+
+      .search-box input,
+      .search-box select {
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      .search-box button {
+        background: var(--primary);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      section {
+        padding: 80px 5%;
+      }
+
+      section h2 {
+        text-align: center;
+        font-size: 36px;
+        margin-bottom: 50px;
+      }
+
+      .flights {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+      }
+
+      .flights {
+        margin-bottom: 70px;
+      }
+
+      .flight-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        transition: 0.4s;
+      }
+
+      .flight-card:hover {
+        transform: translateY(-8px);
+        background: rgba(217, 4, 41, 0.05);
+      }
+
+      .flight-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+      }
+
+      .flight-info {
+        padding: 20px;
+      }
+
+      .flight-info h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      .price {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        font-size: 12px;
+        margin-top: 12px;
+      }
+
+      .regions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 20px;
+        text-align: center;
+      }
+
+      .region {
+        padding: 18px;
+        border-radius: 14px;
+        background: white;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .region:hover {
+        background: var(--primary);
+        color: white;
+      }
+
+      .award {
+        background: linear-gradient(135deg, var(--secondary), var(--primary));
+        color: white;
+        text-align: center;
+        padding: 70px 10%;
+        border-radius: 30px;
+        margin: 80px 5%;
+      }
+
+      .award button {
+        margin-top: 25px;
+        background: transparent;
+        border: 2px solid white;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .popular-flights {
+        padding: 90px 5%;
+        background: var(--bg);
+      }
+
+      .popular-flights h2 {
+        text-align: center;
+        font-size: 34px;
+        margin-bottom: 50px;
+      }
+
+      .popular-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 18px;
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      .popular-grid span {
+        padding: 16px 18px;
+        border-radius: 64px;
+        background: transparent;
+        font-size: 15px;
+        font-weight: 500;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s ease;
+        border: 1px solid black;
+      }
+
+      .popular-grid span:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-4px);
+      }
+
+      .view-more-wrap {
+        display: flex;
+        justify-content: center;
+        margin-top: 50px;
+      }
+
+      .view-more-btn {
+        padding: 16px 60px;
+        border-radius: 999px;
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.35s ease;
+      }
+
+      .view-more-btn:hover {
+        background: var(--primary);
+        color: white;
+      }
+
+      footer {
+        background: var(--secondary);
+        color: #ddd;
+        padding: 80px 5% 40px;
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 40px;
+        margin-bottom: 50px;
+      }
+
+      footer h4 {
+        color: white;
+        margin-bottom: 15px;
+      }
+
+      footer ul {
+        list-style: none;
+      }
+
+      footer ul li {
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 20px;
+        text-align: center;
+        font-size: 13px;
+        color: #aaa;
+      }
+
+      @media (max-width: 1024px) {
+        .popular-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .popular-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
         .hero h1 {
-            font-size: 52px;
-            margin-bottom: 20px;
-        }
-
-        .hero p {
-            font-size: 18px;
-            margin-bottom: 30px;
-            color: #f1f1f1;
-        }
-
-        .btn {
-            display: inline-block;
-            background: var(--primary);
-            color: white;
-            padding: 14px 32px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            background: #b00321;
-            transform: translateY(-2px);
-        }
-
-        /* ================= SEARCH BAR ================= */
-        .search-box {
-            background: white;
-            margin: -60px auto 60px;
-            max-width: 1100px;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .search-box div {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .search-box label {
-            font-size: 13px;
-            color: var(--accent);
-            margin-bottom: 6px;
-        }
-
-        .search-box input,
-        .search-box select {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-
-        .search-box button {
-            background: var(--primary);
-            border: none;
-            color: white;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* ================= SECTIONS ================= */
-        section {
-            padding: 80px 5%;
+          font-size: 38px;
         }
 
         section h2 {
-            text-align: center;
-            font-size: 36px;
-            margin-bottom: 50px;
+          font-size: 28px;
         }
-
-        .flights {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        /* Add vertical spacing between flight rows */
-        .flights {
-            margin-bottom: 70px;
-        }
-
-
-        .flight-card {
-            background: white;
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
-            transition: 0.4s;
-        }
-
-        .flight-card:hover {
-            transform: translateY(-8px);
-            background: rgba(217, 4, 41, 0.05);
-        }
-
-        .flight-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-
-        .flight-info {
-            padding: 20px;
-        }
-
-        .flight-info h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-
-        .price {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            font-size: 12px;
-            margin-top: 12px;
-        }
-
-        /* ================= REGIONS ================= */
-        .regions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 20px;
-            text-align: center;
-        }
-
-        .region {
-            padding: 18px;
-            border-radius: 14px;
-            background: white;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .region:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* ================= AWARD ================= */
-        .award {
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
-            color: white;
-            text-align: center;
-            padding: 70px 10%;
-            border-radius: 30px;
-            margin: 80px 5%;
-        }
-
-        .award button {
-            margin-top: 25px;
-            background: transparent;
-            border: 2px solid white;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* ================= POPULAR FLIGHTS ================= */
-.popular-flights {
-  padding: 90px 5%;
-  background: var(--bg);
-}
-
-.popular-flights h2 {
-  text-align: center;
-  font-size: 34px;
-  margin-bottom: 50px;
-}
-
-/* Grid layout */
-.popular-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 18px;
-  max-width: 1200px;
-  margin: auto;
-}
-
-.popular-grid span {
-  padding: 16px 18px;
-  border-radius: 64px;
-  background: transparent;
-  font-size: 15px;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: 0.3s ease;
-  border: 1px solid black;
-}
-
-.popular-grid span:hover {
-  background: var(--primary);
-  color: white;
-  transform: translateY(-4px);
-}
-
-.view-more-wrap {
-  display: flex;
-  justify-content: center;
-  margin-top: 50px;
-}
-
-.view-more-btn {
-  padding: 16px 60px;
-  border-radius: 999px;
-  background: transparent;
-  border: 2px solid var(--primary);
-  color: var(--primary);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.35s ease;
-}
-
-.view-more-btn:hover {
-  background: var(--primary);
-  color: white;
-}
-
-
-
-        footer {
-            background: var(--secondary);
-            color: #ddd;
-            padding: 80px 5% 40px;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 40px;
-            margin-bottom: 50px;
-        }
-
-        footer h4 {
-            color: white;
-            margin-bottom: 15px;
-        }
-
-        footer ul {
-            list-style: none;
-        }
-
-        footer ul li {
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 20px;
-            text-align: center;
-            font-size: 13px;
-            color: #aaa;
-        }
-
-
-@media (max-width: 1024px) {
-  .popular-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .popular-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 38px;
-            }
-
-            section h2 {
-                font-size: 28px;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <header>
-        <div class="nav">
-            <div class="logo">Volt Airways</div>
-            <div>
-                <a href="#">Flights</a>
-                <a href="#">Deals</a>
-                <a href="#">Experience</a>
-                <a href="#">Contact</a>
-            </div>
+      <div class="nav">
+        <div class="logo">Volt Airways</div>
+        <div>
+          <a href="#">Flights</a>
+          <a href="#">Deals</a>
+          <a href="#">Experience</a>
+          <a href="#">Contact</a>
         </div>
+      </div>
 
-        <div class="hero">
-            <h1>Fly Faster. Fly Smarter.</h1>
-            <p>Lightning-fast bookings, premium comfort, and unbeatable global routes from Lagos to the world.</p>
-            <a href="#" class="btn">Search Flights</a>
-        </div>
+      <div class="hero">
+        <h1>Fly Faster. Fly Smarter.</h1>
+        <p>
+          Lightning-fast bookings, premium comfort, and unbeatable global routes
+          from Lagos to the world.
+        </p>
+        <a href="#" class="btn">Search Flights</a>
+      </div>
     </header>
 
-
     <div class="search-box">
-        <div>
-            <label>From</label>
-            <input placeholder="Select departure" />
-        </div>
-        <div>
-            <label>To</label>
-            <input placeholder="Select destination" />
-        </div>
-        <div>
-            <label>Travel Class</label>
-            <select>
-                <option>Economy</option>
-                <option>Premium</option>
-                <option>Upper Class</option>
-            </select>
-        </div>
-        <button>Search latest fare</button>
+      <div>
+        <label>From</label>
+        <input placeholder="Select departure" />
+      </div>
+      <div>
+        <label>To</label>
+        <input placeholder="Select destination" />
+      </div>
+      <div>
+        <label>Travel Class</label>
+        <select>
+          <option>Economy</option>
+          <option>Premium</option>
+          <option>Upper Class</option>
+        </select>
+      </div>
+      <button>Search latest fare</button>
     </div>
 
     <section>
-        <h2>Explore Our Most Popular Flights</h2>
-        <div class="flights">
-            <div class="flight-card">
-                <img
-                    src="https://assets.airtrfx.com/cdn-cgi/image/height=170,quality=80,fit=crop,format=auto/https://content.virginatlantic.com/content/dam/Everymundo/washington_EM-v2.jpg" />
-                <div class="flight-info">
-                    <h3>Lagos (LOS)to Washington, D.C. (IAD)</h3>
-                    <p>17 Mar – 24 Mar, 2026</p>
-                    <div class="price">US$950</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
-
-            <div class="flight-card">
-                <img
-                    src="https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80" />
-                <div class="flight-info">
-                    <h3>Lagos → New York (JFK)</h3>
-                    <p>08 Mar – 26 Jul, 2026</p>
-                    <div class="price">US$1,337</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
-
-            <div class="flight-card">
-                <img
-                    src="https://images.unsplash.com/photo-1517090504586-fde19ea6066f?auto=format&fit=crop&w=1200&q=80" />
-                <div class="flight-info">
-                    <h3>Lagos → Toronto (YYZ)</h3>
-                    <p>04 Apr – 24 May, 2026</p>
-                    <div class="price">US$1,260</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
-
-            <div class="flight-card">
-                <img
-                    src="https://assets.airtrfx.com/media-em/library/cities/atlanta-ATL.jpg?height=170&quality=80&fit=crop&format=auto&opt=true" />
-                <div class="flight-info">
-                    <h3>Lagos → Atlanta (ATL)</h3>
-                    <p>04 Apr – 24 May, 2026</p>
-                    <div class="price">US$1,260</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
+      <h2>Explore Our Most Popular Flights</h2>
+      <div class="flights">
+        <div class="flight-card">
+          <img
+            src="https://assets.airtrfx.com/cdn-cgi/image/height=170,quality=80,fit=crop,format=auto/https://content.virginatlantic.com/content/dam/Everymundo/washington_EM-v2.jpg"
+          />
+          <div class="flight-info">
+            <h3>Lagos (LOS)to Washington, D.C. (IAD)</h3>
+            <p>17 Mar – 24 Mar, 2026</p>
+            <div class="price">US$950</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
         </div>
-        <div class="flights">
-            <div class="flight-card">
-                <img
-                    src="https://assets.airtrfx.com/media-em/library/cities/edinburgh-EDI.jpg?height=170&quality=80&fit=crop&format=auto&opt=true" />
-                <div class="flight-info">
-                    <h3>Lagos (LOS)to Edinburgh (EDI)</h3>
-                    <p>17 Mar – 24 Mar, 2026</p>
-                    <div class="price">US$950</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
 
-            <div class="flight-card">
-                <img
-                    src="https://assets.airtrfx.com/media-em/vs/604a4e56a238e_Disney3-Orlando-MCO-min.png?height=170&quality=80&fit=crop&format=auto&opt=true" />
-                <div class="flight-info">
-                    <h3>Lagos (LOS)to Orlando (MCO)</h3>
-                    <p>08 Mar – 26 Jul, 2026</p>
-                    <div class="price">US$1,337</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
-
-            <div class="flight-card">
-                <img
-                    src="https://assets.airtrfx.com/cdn-cgi/image/height=170,quality=80,fit=crop,format=auto/https://content.virginatlantic.com/content/dam/Everymundo/miami_EM.jpg" />
-                <div class="flight-info">
-                    <h3>Lagos (LOS)to Miami (MIA)</h3>
-                    <p>04 Apr – 24 May, 2026</p>
-                    <div class="price">US$1,260</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
-
-            <div class="flight-card">
-                <img
-                    src="https://assets.airtrfx.com/cdn-cgi/image/height=170,quality=80,fit=crop,format=auto/https://www.virginatlantic.com/content/dam/Everymundo/Caribbean/Barbados-EM.jpg" />
-                <div class="flight-info">
-                    <h3>Lagos (LOS)to Barbados (Bridgetown) (BGI)</h3>
-                    <p>04 Apr – 24 May, 2026</p>
-                    <div class="price">US$1,260</div>
-                    <span class="tag">Economy • Round trip</span>
-                </div>
-            </div>
+        <div class="flight-card">
+          <img
+            src="https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80"
+          />
+          <div class="flight-info">
+            <h3>Lagos → New York (JFK)</h3>
+            <p>08 Mar – 26 Jul, 2026</p>
+            <div class="price">US$1,337</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
         </div>
+
+        <div class="flight-card">
+          <img
+            src="https://images.unsplash.com/photo-1517090504586-fde19ea6066f?auto=format&fit=crop&w=1200&q=80"
+          />
+          <div class="flight-info">
+            <h3>Lagos → Toronto (YYZ)</h3>
+            <p>04 Apr – 24 May, 2026</p>
+            <div class="price">US$1,260</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
+        </div>
+
+        <div class="flight-card">
+          <img
+            src="https://assets.airtrfx.com/media-em/library/cities/atlanta-ATL.jpg?height=170&quality=80&fit=crop&format=auto&opt=true"
+          />
+          <div class="flight-info">
+            <h3>Lagos → Atlanta (ATL)</h3>
+            <p>04 Apr – 24 May, 2026</p>
+            <div class="price">US$1,260</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
+        </div>
+      </div>
+      <div class="flights">
+        <div class="flight-card">
+          <img
+            src="https://assets.airtrfx.com/media-em/library/cities/edinburgh-EDI.jpg?height=170&quality=80&fit=crop&format=auto&opt=true"
+          />
+          <div class="flight-info">
+            <h3>Lagos (LOS)to Edinburgh (EDI)</h3>
+            <p>17 Mar – 24 Mar, 2026</p>
+            <div class="price">US$950</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
+        </div>
+
+        <div class="flight-card">
+          <img
+            src="https://assets.airtrfx.com/media-em/vs/604a4e56a238e_Disney3-Orlando-MCO-min.png?height=170&quality=80&fit=crop&format=auto&opt=true"
+          />
+          <div class="flight-info">
+            <h3>Lagos (LOS)to Orlando (MCO)</h3>
+            <p>08 Mar – 26 Jul, 2026</p>
+            <div class="price">US$1,337</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
+        </div>
+
+        <div class="flight-card">
+          <img
+            src="https://assets.airtrfx.com/cdn-cgi/image/height=170,quality=80,fit=crop,format=auto/https://content.virginatlantic.com/content/dam/Everymundo/miami_EM.jpg"
+          />
+          <div class="flight-info">
+            <h3>Lagos (LOS)to Miami (MIA)</h3>
+            <p>04 Apr – 24 May, 2026</p>
+            <div class="price">US$1,260</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
+        </div>
+
+        <div class="flight-card">
+          <img
+            src="https://assets.airtrfx.com/cdn-cgi/image/height=170,quality=80,fit=crop,format=auto/https://www.virginatlantic.com/content/dam/Everymundo/Caribbean/Barbados-EM.jpg"
+          />
+          <div class="flight-info">
+            <h3>Lagos (LOS)to Barbados (Bridgetown) (BGI)</h3>
+            <p>04 Apr – 24 May, 2026</p>
+            <div class="price">US$1,260</div>
+            <span class="tag">Economy • Round trip</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section>
-        <h2>Where do you want to go?</h2>
-        <div class="regions">
-            <div class="region">Africa</div>
-            <div class="region">Asia-Pacific</div>
-            <div class="region">Canada</div>
-            <div class="region">Caribbean</div>
-            <div class="region">Europe</div>
-            <div class="region">Middle East</div>
-            <div class="region">United States</div>
-            <div class="region">United Kingdom</div>
-        </div>
+      <h2>Where do you want to go?</h2>
+      <div class="regions">
+        <div class="region">Africa</div>
+        <div class="region">Asia-Pacific</div>
+        <div class="region">Canada</div>
+        <div class="region">Caribbean</div>
+        <div class="region">Europe</div>
+        <div class="region">Middle East</div>
+        <div class="region">United States</div>
+        <div class="region">United Kingdom</div>
+      </div>
     </section>
 
     <div class="award">
-        <h2>Best Overall Airline in Europe 2025</h2>
-        <p>Proudly delivering world-class service and unforgettable journeys.</p>
-        <button>Discover our awards</button>
+      <h2>Best Overall Airline in Europe 2025</h2>
+      <p>Proudly delivering world-class service and unforgettable journeys.</p>
+      <button>Discover our awards</button>
     </div>
- 
+
     <section class="popular-flights">
-  <h2>Popular flights from Virgin Atlantic</h2>
+      <h2>Popular flights from Virgin Atlantic</h2>
 
-  <div class="popular-grid">
-    <span>Lagos – London</span>
-    <span>Lagos – Toronto</span>
-    <span>Lagos – New York</span>
-    <span>Lagos – Manchester</span>
-    <span>Lagos – Atlanta</span>
+      <div class="popular-grid">
+        <span>Lagos – London</span>
+        <span>Lagos – Toronto</span>
+        <span>Lagos – New York</span>
+        <span>Lagos – Manchester</span>
+        <span>Lagos – Atlanta</span>
 
-    <span>Lagos – Washington, D.C.</span>
-    <span>Lagos – Riyadh</span>
-    <span>Lagos – Edinburgh</span>
-    <span>Lagos – Barbados (Bridgetown)</span>
+        <span>Lagos – Washington, D.C.</span>
+        <span>Lagos – Riyadh</span>
+        <span>Lagos – Edinburgh</span>
+        <span>Lagos – Barbados (Bridgetown)</span>
 
-    <span>Lagos – Boston</span>
-    <span>Lagos – San Francisco</span>
-    <span>Lagos – Los Angeles</span>
-    <span>Lagos – Portland</span>
-    <span>Lagos – Miami</span>
-    <span>Lagos – Salt Lake City</span>
-  </div>
+        <span>Lagos – Boston</span>
+        <span>Lagos – San Francisco</span>
+        <span>Lagos – Los Angeles</span>
+        <span>Lagos – Portland</span>
+        <span>Lagos – Miami</span>
+        <span>Lagos – Salt Lake City</span>
+      </div>
 
-  <div class="view-more-wrap">
-    <button class="view-more-btn">View more</button>
-  </div>
-</section>
+      <div class="view-more-wrap">
+        <button class="view-more-btn">View more</button>
+      </div>
+    </section>
 
     <footer>
-        <div class="footer-grid">
-            <div>
-                <h4>Where we fly</h4>
-                <ul>
-                    <li>Lagos – London</li>
-                    <li>Lagos – Toronto</li>
-                    <li>Lagos – New York</li>
-                    <li>Lagos – Manchester</li>
-                </ul>
-            </div>
-            <div>
-                <h4>Experience & Extras</h4>
-                <ul>
-                    <li>Cabin classes</li>
-                    <li>In-flight meals</li>
-                    <li>Entertainment</li>
-                </ul>
-            </div>
-            <div>
-                <h4>Help & Support</h4>
-                <ul>
-                    <li>Contact us</li>
-                    <li>Baggage</li>
-                    <li>Flight disruption</li>
-                </ul>
-            </div>
-            <div>
-                <h4>About Volt Airways</h4>
-                <ul>
-                    <li>Our story</li>
-                    <li>Careers</li>
-                    <li>Media centre</li>
-                </ul>
-            </div>
+      <div class="footer-grid">
+        <div>
+          <h4>Where we fly</h4>
+          <ul>
+            <li>Lagos – London</li>
+            <li>Lagos – Toronto</li>
+            <li>Lagos – New York</li>
+            <li>Lagos – Manchester</li>
+          </ul>
         </div>
+        <div>
+          <h4>Experience & Extras</h4>
+          <ul>
+            <li>Cabin classes</li>
+            <li>In-flight meals</li>
+            <li>Entertainment</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Help & Support</h4>
+          <ul>
+            <li>Contact us</li>
+            <li>Baggage</li>
+            <li>Flight disruption</li>
+          </ul>
+        </div>
+        <div>
+          <h4>About Volt Airways</h4>
+          <ul>
+            <li>Our story</li>
+            <li>Careers</li>
+            <li>Media centre</li>
+          </ul>
+        </div>
+      </div>
 
-        <div class="footer-bottom">
-            ©2025 Volt Airways. All rights reserved.
-        </div>
+      <div class="footer-bottom">©2025 Volt Airways. All rights reserved.</div>
     </footer>
-
-</body>
-
+  </body>
 </html>
 <script>
   document.getElementById("darkToggle").addEventListener("click", () => {
@@ -598,14 +594,14 @@
     y: 80,
     opacity: 0,
     duration: 1.2,
-    ease: "power3.out"
+    ease: "power3.out",
   });
 
   gsap.from(".search-box", {
     y: 60,
     opacity: 0,
     duration: 1,
-    delay: 0.4
+    delay: 0.4,
   });
 
   gsap.from(".flight-card", {
@@ -613,7 +609,6 @@
     opacity: 0,
     duration: 0.8,
     stagger: 0.15,
-    delay: 0.6
+    delay: 0.6,
   });
-
 </script>

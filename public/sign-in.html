@@ -1,5 +1,5 @@
 
-<!-- REAL SIGNUP WITHOUT ADMIN -->
+
  <!DOCTYPE html>
 <html>
 
@@ -262,20 +262,20 @@
     }
 
 
-    /* 📱 PERFECT RESPONSIVE MOBILE VIEW */
+    
     @media screen and (max-width: 900px) {
 
         body {
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            /* No scrolling */
+            
             margin: 0;
             padding: 0;
             position: relative;
         }
 
-        /* Use WAVE IMAGE as full blurred background */
+        
         .wave {
             position: fixed;
             top: 0;
@@ -285,10 +285,10 @@
             object-fit: cover;
             z-index: -2;
             filter: blur(6px) brightness(1);
-            /* Glass blur */
+            
         }
 
-        /* Remove the rice image section */
+        
         .img {
             display: none !important;
         }
@@ -309,10 +309,10 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            /* padding: 0 20px; */
+            
             margin: 20px 20px 0px 20px;
-            /* backdrop-filter: blur(12px); */
-            /* Glass layer */
+            
+            
         }
 
         form {
@@ -342,7 +342,7 @@
     }
     
     }
-    /* ----------- FIX FOR LARGE TABLETS & SURFACE PRO (900px–1300px) ----------- */
+    
 @media screen and (max-width: 1300px) {
     .container {
         grid-template-columns: 1fr 1fr;
@@ -365,7 +365,7 @@
     }
 }
 
-/* ----------- FIX FOR IPAD PRO & TABLETS (768px–900px) ----------- */
+
 @media screen and (max-width: 900px) {
     .container {
         grid-template-columns: 1fr;
@@ -386,9 +386,14 @@
         width: 80%;
         max-width: 340px;
     }
+        a{
+       color: yellow;
+        font-size: 0.9rem;
+        transition: .3s;
+    }
 }
 
-/* ----------- FIX FOR SMALL TABLETS & OLD PHONES (600px–767px) ----------- */
+
 @media screen and (max-width: 767px) {
     .container {
         padding-top: 20px;
@@ -407,7 +412,7 @@
     }
 }
 
-/* ----------- PERFECT FIX FOR ALL PHONES INCLUDING iPhone 4 ----------- */
+
 @media screen and (max-width: 480px) {
     body {
         overflow-y: auto;
@@ -433,7 +438,7 @@
     }
 }
 
-/* ----------- EXTREME SMALL DEVICES FIX (iPhone 4, iPhone SE old) ----------- */
+
 @media screen and (max-width: 360px) {
     .login-content img {
         height: 80px;
@@ -454,7 +459,7 @@
 <body>
     <img class="wave" src="golden-crispy-french-fries-basket_23-2151997993.jpg">
     <div class="container">
-        <div class="img">
+        <div class="img"> 
             <img
                 src="https://static.vecteezy.com/system/resources/previews/048/412/062/non_2x/jollof-rice-isolated-on-transparent-background-free-png.png">
         </div>
@@ -529,7 +534,7 @@
         input.addEventListener("blur", remcl);
     });
 
-    // FIREBASE?
+    
     const firebaseConfig = {
         apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
         authDomain: "taste-lounge-3075.firebaseapp.com",
@@ -539,14 +544,14 @@
         appId: "1:923805907944:web:8c054c78c5cbd75929c25d"
     };
 
-    // Initialize Firebase
-    // const app = initializeApp(firebaseConfig);
+    
+    
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    // const auth = firebase.auth();
+    
 
 
-    // passwordtogglelock
+    
     function showPass() {
         let input = document.getElementById("password");
         let icon = document.getElementById("togglePassword");
@@ -562,7 +567,7 @@
         }
     }
 
-    //confirm passwordtogglelock
+    
     function showConfirmPass() {
         let input = document.getElementById("confirmPass");
         let icon = document.getElementById("toggleConfirm");
@@ -613,12 +618,12 @@ function signUp() {
     .then(async (userCredential) => {
       const user = userCredential.user;
 
-      // ✅ SAVE DISPLAY NAME
+      
       await user.updateProfile({
         displayName: username
       });
 
-      // ✅ SAVE FIRESTORE DATA
+      
       await firebase.firestore()
         .collection("users")
         .doc(user.uid)

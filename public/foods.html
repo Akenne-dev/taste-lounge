@@ -40,9 +40,7 @@
       padding-top: 100px;
     }
 
-    /* ==============================
-   DESKTOP NAVBAR
-============================== */
+    
     .header {
       position: fixed;
       top: 0;
@@ -70,7 +68,7 @@
       color: var(--red);
     }
 
-    /* Desktop menu */
+    
     .desktop-nav {
       display: flex;
       gap: 60px;
@@ -100,9 +98,7 @@
       border-radius: 8px;
     }
 
-    /* ==============================
-   MOBILE HAMBURGER
-============================== */
+    
     .hamburger {
       font-size: 32px;
       cursor: pointer;
@@ -110,9 +106,7 @@
       display: none;
     }
 
-    /* ==============================
-   MOBILE SLIDE MENU
-============================== */
+    
     .mobile-menu {
       position: fixed;
       top: 0;
@@ -149,9 +143,7 @@
       color: var(--red);
     }
 
-    /* ==============================
-   BOTTOM NAV (MOBILE ONLY)
-============================== */
+    
     .bottom-nav {
       display: none;
       position: fixed;
@@ -185,9 +177,7 @@
       color: red;
     }
 
-    /* ===========================
-   SEARCH SECTION 
-=========================== */
+    
     .search-section {
       margin-bottom: 25px;
       display: flex;
@@ -196,7 +186,7 @@
     }
           body.dark ::placeholder{
       color: #9c9595 !important;
-      /* background-color: #121212; */
+      
     }
 
     .search-input {
@@ -210,10 +200,10 @@
     }
         body.dark .search-input{
       color: white !important;
-      /* background-color: #121212; */
+      
     }
 
-    /* FOCUS effect */
+    
     .search-input:focus {
       border: 2px solid red !important;
       outline: none;
@@ -236,9 +226,7 @@
       font-size: 14px;
     }
 
-    /* ===========================
-   CAROUSEL — DEALS
-=========================== */
+    
     .deals-carousel {
       margin: 25px 0;
       overflow: hidden;
@@ -270,9 +258,7 @@
       }
     }
 
-    /* ===========================
-   CATEGORY SCROLL
-=========================== */
+    
     .category-scroll h2 {
       margin-bottom: 10px;
       color: var(--red);
@@ -314,9 +300,7 @@
       transform: scale(0.96);
     }
 
-    /* ===========================
- TRENDING CAROUSEL
-=========================== */
+    
     .trending-section h2 {
       margin: 18px 0;
       color: var(--red);
@@ -363,9 +347,7 @@
       margin-top: 8px;
     }
 
-    /* ===========================
-   POPULAR GRID
-=========================== */
+    
     .popular-section h2 {
       margin: 20px 0 10px;
       color: var(--red);
@@ -410,9 +392,7 @@
 
 
 
-    /* ==============================
-   RESPONSIVE
-============================== */
+    
     @media (max-width:900px) {
       .desktop-nav {
         display: none;
@@ -442,9 +422,7 @@
       }
     }
 
-    /* ==============================
-   PAGE CONTENT
-============================== */
+    
     .container {
       max-width: 1100px;
       margin: auto;
@@ -471,7 +449,7 @@
     }
 
 
-    /* BACKDROP */
+    
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -481,7 +459,7 @@
       z-index: 9;
     }
 
-    /* MODAL */
+    
     .modal {
       display: none;
       position: fixed;
@@ -503,7 +481,7 @@
 
     }
 
-    /* HEADER */
+    
     .modal-header {
       display: flex;
       justify-content: space-between;
@@ -524,7 +502,7 @@
 
     }
 
-    /* FOOD CARDS */
+    
     .meal-card {
       display: flex;
       gap: 15px;
@@ -535,7 +513,7 @@
     }
             body.dark .meal-card {
       background: #1a1919;
-            /* box-shadow: 0 0 15px rgba(70, 59, 59, 0.525); */
+            
 
     }
 
@@ -572,7 +550,7 @@
     }
 
 
-    /* first quantity modal and phone */
+    
 
     .qty-box {
       display: flex;
@@ -598,8 +576,8 @@
     }
 
 
-    /* second quantitity desktop */
-    /* Quantity Selector */
+    
+    
     .qty-boxx {
       display: flex;
       align-items: center;
@@ -637,7 +615,7 @@
 
 
 
-    /* RESPONSIVE */
+    
     @media (max-width: 600px) {
       .meal-card {
         flex-direction: column;
@@ -699,29 +677,24 @@
       color: #fff;
     }
 
-    /* ===============================
-   DARK MODE → RED THEME
-   =============================== */
+    
 
     body.dark {
       background: #121212;
       color: red;
     }
 
-    /* FORCE ALL TEXT TO RED */
-    /* body.dark,
-body.dark * {
-  color: red !important;
-}  */
+    
+    
 
-    /* HEADER */
+    
     body.dark .header {
       background: #1a1a1a;
       box-shadow: none;
       border-bottom: 3px solid rgb(86, 82, 82);
     }
 
-    /* DESKTOP NAV */
+    
     body.dark .desktop-nav a {
       color: white !important;
     }
@@ -731,13 +704,13 @@ body.dark * {
     }
 
 
-    /* MOBILE MENU */
+    
     body.dark .mobile-menu {
       background: rgba(26, 26, 26, 0.95);
       color: white;
     }
 
-    /* BOTTOM NAV */
+    
     body.dark .bottom-nav {
       background: #1a1a1a;
       border-top: 3px solid rgb(86, 82, 82) !important;
@@ -771,13 +744,11 @@ body.dark * {
 
 <body>
 
-  <!-- ==============================
-     HEADER NAVBAR
-============================== -->
+  
   <header class="header">
     <div class="logo">Foods</div>
 
-    <!-- Desktop Navigation -->
+    
     <nav class="desktop-nav">
       <a href="foods.html" class="active">Foods</a>
       <a href="cart.html">Cart</a>
@@ -785,13 +756,11 @@ body.dark * {
       <a href="profile.html">Profile</a>
     </nav>
 
-    <!-- Mobile Button -->
+    
     <div class="hamburger" id="menuBtn">&#9776;</div>
   </header>
 
-  <!-- ==============================
-     MOBILE SLIDE MENU
-============================== -->
+  
   <div class="mobile-menu" id="mobileMenu">
     <div class="close-btn" id="closeMenu">×</div>
     <a href="foods.html">Foods</a>
@@ -800,10 +769,8 @@ body.dark * {
     <a href="profile.html">Profile</a>
   </div>
 
-  <!-- ==============================
-     MAIN CONTENT
-============================== -->
-  <!-- 🔍 SEARCH + FILTER SECTION -->
+  
+  
   <section class="search-section">
     <input type="text" placeholder="What are you craving?" class="search-input" id="search" oninput="seek()">
 
@@ -813,12 +780,12 @@ body.dark * {
 
 
 
-  <!-- 🔥 DEALS CAROUSEL -->
+  
   <section class="deals-carousel">
     <div class="carousel-track">
       <div class="deal-card">🔥 20% Off All Burgers — Today Only!</div>
       <div class="deal-card">🍲 New Meal Alert: Coconut Jollof Rice!</div>
-      <div class="deal-card">🚚 Free Delivery for Orders Above ₦10,000!</div>
+      <div class="deal-card">🚚 Free Delivery for Orders Above ₦20,000!</div>
       <div class="deal-card">💥 Boneless Chicken — ₦4500 → ₦3200!</div>
     </div>
   </section>
@@ -829,7 +796,7 @@ body.dark * {
   </p>
 
 
-  <!-- 🥘 CATEGORY SCROLL -->
+  
   <section class="category-scroll">
     <h2>Categories</h2>
 
@@ -837,7 +804,7 @@ body.dark * {
 
       <div class="cat-box" onclick="openFoodModal(naijaFoods, 'Nigerian Dishes 🇳🇬')">Nigerian Dishes</div>
 
-      <!-- <div class="cat-box" onclick="openFoodModal(africanFoods, 'African Dishes 🌍')">African</div> -->
+      
 
       <div class="cat-box" onclick="openFoodModal(continentalFoods, 'Continental Dishes 🌐')">Continental</div>
 
@@ -852,7 +819,7 @@ body.dark * {
   </section>
 
 
-  <!-- ⭐ TRENDING MEALS CAROUSEL -->
+  
   <section class="trending-section">
     <h2>Trending Meals 🔥</h2>
 
@@ -958,7 +925,7 @@ body.dark * {
 
   <div class="trend-card" data-name="Jollof Turkey Deluxe">
 
-    <!-- ⭐ POPULAR MEALS GRID -->
+    
     <section class="popular-section">
       <h2>Popular This Week ⭐</h2>
 
@@ -991,8 +958,9 @@ body.dark * {
         </div>
 
         <div class="food-card">
-          <img src="fried-sweet-ans-sour-chicken-with-steamed-rice-close-up_177613-3387.jpg">
-          <h3>Fried Rice</h3>
+          <!-- <img src="fried-sweet-ans-sour-chicken-with-steamed-rice-close-up_177613-3387.jpg"> -->
+          <img src="https://i.pinimg.com/736x/52/f0/32/52f0328d3f17af25800af7ec1729e411.jpg">
+          <h3>Coconut jollof Rice</h3>
           <p class="price">₦4,500</p>
           <button onclick="addToCart({
   id:'Fried Rice-f',
@@ -1038,9 +1006,7 @@ body.dark * {
     </section>
 
 
-    <!-- ==============================
-     BOTTOM NAV
-============================== -->
+    
     <nav class="bottom-nav">
       <a href="foods.html" class="active-bottom"><i class="fa fa-utensils"></i><span>Foods</span></a>
       <a href="cart.html"><i class="fa fa-shopping-cart"></i><span>Cart</span></a>
@@ -1072,7 +1038,7 @@ body.dark * {
     document.body.classList.add("dark");
   }
 
-  // Firebase Config
+  
   const firebaseConfig = {
     apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
     authDomain: "taste-lounge-3075.firebaseapp.com",
@@ -1085,12 +1051,12 @@ body.dark * {
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Auth check
+  
   auth.onAuthStateChanged(user => {
     if (!user) location.href = "log-in.html";
   });
 
-  // Mobile menu
+  
   const menuBtn = document.getElementById("menuBtn");
   const closeMenu = document.getElementById("closeMenu");
   const mobileMenu = document.getElementById("mobileMenu");
@@ -1098,7 +1064,7 @@ body.dark * {
   closeMenu.onclick = () => mobileMenu.style.left = "-100%";
 
 
-  //            // SEARCH INPUT
+  
 
   function seek() {
     const value = document.getElementById("search").value.trim().toLowerCase();
@@ -1107,7 +1073,7 @@ body.dark * {
 
     resultsDiv.innerHTML = "";
 
-    // Reset view if empty search
+    
     if (value === "") {
       resultsDiv.style.display = "none";
       noResults.style.display = "none";
@@ -1160,13 +1126,12 @@ body.dark * {
     });
   }
 
-  // MODAL
+  
 
   const naijaFoods = [
     { name: "Asun Jollof Rice", price: "₦6000", img: "https://t4.ftcdn.net/jpg/08/86/88/03/360_F_886880307_8CLg4L9mXWDDCQxgKN5feoXyasoeX08a.jpg" },
     { name: "Pasta Spaghetti with shrimps", price: "₦6000", img: "pasta-spaghetti-with-shrimps-tomato-sauce-served-plate-dark-surface-closeup_1220-5409.jpg" },
-    { name: "Ofada Rice & Ayamase", price: "₦5000", img: "https://nigerianfoodiehub.com/wp-content/uploads/2022/02/Attachment-1-31.jpg" },
-    // { name: "Oha Soup", price: "₦5000", img: "https://www.edofood.com.ng/wp-content/uploads/2024/04/oha-soup.jpg" },
+    { name: "Ofada Rice & Ayamase", price: "₦5000", img: "https://i.pinimg.com/736x/a9/7e/64/a97e640b8f51b9f9e1787a2cee6472a3.jpg" },
     { name: "Oha Soup", price: "₦5000", img: "https://i.pinimg.com/1200x/33/54/4a/33544a780071ea22ffe18f73f3b3b3e5.jpg" },
     { name: "Semo & Egusi", price: "₦5000", img: "https://www.sugarcaneglasgow.co.uk/wp-content/uploads/2022/12/pounded-yam.jpg" },
     { name: "Asun", price: "₦5000", img: "https://abovelifestyle.com/ikotun/wp-content/uploads/2025/04/1653690949.jpg" },
@@ -1204,7 +1169,7 @@ body.dark * {
   ];
 
   const drinksFoods = [
-    // { name: "Don Julio 1942", price: "₦380,000", img: "https://spiritedgifts.com/cdn-cgi/image/q=80,format=auto,onerror=redirect,metadata=none/media/catalog/product/cache/c80e0267e825dacf36afc01b3b63bc1a/T/L/TL2016-Don-Julio-Blanco_03.jpg" },
+    
     { name: "Don Julio 1942", price: "₦380,000", img: "https://bottleking.ng/_next/image?url=https%3A%2F%2Fdnk1kazq09utu.cloudfront.net%2Fproduct-don-julio-1942-1761324445023.png&w=2048&q=75"},
     { name: "Virgin Mojito", price: "₦2500", img: "https://i.pinimg.com/1200x/57/cd/dd/57cddd925ee9c23164c2cfb69faf0e92.jpg" },
     { name: "Table Water", price: "₦1000", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfdsK3pXJn7OeqYYzbSJd1AM5s-SSc680XNA&s" },
@@ -1233,7 +1198,7 @@ body.dark * {
   ];
 
 
-  // Add more categories when ready...
+  
 
   const allFoods = [
     ...naijaFoods.map(f => ({ ...f, category: "Nigerian Dishes 🇳🇬" })),
@@ -1298,7 +1263,7 @@ body.dark * {
 
 
 
-  // ========================= CART SYSTEM =========================
+  
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
   function saveCart() {

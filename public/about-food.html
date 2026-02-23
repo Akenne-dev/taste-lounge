@@ -1,892 +1,875 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About Our Food | Taste Lounge</title>
+    <link
+      rel="shortcut icon"
+      href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+      type="image/x-icon"
+    />
+    <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth-compat.js"></script>
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>About Our Food | Taste Lounge</title>
-  <link rel="shortcut icon"
-    href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
-    type="image/x-icon">
-  <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth-compat.js"></script>
-  <!-- Google Fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
-  <style>
-    :root {
-      --yellow: #FBC02D;
-      --red: #C62828;
-      --cream: #FFF6E9;
-      --beige: #F4E3C1;
-      --brown: #4E342E;
-      --black: #1A1A1A;
-      --white: #FFFFFF;
-      --orange-glow: #FF7043;
-      --red-glow: #E53935;
-      --red: #C62828;
-      --white: #fff;
-      --black: #111;
-      --bg: #f9f9f9;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      scroll-behavior: smooth;
-    }
-
-    /* body {
-      background: var(--cream);
-      font-family: Poppins, sans-serif;
-      color: var(--black);
-    } */
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--cream);
-    }
-
-    /* ---------------- TOP & BOTTOM NAVBAR ---------------- */
-
-    .logo {
-      color: red;
-      font-size: 32px;
-
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 50px;
-      background: var(--cream);
-      color: var(--white);
-      font-family: "Abril Fatface", serif;
-      font-size: 25px;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 2000;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .top-bar .btn-order {
-      background-color: red;
-      color: var(--white);
-      padding: 8px 20px;
-      border-radius: 5px;
-      font-weight: 900;
-      text-decoration: none;
-      font-size: 16px;
-      /* box-shadow: 0 0 10px var(--yellow); */
-      display: flex;
-      justify-content: flex-end;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    .btn-order {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-
-    .main-nav {
-      display: flex;
-      justify-content: flex-end;
-      background: var(--white);
-      padding: 25px 0;
-      position: fixed;
-      top: 60px;
-      /* adjust based on top-bar height */
-      width: 100%;
-      /* border-bottom: 2px solid var(--red); */
-      z-index: 1999;
-      font-size: 17px;
-      font-weight: 900;
-      padding-right: 45px;
-    }
-
-    .main-nav a.active {
-      border-bottom: 3px solid var(--black);
-      padding-bottom: 4px;
-      color: black;
-    }
-
-    .main-nav a.active:hover {
-      color: black;
-    }
-
-
-    .main-nav ul {
-      display: flex;
-      gap: 40px;
-      list-style: none;
-      font-weight: 500;
-    }
-
-    .main-nav ul li a {
-      text-decoration: none;
-      color: var(--red-glow);
-      font-size: 18px;
-      padding: 5px 10px;
-      transition: 0.3s;
-    }
-
-    .main-nav ul li a:hover {
-      color: var(--red);
-    }
-
-    .mobile-nav {
-      display: none;
-    }
-
-    /* ---------------- FOOTER ---------------- */
-    footer {
-      padding: 60px 50px;
-      background: var(--cream);
-      color: var(--black);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .social-icons {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-top: 20px;
-    }
-
-    .social-icons .icon {
-      width: 45px;
-      height: 45px;
-      background: #000;
-      color: #fff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      text-decoration: none;
-      transition: 0.3s ease;
-    }
-
-    .social-icons .icon:hover {
-      /* background: var(--red); */
-      background-color: red;
-    }
-
-    /* ---------------- COPYRIGHT BAR ---------------- */
-    .copyright-bar {
-      width: 100%;
-      text-align: center;
-      background-color: red;
-      color: white;
-      padding: 18px 0;
-      font-size: 15px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-    }
-
-
-
-    /* Show at 1103px and below */
-    @media (max-width:1103px) {
-
-      .main-nav {
-        display: none;
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
+    />
+    <style>
+      :root {
+        --yellow: #fbc02d;
+        --red: #c62828;
+        --cream: #fff6e9;
+        --beige: #f4e3c1;
+        --brown: #4e342e;
+        --black: #1a1a1a;
+        --white: #ffffff;
+        --orange-glow: #ff7043;
+        --red-glow: #e53935;
+        --red: #c62828;
+        --white: #fff;
+        --black: #111;
+        --bg: #f9f9f9;
       }
 
-      .top-bar {
-        display: none;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        scroll-behavior: smooth;
       }
 
-      .mobile-nav {
-        display: block;
-        width: 100%;
-        position: fixed;
-        top: 0;
-        left: 0;
-        padding: 15px 25px;
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
         background: var(--cream);
-        z-index: 4000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
-      .mobile-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .mobile-logo {
-        font-size: 22px;
-        font-weight: 900;
+      .logo {
         color: red;
-        font-family: "Abril Fatface", serif;
-      }
-
-      .hamburger-menu {
-        font-size: 34px;
-        cursor: pointer;
-        color: var(--red);
-        color: red;
-
-      }
-
-      /* SLIDE-IN MENU */
-      .mobile-menu-panel {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        width: 100%;
-        height: 100vh;
-
-        /* ✨ LUXURY BLURRED BACKGROUND ✨ */
-        background: rgba(255, 255, 255, 0.25);
-        background: rgba(45, 44, 44, 0.25);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-
-        z-index: 5000;
-        padding: 25px 30px;
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-        box-shadow: -4px 0 25px rgba(0, 0, 0, 0.25);
-
-        border-left: 3px solid rgba(255, 0, 0, 0.35);
-        /* subtle red accent */
-        transition: right 0.35s ease-in-out;
-      }
-
-
-      .mobile-menu-panel.open {
-        right: 0;
-      }
-
-      /* Header inside panel */
-      .mobile-menu-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .mobile-menu-logo {
-        font-size: 24px;
-        font-weight: 900;
-        color: red;
-        font-family: "Abril Fatface", serif;
-      }
-
-      .close-menu {
-        font-size: 40px;
-        font-weight: 700;
-        cursor: pointer;
-        color: red;
-
-      }
-
-      /* MENU LINKS */
-      .mobile-menu-links {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        padding-top: 20px;
-      }
-
-      .mobile-menu-links li a {
-        font-size: 18px;
-        font-weight: 800;
-        color: var(--white);
-        padding: 8px 0;
-        display: block;
-      }
-
-    }
-
-
-    /* =============== TABLET (max-width: 900px) =============== */
-    @media (max-width: 900px) {
-
-      /* NAVBAR */
-      .top-bar {
-        padding: 12px 25px;
-        font-size: 20px;
-      }
-
-      .main-nav {
-        padding-right: 20px;
-      }
-
-      .main-nav ul {
-        gap: 20px;
-      }
-
-      footer {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
-      }
-
-    }
-
-    @media (max-width: 420px) {
-
-      /* NAVBAR */
-      .top-bar {
-        padding: 10px 15px;
-      }
-
-      .main-nav ul li a {
-        font-size: 14px;
-      }
-    }
-
-
-    /* Center footer items on small screens */
-    @media (max-width: 768px) {
-      footer {
-        flex-direction: column;
-        text-align: center;
-        gap: 40px;
-        padding: 50px 20px;
-      }
-
-      .social-icons {
-        justify-content: center !important;
-      }
-    }
-
-    :root {
-      --red: #C62828;
-      --dark: #111;
-      --white: #fff;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #fff;
-      color: #111;
-    }
-
-
-
-    .about-sec-1 {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 50px 20px;
-      margin-top: 80px;
-
-    }
-
-    .about-img img {
-      width: 100%;
-      height: auto;
-      height: 600px;
-      object-fit: cover;
-    }
-
-    .about-text {
-      background: red;
-      padding: 190px 40px 0px 40px;
-      color: white;
-      max-width: 700px;
-      width: 100%;
-      height: auto;
-      height: 600px;
-    }
-
-    .about-text h1 {
-      font-size: 60px;
-      line-height: 1.2;
-      margin-bottom: 20px;
-    }
-
-    .about-text h1 span {
-      display: block;
-    }
-
-    .about-text p {
-      font-size: 20px;
-      line-height: 1.6;
-    }
-
-
-    /* ---------------- RESPONSIVENESS ---------------- */
-
-    @media (max-width: 900px) {
-      .about-sec-1 {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .about-text {
-        max-width: 100%;
-      }
-
-      .about-img img {
-        max-width: 100%;
-      }
-
-      .about-img img {
-        width: 100%;
-        height: auto;
-        height: 350px;
-        border-radius: 10px;
-
-      }
-
-      .about-text {
-        padding: 70px 40px 0px 40px;
-        border-radius: 10px;
-        color: white;
-        max-width: 700px;
-        width: 100%;
-        height: 350px;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .about-text h1 {
-        font-size: 28px;
-      }
-
-      .about-text p {
-        font-size: 16px;
-      }
-
-      .about-img img {
-        width: 100%;
-        height: auto;
-        height: 350px;
-        border-radius: 10px;
-
-      }
-
-      .about-text {
-        padding: 70px 40px 0px 40px;
-        border-radius: 10px;
-        color: white;
-        max-width: 700px;
-        width: 100%;
-        height: 350px;
-      }
-    }
-
-    @media (max-width: 544px) {
-      .about-text h1 {
-        font-size: 25px;
-      }
-    }
-
-
-    /* ================= SECTION 2 ================= */
-    .section2 {
-      padding: 60px 5%;
-      text-align: center;
-    }
-
-    .section2 h1 {
-      font-size: 58px;
-      margin-bottom: 40px;
-    }
-
-    .image-overlay-box {
-      position: relative;
-      width: 100%;
-      height: 880px;
-      background-image: url("https://media.fiveguys.com/us/2025/07/slider-section-bkg-1.jpg");
-      background-size: cover;
-      background-position: center;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .overlay-dark {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    .section2-content {
-      position: absolute;
-      top: 50%;
-      left: 8%;
-      transform: translateY(-50%);
-      text-align: left;
-      color: white;
-      width: 80%;
-    }
-
-    .section2-content h1 {
-      font-size: 50px;
-      margin: 0;
-      line-height: 40px;
-    }
-
-    .section2-content h1 span {
-      display: block;
-    }
-
-    .section2-content p {
-      font-size: 20px;
-      max-width: 850px;
-      margin-top: 15px;
-      line-height: 1.5;
-    }
-
-    /* ================= SECTION 3 ================= */
-    .section3 {
-      background: red;
-      padding: 60px 5%;
-      color: white;
-    }
-
-    .section3 h1 {
-      text-align: center;
-      font-size: 40px;
-      /* text-decoration: underline; */
-      margin-bottom: 40px;
-    }
-
-    .section3-wrap {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .section3 img {
-      width: 750px;
-      height: auto;
-      border-radius: 10px;
-    }
-
-    .section3-text {
-      flex: 1;
-      padding: 20px;
-    }
-
-    .section3-text h1 {
-      font-size: 45px;
-      line-height: 40px;
-    }
-
-    .section3-text h1 span {
-      display: block;
-    }
-
-    .section3-text p {
-      font-size: 20px;
-      margin-top: 15px;
-      max-width: 550px;
-      line-height: 1.5;
-    }
-
-    /* ================= SECTION 4 ================= */
-    .section4 {
-      text-align: center;
-      padding: 80px 5%;
-    }
-
-    .section4 h1 {
-      font-size: 45px;
-      margin-bottom: 20px;
-    }
-
-    .order-btn {
-      display: inline-block;
-      padding: 15px 35px;
-      background: red;
-      color: white;
-      font-size: 22px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-
-    .order-btn:hover {
-      background: white;
-      color: red;
-    }
-
-    /* ============ RESPONSIVE MEDIA QUERY ============ */
-
-    @media (max-width: 900px) {
-
-      .section1,
-      .section3-wrap {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .section1 img,
-      .section3 img {
-        width: 100%;
-      }
-
-      .section2-content {
-        width: 90%;
-      }
-
-      .section2-content h1 {
         font-size: 32px;
       }
 
-      .section1-text h1,
-      .section3-text h1 {
-        font-size: 35px;
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 50px;
+        background: var(--cream);
+        color: var(--white);
+        font-family: "Abril Fatface", serif;
+        font-size: 25px;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 2000;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       }
 
-      .image-overlay-box {
-        height: 300px;
+      .top-bar .btn-order {
+        background-color: red;
+        color: var(--white);
+        padding: 8px 20px;
+        border-radius: 5px;
+        font-weight: 900;
+        text-decoration: none;
+        font-size: 16px;
+
+        display: flex;
+        justify-content: flex-end;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .btn-order {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .main-nav {
+        display: flex;
+        justify-content: flex-end;
+        background: var(--white);
+        padding: 25px 0;
+        position: fixed;
+        top: 60px;
+
+        width: 100%;
+
+        z-index: 1999;
+        font-size: 17px;
+        font-weight: 900;
+        padding-right: 45px;
+      }
+
+      .main-nav a.active {
+        border-bottom: 3px solid var(--black);
+        padding-bottom: 4px;
+        color: black;
+      }
+
+      .main-nav a.active:hover {
+        color: black;
+      }
+
+      .main-nav ul {
+        display: flex;
+        gap: 40px;
+        list-style: none;
+        font-weight: 500;
+      }
+
+      .main-nav ul li a {
+        text-decoration: none;
+        color: var(--red-glow);
+        font-size: 18px;
+        padding: 5px 10px;
+        transition: 0.3s;
+      }
+
+      .main-nav ul li a:hover {
+        color: var(--red);
+      }
+
+      .mobile-nav {
+        display: none;
+      }
+
+      footer {
+        padding: 60px 50px;
+        background: var(--cream);
+        color: var(--black);
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .social-icons {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .social-icons .icon {
+        width: 45px;
+        height: 45px;
+        background: #000;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        text-decoration: none;
+        transition: 0.3s ease;
+      }
+
+      .social-icons .icon:hover {
+        background-color: red;
+      }
+
+      .copyright-bar {
+        width: 100%;
+        text-align: center;
+        background-color: red;
+        color: white;
+        padding: 18px 0;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+
+      @media (max-width: 1103px) {
+        .main-nav {
+          display: none;
+        }
+
+        .top-bar {
+          display: none;
+        }
+
+        .mobile-nav {
+          display: block;
+          width: 100%;
+          position: fixed;
+          top: 0;
+          left: 0;
+          padding: 15px 25px;
+          background: var(--cream);
+          z-index: 4000;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .mobile-logo {
+          font-size: 22px;
+          font-weight: 900;
+          color: red;
+          font-family: "Abril Fatface", serif;
+        }
+
+        .hamburger-menu {
+          font-size: 34px;
+          cursor: pointer;
+          color: var(--red);
+          color: red;
+        }
+
+        .mobile-menu-panel {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: 100%;
+          height: 100vh;
+
+          background: rgba(255, 255, 255, 0.25);
+          background: rgba(45, 44, 44, 0.25);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+
+          z-index: 5000;
+          padding: 25px 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 25px;
+          box-shadow: -4px 0 25px rgba(0, 0, 0, 0.25);
+
+          border-left: 3px solid rgba(255, 0, 0, 0.35);
+
+          transition: right 0.35s ease-in-out;
+        }
+
+        .mobile-menu-panel.open {
+          right: 0;
+        }
+
+        .mobile-menu-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .mobile-menu-logo {
+          font-size: 24px;
+          font-weight: 900;
+          color: red;
+          font-family: "Abril Fatface", serif;
+        }
+
+        .close-menu {
+          font-size: 40px;
+          font-weight: 700;
+          cursor: pointer;
+          color: red;
+        }
+
+        .mobile-menu-links {
+          list-style: none;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          padding-top: 20px;
+        }
+
+        .mobile-menu-links li a {
+          font-size: 18px;
+          font-weight: 800;
+          color: var(--white);
+          padding: 8px 0;
+          display: block;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .top-bar {
+          padding: 12px 25px;
+          font-size: 20px;
+        }
+
+        .main-nav {
+          padding-right: 20px;
+        }
+
+        .main-nav ul {
+          gap: 20px;
+        }
+
+        footer {
+          flex-direction: column;
+          text-align: center;
+          gap: 20px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .top-bar {
+          padding: 10px 15px;
+        }
+
+        .main-nav ul li a {
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        footer {
+          flex-direction: column;
+          text-align: center;
+          gap: 40px;
+          padding: 50px 20px;
+        }
+
+        .social-icons {
+          justify-content: center !important;
+        }
+      }
+
+      :root {
+        --red: #c62828;
+        --dark: #111;
+        --white: #fff;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #fff;
+        color: #111;
+      }
+
+      .about-sec-1 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 50px 20px;
+        margin-top: 80px;
+      }
+
+      .about-img img {
+        width: 100%;
+        height: auto;
+        height: 600px;
+        object-fit: cover;
+      }
+
+      .about-text {
+        background: red;
+        padding: 190px 40px 0px 40px;
+        color: white;
+        max-width: 700px;
+        width: 100%;
+        height: auto;
+        height: 600px;
+      }
+
+      .about-text h1 {
+        font-size: 60px;
+        line-height: 1.2;
+        margin-bottom: 20px;
+      }
+
+      .about-text h1 span {
+        display: block;
+      }
+
+      .about-text p {
+        font-size: 20px;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 900px) {
+        .about-sec-1 {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .about-text {
+          max-width: 100%;
+        }
+
+        .about-img img {
+          max-width: 100%;
+        }
+
+        .about-img img {
+          width: 100%;
+          height: auto;
+          height: 350px;
+          border-radius: 10px;
+        }
+
+        .about-text {
+          padding: 70px 40px 0px 40px;
+          border-radius: 10px;
+          color: white;
+          max-width: 700px;
+          width: 100%;
+          height: 350px;
+        }
+      }
+
+      @media (max-width: 500px) {
+        .about-text h1 {
+          font-size: 28px;
+        }
+
+        .about-text p {
+          font-size: 16px;
+        }
+
+        .about-img img {
+          width: 100%;
+          height: auto;
+          height: 350px;
+          border-radius: 10px;
+        }
+
+        .about-text {
+          padding: 70px 40px 0px 40px;
+          border-radius: 10px;
+          color: white;
+          max-width: 700px;
+          width: 100%;
+          height: 350px;
+        }
+      }
+
+      @media (max-width: 544px) {
+        .about-text h1 {
+          font-size: 25px;
+        }
+      }
+
+      .section2 {
+        padding: 60px 5%;
+        text-align: center;
       }
 
       .section2 h1 {
-        font-size: 38px;
+        font-size: 58px;
         margin-bottom: 40px;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .section2-content {
-        left: 5%;
-      }
-
-      .section1-text p,
-      .section2-content p,
-      .section3-text p {
-        font-size: 16px;
       }
 
       .image-overlay-box {
-        height: 530px;
-
+        position: relative;
+        width: 100%;
+        height: 880px;
+        background-image: url("https://media.fiveguys.com/us/2025/07/slider-section-bkg-1.jpg");
+        background-size: cover;
+        background-position: center;
+        border-radius: 10px;
+        overflow: hidden;
       }
-    }
 
-    .hours-card {
-      max-width: 400px;
-      margin: auto;
-      padding: 1.5rem;
-      border-radius: 16px;
-      background: white;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      font-family: system-ui, sans-serif;
-    }
+      .overlay-dark {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.3);
+      }
 
-    .hours-card h3 {
-      margin-bottom: 1rem;
-      text-align: center;
-    }
+      .section2-content {
+        position: absolute;
+        top: 50%;
+        left: 8%;
+        transform: translateY(-50%);
+        text-align: left;
+        color: white;
+        width: 80%;
+      }
 
-    .hours-card ul {
-      list-style: none;
-      padding: 0;
-    }
+      .section2-content h1 {
+        font-size: 50px;
+        margin: 0;
+        line-height: 40px;
+      }
 
-    .hours-card li {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid #eee;
-    }
+      .section2-content h1 span {
+        display: block;
+      }
 
-    .hours-card li:last-child {
-      border-bottom: none;
-    }
+      .section2-content p {
+        font-size: 20px;
+        max-width: 850px;
+        margin-top: 15px;
+        line-height: 1.5;
+      }
 
-    .hours-wrapper {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
+      .section3 {
+        background: red;
+        padding: 60px 5%;
+        color: white;
+      }
 
-    @media (min-width: 768px) {
+      .section3 h1 {
+        text-align: center;
+        font-size: 40px;
+
+        margin-bottom: 40px;
+      }
+
+      .section3-wrap {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .section3 img {
+        width: 750px;
+        height: auto;
+        border-radius: 10px;
+      }
+
+      .section3-text {
+        flex: 1;
+        padding: 20px;
+      }
+
+      .section3-text h1 {
+        font-size: 45px;
+        line-height: 40px;
+      }
+
+      .section3-text h1 span {
+        display: block;
+      }
+
+      .section3-text p {
+        font-size: 20px;
+        margin-top: 15px;
+        max-width: 550px;
+        line-height: 1.5;
+      }
+
+      .section4 {
+        text-align: center;
+        padding: 80px 5%;
+      }
+
+      .section4 h1 {
+        font-size: 45px;
+        margin-bottom: 20px;
+      }
+
+      .order-btn {
+        display: inline-block;
+        padding: 15px 35px;
+        background: red;
+        color: white;
+        font-size: 22px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: 0.3s;
+      }
+
+      .order-btn:hover {
+        background: white;
+        color: red;
+      }
+
+      @media (max-width: 900px) {
+        .section1,
+        .section3-wrap {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .section1 img,
+        .section3 img {
+          width: 100%;
+        }
+
+        .section2-content {
+          width: 90%;
+        }
+
+        .section2-content h1 {
+          font-size: 32px;
+        }
+
+        .section1-text h1,
+        .section3-text h1 {
+          font-size: 35px;
+        }
+
+        .image-overlay-box {
+          height: 300px;
+        }
+
+        .section2 h1 {
+          font-size: 38px;
+          margin-bottom: 40px;
+        }
+      }
+
+      @media (max-width: 500px) {
+        .section2-content {
+          left: 5%;
+        }
+
+        .section1-text p,
+        .section2-content p,
+        .section3-text p {
+          font-size: 16px;
+        }
+
+        .image-overlay-box {
+          height: 530px;
+        }
+      }
+
+      .hours-card {
+        max-width: 400px;
+        margin: auto;
+        padding: 1.5rem;
+        border-radius: 16px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        font-family: system-ui, sans-serif;
+      }
+
+      .hours-card h3 {
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .hours-card ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .hours-card li {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .hours-card li:last-child {
+        border-bottom: none;
+      }
+
       .hours-wrapper {
-        grid-template-columns: 1fr 1fr;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
       }
-    }
 
-    .today {
-      font-weight: 600;
-      color: #2563eb;
-    }
+      @media (min-width: 768px) {
+        .hours-wrapper {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
 
-    .hours-card {
-      transition: transform 0.3s ease;
-    }
+      .today {
+        font-weight: 600;
+        color: #2563eb;
+      }
 
-    .hours-card:hover {
-      transform: translateY(-4px);
-    }
-  </style>
-</head>
+      .hours-card {
+        transition: transform 0.3s ease;
+      }
 
-<body>
-  <!-- NAVBAR -->
-  <header>
-    <!-- Top bar -->
-    <div class="top-bar">
-      <div class="logo">TASTE LOUNGE</div>
-      <a href="log-in.html" class="btn-order">ORDER NOW <svg xmlns="http://www.w3.org/2000/svg" height="24px"
-          viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
-          <path
-            d="m120-80 162-650-2-28q-1-17-12-29.5T240-800q-17 0-28.5 11.5T200-760v80h-80v-80q0-50 35-85t85-35h442q48 0 82.5 32.5T802-767l38 687H120Zm104-80h93l-19-304-74 304Zm174 0h358l-34-602q-1-16-12.5-27T682-800H353q4 10 5 19.5t2 20.5l38 600Zm122-80h60v-160q26-6 43-27.5t17-49.5v-163h-40v151h-30v-151h-40v151h-30v-151h-40v163q0 28 17 49.5t43 27.5v160Zm-122 80h358-358Z" />
-        </svg></a>
+      .hours-card:hover {
+        transform: translateY(-4px);
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="top-bar">
+        <div class="logo">TASTE LOUNGE</div>
+        <a href="log-in.html" class="btn-order"
+          >ORDER NOW
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#FFFFFF"
+          >
+            <path
+              d="m120-80 162-650-2-28q-1-17-12-29.5T240-800q-17 0-28.5 11.5T200-760v80h-80v-80q0-50 35-85t85-35h442q48 0 82.5 32.5T802-767l38 687H120Zm104-80h93l-19-304-74 304Zm174 0h358l-34-602q-1-16-12.5-27T682-800H353q4 10 5 19.5t2 20.5l38 600Zm122-80h60v-160q26-6 43-27.5t17-49.5v-163h-40v151h-30v-151h-40v151h-30v-151h-40v163q0 28 17 49.5t43 27.5v160Zm-122 80h358-358Z"
+            /></svg
+        ></a>
+      </div>
+
+      <nav class="main-nav">
+        <ul>
+          <li><a href="menu.html">THE MENU</a></li>
+          <li><a href="about-food.html" class="active">ABOUT OUR FOOD</a></li>
+          <li>
+            <a
+              href="#"
+              onclick="alert('Coming soon! Our crew is still working on this.')"
+              >THE CREW</a
+            >
+          </li>
+          <li>
+            <a href="#" onclick="alert('We deliver across the country!')"
+              >LOCATION</a
+            >
+          </li>
+          <li><a href="our-story.html">OUR STORY</a></li>
+          <li><a href="log-in.html">Login</a></li>
+          <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="mobile-nav">
+      <div class="mobile-top">
+        <div class="mobile-logo">TASTE LOUNGE</div>
+        <div class="hamburger-menu">&#9776;</div>
+      </div>
+
+      <div class="mobile-menu-panel">
+        <div class="mobile-menu-header">
+          <div class="mobile-menu-logo">TASTE LOUNGE</div>
+          <div class="close-menu">&times;</div>
+        </div>
+
+        <ul class="mobile-menu-links">
+          <li><a href="menu.html">THE MENU</a></li>
+          <li><a href="#about">ABOUT OUR FOOD</a></li>
+          <li>
+            <a
+              href="#"
+              onclick="alert('Coming soon! Our crew is still working on this.')"
+              >THE CREW</a
+            >
+          </li>
+          <li>
+            <a href="#" onclick="alert('We deliver across the country!')"
+              >LOCATION</a
+            >
+          </li>
+          <li><a href="our-story.html">OUR STORY</a></li>
+          <li><a href="log-in.html">Login</a></li>
+          <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
+        </ul>
+      </div>
     </div>
 
-    <!-- Bottom bar / main nav -->
-    <nav class="main-nav">
+    <section class="about-sec-1">
+      <div class="about-img">
+        <img
+          src="https://media.fiveguys.com/us/2025/07/About-Our-Food-Hero.jpg"
+          alt=""
+        />
+      </div>
+
+      <div class="about-text">
+        <h1>Prepared With <br /><span>Purpose</span></h1>
+
+        <p>
+          From the way we wrap our burgers to how we flip the patties and source
+          the potatoes, there’s a method to everything we do at Taste Lounge.
+        </p>
+      </div>
+    </section>
+
+    <div class="section2">
+      <h1>THE TASTE LOUNGE WAY</h1>
+
+      <div class="image-overlay-box">
+        <div class="overlay-dark"></div>
+
+        <div class="section2-content">
+          <h1>Real Food, <span>Really Handmade.</span></h1>
+          <p>
+            When we say our food is handmade, we mean it. Our beef is
+            hand-pattied and fries are sliced fresh in-store. Each morning, our
+            skilled team tears lettuce by hand, chops onions, slices peppers and
+            prepares every ingredient carefully to give you the highest quality
+            meals.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section3">
+      <h1 style="text-decoration: underline">OUR PREPARATION</h1>
+
+      <div class="section3-wrap">
+        <img
+          src="https://i.ytimg.com/vi/lxCY5fObe30/maxresdefault.jpg"
+          alt=""
+        />
+        <div class="section3-text">
+          <h1>The Why Behind <span>The Soup</span></h1>
+          <p>
+            A lot of thought and craft goes into our Soup. We carefully source
+            our veggies and hand-cut them in-store. Using 100% refined palmoil
+            oil, we fry them through a three-step process that gives Taste
+            Lounge soup their signature crispness, flavor, and unforgettable
+            taste.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <section class="hours-card">
+      <h3>🕒 Opening Hours</h3>
       <ul>
-        <li><a href="menu.html">THE MENU</a></li>
-        <li><a href="about-food.html" class="active">ABOUT OUR FOOD</a></li>
-        <li><a href="#" onclick="alert('Coming soon! Our crew is still working on this.')">THE CREW</a></li>
-        <li><a href="#" onclick="alert('We deliver across the country!')">LOCATION</a></li>
-        <li><a href="our-story.html">OUR STORY</a></li>
-        <li><a href="log-in.html">Login</a></li>
-        <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
+        <li><span>Mon – Fri</span><span>9:00 AM – 6:00 PM</span></li>
+        <li><span>Saturday</span><span>10:00 AM – 4:00 PM</span></li>
+        <li><span>Sunday</span><span>Closed</span></li>
       </ul>
-    </nav>
-  </header>
+    </section>
 
-  <!-- MOBILE NAVBAR (appears at 1103px and below) -->
-  <div class="mobile-nav">
-    <div class="mobile-top">
-      <div class="mobile-logo">TASTE LOUNGE</div>
-      <div class="hamburger-menu">&#9776;</div>
+    <div class="section4">
+      <h1>Hungry? Start Your Order.</h1>
+      <a href="log-in.html" class="order-btn">ORDER NOW</a>
     </div>
 
-    <!-- Slide-in navigation panel -->
-    <div class="mobile-menu-panel">
-      <div class="mobile-menu-header">
-        <div class="mobile-menu-logo">TASTE LOUNGE</div>
-        <div class="close-menu">&times;</div>
+    <footer>
+      <div>
+        <h3>Menu</h3>
+        <p>Jollof • Fried Rice • Pasta • Drinks • Swallow</p>
       </div>
 
-      <ul class="mobile-menu-links">
-        <li><a href="menu.html">THE MENU</a></li>
-        <li><a href="#about">ABOUT OUR FOOD</a></li>
-        <li><a href="#" onclick="alert('Coming soon! Our crew is still working on this.')">THE CREW</a></li>
-        <li><a href="#" onclick="alert('We deliver across the country!')">LOCATION</a></li>
-        <li><a href="our-story.html">OUR STORY</a></li>
-        <li><a href="log-in.html">Login</a></li>
-        <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- SECTION ONE -->
-  <section class="about-sec-1">
-    <div class="about-img">
-      <img src="https://media.fiveguys.com/us/2025/07/About-Our-Food-Hero.jpg" alt="">
-    </div>
-
-    <div class="about-text">
-      <h1>Prepared With <br><span>Purpose</span></h1>
-
-      <p>
-        From the way we wrap our burgers to how we flip the patties and source the potatoes,
-        there’s a method to everything we do at Taste Lounge.
-      </p>
-    </div>
-  </section>
-
-
-  <!-- ================= SECTION 2 ================= -->
-  <div class="section2">
-    <h1>THE TASTE LOUNGE WAY</h1>
-
-    <div class="image-overlay-box">
-      <div class="overlay-dark"></div>
-
-      <div class="section2-content">
-        <h1>Real Food, <span>Really Handmade.</span></h1>
-        <p>
-          When we say our food is handmade, we mean it. Our beef is hand-pattied and fries are sliced fresh in-store.
-          Each morning, our skilled team tears lettuce by hand, chops onions, slices peppers and prepares every
-          ingredient carefully to give you the highest quality meals.
-        </p>
+      <div>
+        <h3>Contact</h3>
+        <p>📥 fumilolakadri@gmail.com<br />📍 Delivery, Nationwide</p>
       </div>
-    </div>
-  </div>
 
-  <!-- ================= SECTION 3 ================= -->
-  <div class="section3">
-    <h1 style="text-decoration: underline;">OUR PREPARATION</h1>
-
-    <div class="section3-wrap">
-      <img src="https://i.ytimg.com/vi/lxCY5fObe30/maxresdefault.jpg" alt="">
-      <div class="section3-text">
-        <h1>The Why Behind <span>The Soup</span></h1>
-        <p>
-          A lot of thought and craft goes into our Soup. We carefully source our veggies and hand-cut them in-store.
-          Using 100% refined palmoil oil, we fry them through a three-step process that gives Taste Lounge soup their
-          signature crispness, flavor, and unforgettable taste.
-        </p>
+      <div>
+        <h3>Follow Us</h3>
+        <div class="social-icons">
+          <a href="https://www.instagram.com/akennebaby/?hl=en" class="icon"
+            ><i class="fab fa-instagram"></i
+          ></a>
+          <a href="https://www.facebook.com/" class="icon"
+            ><i class="fab fa-facebook-f"></i
+          ></a>
+          <a href="https://www.tiktok.com/@akennebaby" class="icon"
+            ><i class="fab fa-tiktok"></i
+          ></a>
+          <a href="https://x.com/" class="icon"
+            ><i class="fab fa-twitter"></i
+          ></a>
+        </div>
       </div>
+    </footer>
+
+    <div class="copyright-bar">
+      Copyright © 2026 Taste Lounge Enterprises, LLC. All rights reserved.
     </div>
-  </div>
-
-
-  <!-- ================= SECTION 5 ================= -->
-  <section class="hours-card">
-    <h3>🕒 Opening Hours</h3>
-    <ul>
-      <li><span>Mon – Fri</span><span>9:00 AM – 6:00 PM</span></li>
-      <li><span>Saturday</span><span>10:00 AM – 4:00 PM</span></li>
-      <li><span>Sunday</span><span>Closed</span></li>
-    </ul>
-  </section>
-
-
-  <!-- ================= SECTION 4 ================= -->
-  <div class="section4">
-    <h1>Hungry? Start Your Order.</h1>
-    <a href="log-in.html" class="order-btn">ORDER NOW</a>
-  </div>
-
-
-  <!-- FOOTER -->
-  <footer>
-    <div>
-      <h3>Menu</h3>
-      <p>Jollof • Fried Rice • Pasta • Drinks • Swallow</p>
-    </div>
-
-    <div>
-      <h3>Contact</h3>
-      <p>📥 fumilolakadri@gmail.com<br>📍 Delivery, Nationwide</p>
-    </div>
-
-    <div>
-      <h3>Follow Us</h3>
-      <div class="social-icons">
-        <a href="https://www.instagram.com/akennebaby/?hl=en" class="icon"><i class="fab fa-instagram"></i></a>
-        <a href="https://www.facebook.com/" class="icon"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.tiktok.com/@akennebaby" class="icon"><i class="fab fa-tiktok"></i></a>
-        <a href="https://x.com/" class="icon"><i class="fab fa-twitter"></i></a>
-      </div>
-    </div>
-
-  </footer>
-
-  <div class="copyright-bar">
-    Copyright © 2026 Taste Lounge Enterprises, LLC. All rights reserved.
-  </div>
-
-</body>
-
+  </body>
 </html>
 <script>
   const openBtn = document.querySelector(".hamburger-menu");

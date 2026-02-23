@@ -1,268 +1,298 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Taste Lounge | Daily Specials</title>
-    <link rel="stylesheet" href="landing-page.css">
-    <link rel="shortcut icon" href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A" type="image/x-icon">
+    <link rel="stylesheet" href="landing-page.css" />
+    <link
+      rel="shortcut icon"
+      href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+      type="image/x-icon"
+    />
     <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth-compat.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
 
-
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
+    />
   </head>
 
-<body>
+  <body>
+    <header>
+      <div class="top-bar">
+        <div class="logo">TASTE LOUNGE</div>
 
-    <!-- NAVBAR -->
-<header>
-    <!-- Top bar -->
-    <div class="top-bar">
-        <div class="logo">TASTE  LOUNGE</div>
-        <!-- <marquee behavior="" direction="center" class="logo">TASTE  LOUNGE</marquee> -->
-        <a href="log-in.html" class="btn-order">ORDER NOW <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="m120-80 162-650-2-28q-1-17-12-29.5T240-800q-17 0-28.5 11.5T200-760v80h-80v-80q0-50 35-85t85-35h442q48 0 82.5 32.5T802-767l38 687H120Zm104-80h93l-19-304-74 304Zm174 0h358l-34-602q-1-16-12.5-27T682-800H353q4 10 5 19.5t2 20.5l38 600Zm122-80h60v-160q26-6 43-27.5t17-49.5v-163h-40v151h-30v-151h-40v151h-30v-151h-40v163q0 28 17 49.5t43 27.5v160Zm-122 80h358-358Z"/></svg></a>
-    </div>
+        <a href="log-in.html" class="btn-order"
+          >ORDER NOW
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#FFFFFF"
+          >
+            <path
+              d="m120-80 162-650-2-28q-1-17-12-29.5T240-800q-17 0-28.5 11.5T200-760v80h-80v-80q0-50 35-85t85-35h442q48 0 82.5 32.5T802-767l38 687H120Zm104-80h93l-19-304-74 304Zm174 0h358l-34-602q-1-16-12.5-27T682-800H353q4 10 5 19.5t2 20.5l38 600Zm122-80h60v-160q26-6 43-27.5t17-49.5v-163h-40v151h-30v-151h-40v151h-30v-151h-40v163q0 28 17 49.5t43 27.5v160Zm-122 80h358-358Z"
+            /></svg
+        ></a>
+      </div>
 
-    <!-- Bottom bar / main nav -->
-    <nav class="main-nav">
+      <nav class="main-nav">
         <ul>
-            <li><a href="menu.html">THE MENU</a></li>
-            <li><a href="about-food.html">ABOUT OUR FOOD</a></li>
-        <li><a href="#" onclick="alert('Coming soon! Our crew is still working on this.')">THE CREW</a></li>
-        <li><a href="#" onclick="alert('We deliver across the country!')">LOCATION</a></li>
-            <li><a href="our-story.html">OUR STORY</a></li>
-            <li><a href="log-in.html">Login</a></li>
-            <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
+          <li><a href="menu.html">THE MENU</a></li>
+          <li><a href="about-food.html">ABOUT OUR FOOD</a></li>
+          <li>
+            <a
+              href="#"
+              onclick="alert('Coming soon! Our crew is still working on this.')"
+              >THE CREW</a
+            >
+          </li>
+          <li>
+            <a href="#" onclick="alert('We deliver across the country!')"
+              >LOCATION</a
+            >
+          </li>
+          <li><a href="our-story.html">OUR STORY</a></li>
+          <li><a href="log-in.html">Login</a></li>
+          <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
         </ul>
-    </nav>
-</header>
+      </nav>
+    </header>
 
-<!-- MOBILE NAVBAR (appears at 1103px and below) -->
-<div class="mobile-nav">
-    <div class="mobile-top">
+    <div class="mobile-nav">
+      <div class="mobile-top">
         <div class="mobile-logo">TASTE LOUNGE</div>
         <div class="hamburger-menu">&#9776;</div>
-    </div>
+      </div>
 
-    <!-- Slide-in navigation panel -->
-    <div class="mobile-menu-panel">
+      <div class="mobile-menu-panel">
         <div class="mobile-menu-header">
-            <div class="mobile-menu-logo">TASTE LOUNGE</div>
-            <div class="close-menu">&times;</div>
+          <div class="mobile-menu-logo">TASTE LOUNGE</div>
+          <div class="close-menu">&times;</div>
         </div>
 
         <ul class="mobile-menu-links">
-            <li><a href="menu.html">THE MENU</a></li>
-            <li><a href="about.html">ABOUT OUR FOOD</a></li>
-        <li><a href="#" onclick="alert('Coming soon! Our crew is still working on this.')">THE CREW</a></li>
-        <li><a href="#" onclick="alert('We deliver across the country!')">LOCATION</a></li>
-            <li><a href="our-story.html">OUR STORY</a></li>
-            <li><a href="log-in.html">Login</a></li>
-            <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
+          <li><a href="menu.html">THE MENU</a></li>
+          <li><a href="about.html">ABOUT OUR FOOD</a></li>
+          <li>
+            <a
+              href="#"
+              onclick="alert('Coming soon! Our crew is still working on this.')"
+              >THE CREW</a
+            >
+          </li>
+          <li>
+            <a href="#" onclick="alert('We deliver across the country!')"
+              >LOCATION</a
+            >
+          </li>
+          <li><a href="our-story.html">OUR STORY</a></li>
+          <li><a href="log-in.html">Login</a></li>
+          <li><a class="btn-signup" href="sign-in.html">Signup</a></li>
         </ul>
+      </div>
     </div>
-</div>
-
-
 
     <section class="hero">
-    <video autoplay muted loop playsinline class="hero-video">
-        <source src="delicious-indian.mp4" type="video/mp4">
-    </video>
+      <video id="heroVideo" autoplay muted playsinline class="hero-video">
+        <source src="delicious-indian.mp4" type="video/mp4" />
+      </video>
 
-    <div class="hero-content">
+      <div class="hero-content">
         <h1><i>Welcome To Taste - Lounge</i></h1>
-<p>From sizzling Nigerian classics to rich continental favorites — made fresh, made premium.</p>
+        <p>
+          From sizzling Nigerian classics to rich continental favorites — made
+          fresh, made premium.
+        </p>
 
         <div class="buttons">
-            <a href="log-in.html" class="btn-order">START YOUR ORDER</a>
+          <a href="log-in.html" class="btn-order">START YOUR ORDER</a>
         </div>
-    </div>
+      </div>
 
-<p class="status open">● Open Now</p>
+      <p class="status open">● Open Now</p>
+    </section>
 
-
-</section>
-
-
-
-    <!-- <section class="hero">
-    <video id="heroVideo" autoplay muted playsinline class="hero-video"></video>
-
-    <div class="hero-content">
-        <h1><i>Welcome To Taste - Lounge</i></h1>
-        <p>From sizzling Nigerian classics to rich continental favorites — made fresh, made premium.</p>
-
-        <div class="buttons">
-            <a href="log-in.html" class="btn-order">START YOUR ORDER</a>
-        </div>
-    </div>
-</section> -->
-
-
-    <!-- ABOUT -->
     <section class="about" id="about">
-        <img src="https://t4.ftcdn.net/jpg/08/86/88/03/360_F_886880307_8CLg4L9mXWDDCQxgKN5feoXyasoeX08a.jpg">
+      <img
+        src="https://t4.ftcdn.net/jpg/08/86/88/03/360_F_886880307_8CLg4L9mXWDDCQxgKN5feoXyasoeX08a.jpg"
+      />
 
-        <div class="text">
-            <h2>Have you tried our Jolly Rice?</h2>
-            <p>Inspired by a popular menu hack, the Taste Lounge Jolly Rice is available everywhere! What proteins are you adding to yours?</p>
-            <a href="log-in.html" class="Jolly">ORDER NOW <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="m120-80 162-650-2-28q-1-17-12-29.5T240-800q-17 0-28.5 11.5T200-760v80h-80v-80q0-50 35-85t85-35h442q48 0 82.5 32.5T802-767l38 687H120Zm104-80h93l-19-304-74 304Zm174 0h358l-34-602q-1-16-12.5-27T682-800H353q4 10 5 19.5t2 20.5l38 600Zm122-80h60v-160q26-6 43-27.5t17-49.5v-163h-40v151h-30v-151h-40v151h-30v-151h-40v163q0 28 17 49.5t43 27.5v160Zm-122 80h358-358Z"/></svg></a>
-        </div>
+      <div class="text">
+        <h2>Have you tried our Jolly Rice?</h2>
+        <p>
+          Inspired by a popular menu hack, the Taste Lounge Jolly Rice is
+          available everywhere! What proteins are you adding to yours?
+        </p>
+        <a href="log-in.html" class="Jolly"
+          >ORDER NOW
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#FFFFFF"
+          >
+            <path
+              d="m120-80 162-650-2-28q-1-17-12-29.5T240-800q-17 0-28.5 11.5T200-760v80h-80v-80q0-50 35-85t85-35h442q48 0 82.5 32.5T802-767l38 687H120Zm104-80h93l-19-304-74 304Zm174 0h358l-34-602q-1-16-12.5-27T682-800H353q4 10 5 19.5t2 20.5l38 600Zm122-80h60v-160q26-6 43-27.5t17-49.5v-163h-40v151h-30v-151h-40v151h-30v-151h-40v163q0 28 17 49.5t43 27.5v160Zm-122 80h358-358Z"
+            /></svg
+        ></a>
+      </div>
     </section>
 
     <section class="foods-section" id="foods">
-
-    <div class="foods-title">
+      <div class="foods-title">
         <h2>THE FOOD</h2>
         <div class="underline"></div>
-    </div>
+      </div>
 
-    <div class="foods-grid">
-
-        <!-- CARD 1 -->
+      <div class="foods-grid">
         <div class="food-card">
-            <img src="fried-sweet-ans-sour-chicken-with-steamed-rice-close-up_177613-3387.jpg">
-            <a href="menu.html" class="food-name">FRIED RICE</a>
+          <img
+            src="fried-sweet-ans-sour-chicken-with-steamed-rice-close-up_177613-3387.jpg"
+          />
+          <a href="menu.html" class="food-name">FRIED RICE</a>
         </div>
 
-        <!-- CARD 2 -->
         <div class="food-card">
-            <img src="https://dooneyskitchen.com/wp-content/uploads/2021/03/nkwobi-2.jpg">
-            <a href="menu.html" class="food-name">NKWOBI</a>
+          <img
+            src="https://dooneyskitchen.com/wp-content/uploads/2021/03/nkwobi-2.jpg"
+          />
+          <a href="menu.html" class="food-name">NKWOBI</a>
         </div>
 
-        <!-- CARD 3 -->
         <div class="food-card">
-            <img src="golden-crispy-french-fries-basket_23-2151997993.jpg">
-            <a href="menu.html" class="food-name">FRIES</a>
+          <img src="golden-crispy-french-fries-basket_23-2151997993.jpg" />
+          <a href="menu.html" class="food-name">FRIES</a>
         </div>
 
-        <!-- CARD 4 -->
         <div class="food-card">
-            <img src="garri-pounded-yam-served-with-efo-riro-vegetable-soup_539365-1068.jpg">
-            <a href="menu.html" class="food-name">IYAN & EFO-RIRO</a>
+          <img
+            src="garri-pounded-yam-served-with-efo-riro-vegetable-soup_539365-1068.jpg"
+          />
+          <a href="menu.html" class="food-name">IYAN & EFO-RIRO</a>
         </div>
 
-        <!-- CARD 5 -->
         <div class="food-card">
-            <img src="pasta-spaghetti-with-shrimps-tomato-sauce-served-plate-dark-surface-closeup_1220-5409.jpg">
-            <a href="menu.html" class="food-name">SPAGEHETTI</a>
+          <img
+            src="pasta-spaghetti-with-shrimps-tomato-sauce-served-plate-dark-surface-closeup_1220-5409.jpg"
+          />
+          <a href="menu.html" class="food-name">SPAGEHETTI</a>
         </div>
 
-        <!-- CARD 6 -->
         <div class="food-card">
-            <!-- <img src="https://nigerianfoodiehub.com/wp-content/uploads/2022/02/Attachment-1-31.jpg"> -->
-            <img src="https://www.myactivekitchen.com/wp-content/uploads/2016/12/ofada-stew-recipe-image_9.jpg" alt="">
-            <a href="menu.html" class="food-name">Ofada Rice</a>
+          <img
+            src="https://www.myactivekitchen.com/wp-content/uploads/2016/12/ofada-stew-recipe-image_9.jpg"
+            alt=""
+          />
+          <a href="menu.html" class="food-name">Ofada Rice</a>
         </div>
 
-        <!-- CARD 7 -->
         <div class="food-card">
-            <img src="delicious-beef-shawarma-wrap-with-fresh-vegetables_822916-5469.jpg">
-            <a href="menu.html" class="food-name">SHARWAMA</a>
+          <img
+            src="delicious-beef-shawarma-wrap-with-fresh-vegetables_822916-5469.jpg"
+          />
+          <a href="menu.html" class="food-name">SHARWAMA</a>
         </div>
 
-        <!-- CARD 8 -->
         <div class="food-card">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfdsK3pXJn7OeqYYzbSJd1AM5s-SSc680XNA&s">
-            <a href="menu.html" class="food-name">TABLE WATER</a>
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfdsK3pXJn7OeqYYzbSJd1AM5s-SSc680XNA&s"
+          />
+          <a href="menu.html" class="food-name">TABLE WATER</a>
         </div>
 
-        <!-- CARD 9 -->
         <div class="food-card">
-            <img src="vertical-shot-delicious-mix-berry-milkshake-with-different-berries-bowl-it_181624-2298.jpg">
-            <a href="menu.html" class="food-name">MILKSHAKE</a>
+          <img
+            src="vertical-shot-delicious-mix-berry-milkshake-with-different-berries-bowl-it_181624-2298.jpg"
+          />
+          <a href="menu.html" class="food-name">MILKSHAKE</a>
         </div>
+      </div>
+    </section>
 
-    </div>
-</section>
+    <section class="unwrapped-section">
+      <div class="dark-overlay"></div>
 
-
-<section class="unwrapped-section">
-    <div class="dark-overlay"></div>
-
-    <div class="unwrapped-content">
-
+      <div class="unwrapped-content">
         <h1>
-            TASTE LOUNGE <br>
-            <span>UNWRAPPED</span>
+          TASTE LOUNGE <br />
+          <span>UNWRAPPED</span>
         </h1>
 
         <p>
-            Peek into our kitchen and see how we use the freshest ingredients to make burger magic happen.
-             Here’s the how and why behind Taste Lounge.
+          Peek into our kitchen and see how we use the freshest ingredients to
+          make burger magic happen. Here’s the how and why behind Taste Lounge.
         </p>
 
         <a href="about-food.html" class="btn-about">ABOUT OUR FOOD</a>
-
-    </div>
-</section>
-
-
-
-    <!-- PARALLAX -->
-    <section class="parallax">
-        <h2>Your cravings, delivered fresh.</h2>
+      </div>
     </section>
 
-    <!-- FOOTER -->
+    <section class="parallax">
+      <h2>Your cravings, delivered fresh.</h2>
+    </section>
+
     <footer>
-        <div>
-            <h3>Menu</h3>
-            <p>Jollof • Fried Rice • Pasta • Drinks • Swallow</p>
-        </div>
+      <div>
+        <h3>Menu</h3>
+        <p>Jollof • Fried Rice • Pasta • Drinks • Swallow</p>
+      </div>
 
-        <div>
-            <h3>Contact</h3>
-            <p>📥 fumilolakadri@gmail.com<br>📍 Delivery, Nationwide</p>
-        </div>
+      <div>
+        <h3>Contact</h3>
+        <p>📥 fumilolakadri@gmail.com<br />📍 Delivery, Nationwide</p>
+      </div>
 
-        <div>
-            <h3>Follow Us</h3>
-        
+      <div>
+        <h3>Follow Us</h3>
+
         <div class="social-icons">
-    <a href="https://www.instagram.com/akennebaby/?hl=en" class="icon"><i class="fab fa-instagram"></i></a>
-    <a href="https://www.facebook.com/" class="icon"><i class="fab fa-facebook-f"></i></a>
-    <a href="https://www.tiktok.com/@akennebaby" class="icon"><i class="fab fa-tiktok"></i></a>
-    <a href="https://x.com/" class="icon"><i class="fab fa-twitter"></i></a>
-</div>
+          <a href="https://www.instagram.com/akennebaby/?hl=en" class="icon"
+            ><i class="fab fa-instagram"></i
+          ></a>
+          <a href="https://www.facebook.com/" class="icon"
+            ><i class="fab fa-facebook-f"></i
+          ></a>
+          <a href="https://www.tiktok.com/@akennebaby" class="icon"
+            ><i class="fab fa-tiktok"></i
+          ></a>
+          <a href="https://x.com/" class="icon"
+            ><i class="fab fa-twitter"></i
+          ></a>
         </div>
-
+      </div>
     </footer>
 
     <div class="copyright-bar">
-    Copyright © 2026 Taste Lounge Enterprises, LLC. All rights reserved.
-</div>
-
-
-
-
+      Copyright © 2026 Taste Lounge Enterprises, LLC. All rights reserved.
+    </div>
   </body>
 </html>
 <script>
+  const openBtn = document.querySelector(".hamburger-menu");
+  const closeBtn = document.querySelector(".close-menu");
+  const menuPanel = document.querySelector(".mobile-menu-panel");
 
-
-const openBtn = document.querySelector(".hamburger-menu");
-const closeBtn = document.querySelector(".close-menu");
-const menuPanel = document.querySelector(".mobile-menu-panel");
-
-openBtn.addEventListener("click", () => {
+  openBtn.addEventListener("click", () => {
     menuPanel.classList.add("open");
-});
+  });
 
-closeBtn.addEventListener("click", () => {
+  closeBtn.addEventListener("click", () => {
     menuPanel.classList.remove("open");
-}); 
+  });
 
   const hour = new Date().getHours();
-  const status = document.querySelector('.status');
+  const status = document.querySelector(".status");
 
   if (hour >= 6 && hour < 18) {
-//   if (hour >= 9 && hour < 18) {
     status.textContent = "● Open Now";
     status.className = "status open";
   } else {
@@ -270,25 +300,61 @@ closeBtn.addEventListener("click", () => {
     status.className = "status closed";
   }
 
+  const videoList = {
+    desktop: ["drinking-soda.mp4", "delicious-indian.mp4"],
+    mobile: ["women-eating-pizza-mobile.mp4", "delicious-indian-mobile.mp4"],
+  };
 
-// const videoList = [
-//     "delicious-indian.mp4",
-//     "couple-talking.mp4",
-//     "couple-talking.mp4"
-// ];
+  let index = 0;
+  const video = document.getElementById("heroVideo");
 
-// let index = 0;
-// const video = document.getElementById("heroVideo");
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
 
-// // Load first video
-// video.src = videoList[index];
+  function getCurrentVideoList() {
+    return isMobile() ? videoList.mobile : videoList.desktop;
+  }
 
-// setInterval(() => {
-//     index = (index + 1) % videoList.length;
-//     video.src = videoList[index];
-//     video.play();
-// }, 3000);  // 4 seconds
+  function loadVideo() {
+    const currentList = getCurrentVideoList();
+    const newSrc = currentList[index];
 
+    if (video.src !== newSrc && !video.src.includes(newSrc)) {
+      video.src = newSrc;
+    }
 
-</script> 
+    video.playbackRate = isMobile() ? 1.1 : 1.5;
 
+    video.play().catch((err) => {
+      console.log("Autoplay note:", err.message);
+    });
+  }
+
+  loadVideo();
+
+  video.addEventListener(
+    "ended",
+    () => {
+      const currentList = getCurrentVideoList();
+      index = (index + 1) % currentList.length;
+      loadVideo();
+    },
+    false,
+  );
+
+  window.addEventListener("resize", () => {
+    loadVideo();
+  });
+
+  video.addEventListener(
+    "error",
+    (e) => {
+      console.error("Video error, skipping:", e.type);
+      const currentList = getCurrentVideoList();
+      index = (index + 1) % currentList.length;
+      loadVideo();
+    },
+    false,
+  );
+</script>

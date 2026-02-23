@@ -1,478 +1,428 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Taste Lounge — Checkout</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Taste Lounge — Checkout</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
-    <link rel="shortcut icon"
-    href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
-    type="image/x-icon">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
+    />
+    <link
+      rel="shortcut icon"
+      href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+      type="image/x-icon"
+    />
 
-<!-- <script src="https://kit.fontawesome.com/a81368914c.js" crossorigin="anonymous"></script> -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
- <style>
-:root{
-  --red:#ff0000;
-  --cream:#FFF6E9;
-  --white:#fff;
-  --black:#1A1A1A;
-  --muted:#777;
-}
+    <style>
+      :root {
+        --red: #ff0000;
+        --cream: #fff6e9;
+        --white: #fff;
+        --black: #1a1a1a;
+        --muted: #777;
+      }
 
-/* RESET */
-*{
-  box-sizing:border-box;
-}
+      * {
+        box-sizing: border-box;
+      }
 
-body{
-  font-family:Inter, system-ui, -apple-system;
-  background:var(--cream);
-  margin:0;
-  padding-bottom:90px;
-  color:var(--black);
-}
+      body {
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system;
+        background: var(--cream);
+        margin: 0;
+        padding-bottom: 90px;
+        color: var(--black);
+      }
 
-/* CONTAINER */
-.container{
-  max-width:1000px;
-  margin:auto;
-  padding:20px;
-    grid-template-columns:1.2fr 1fr;
-    align-items:start;
-}
+      .container {
+        max-width: 1000px;
+        margin: auto;
+        padding: 20px;
+        grid-template-columns: 1.2fr 1fr;
+        align-items: start;
+      }
 
-/* CARD */
-.card{
-  background:var(--white);
-  padding:20px;
-  border-radius:18px;
-  box-shadow:0 12px 30px rgba(0,0,0,.08);
-    margin-bottom: 20px;  /* Space between cards */
-    font-size: 18px;
-  
-}
-body.dark .card {
-  background: #1e1e1e;
-  color: #fff;
-    /* box-shadow:0 12px 30px rgba(234, 96, 96, 0.08); */
-    box-shadow:0 12px 30px rgba(191, 179, 179, 0.215);
+      .card {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+        font-size: 18px;
+      }
+      body.dark .card {
+        background: #1e1e1e;
+        color: #fff;
 
-}
+        box-shadow: 0 12px 30px rgba(191, 179, 179, 0.215);
+      }
 
-.card h2{
-  color:var(--red);
-  margin-bottom:14px;
-  font-size:22px;
-}
+      .card h2 {
+        color: var(--red);
+        margin-bottom: 14px;
+        font-size: 22px;
+      }
 
-/* ORDER SUMMARY */
-.item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:8px 0;
-  font-size:15px;
-}
+      .item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        font-size: 15px;
+      }
 
-.item span:last-child{
-  font-weight:600;
-}
+      .item span:last-child {
+        font-weight: 600;
+      }
 
-hr{
-  border:none;
-  border-top:1px solid #eee;
-  margin:14px 0;
-}
+      hr {
+        border: none;
+        border-top: 1px solid #eee;
+        margin: 14px 0;
+      }
 
-/* TOTAL */
-.card h3{
-  font-size:22px;
-  margin-top:8px;
-}
+      .card h3 {
+        font-size: 22px;
+        margin-top: 8px;
+      }
 
-a{
-  display:inline-block;
-  margin-top:10px;
-  color:var(--red);
-  text-decoration:none;
-  font-weight:600;
-}
-body.dark .card {
-  background: #1e1e1e;
-  color: #fff;
-    /* box-shadow:0 12px 30px rgba(234, 96, 96, 0.08); */
-    box-shadow:0 12px 30px rgba(191, 179, 179, 0.215);
+      a {
+        display: inline-block;
+        margin-top: 10px;
+        color: var(--red);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      body.dark .card {
+        background: #1e1e1e;
+        color: #fff;
 
-}
+        box-shadow: 0 12px 30px rgba(191, 179, 179, 0.215);
+      }
 
-/* INPUTS */
-input, textarea{
-  width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  margin-bottom:12px;
-  font-size:15px;
-}
+      input,
+      textarea {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
 
-input:focus,
-textarea:focus{
-  border-color:var(--red);
-  outline:none;
-  background:#fff5f5;
-}
+      input:focus,
+      textarea:focus {
+        border-color: var(--red);
+        outline: none;
+        background: #fff5f5;
+      }
 
-/* OPTIONS - flexbox for alignment */
-.option {
-  display: flex;
-  align-items: center;
-  margin: 12px 0;
-  font-size: 1.1rem;
-}
+      .option {
+        align-items: center;
+        margin: 12px 0;
+        font-size: 1.1rem;
+      }
 
-/* Adjust radio button size */
-.option input[type="radio"] {
-  width: 18px;  /* Smaller radio button */
-  height: 18px;
-  margin-right: 10px;  /* Space between radio button and label */
-  cursor: pointer;
-  transform: scale(0.8); /* Adjust size */
-}
+      .option input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+        cursor: pointer;
+        transform: scale(0.8);
+      }
 
-/* Adjust label text to fit */
-.option label {
-  white-space: nowrap; /* Prevent label text from wrapping onto next line */
-  overflow: hidden; /* Ensures no overflow */
-  text-overflow: ellipsis; /* Add ellipsis if label text is too long */
-  font-size: 1.1rem;  /* Adjust font size */
-  color: #d61b1b;
-  display: inline-block;  /* Keep the label aligned with radio button */
-}
-body.dark .option label{
-    color: #fff;
+      .option label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1.1rem;
+        color: #d61b1b;
+        display: inline-block;
+      }
+      body.dark .option label {
+        color: #fff;
+      }
 
-}
+      .option:hover {
+        border-color: var(--red);
+      }
 
-.option:hover{
-  border-color:var(--red);
-}
+      .option input {
+        transform: scale(1.2);
+      }
 
-.option input{
-  transform:scale(1.2);
-}
+      .pay-btn {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--red);
+        color: white;
+        padding: 18px;
+        font-size: 18px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        z-index: 10;
+      }
+      .pay-btn:hover {
+        background-color: rgb(208, 35, 35);
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.137);
+        transform: scale(1.01);
+      }
 
-/* PAY BUTTON */
-.pay-btn{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:var(--red);
-  color:white;
-  padding:18px;
-  font-size:18px;
-  font-weight:700;
-  border:none;
-  cursor:pointer;
-  z-index:10;
-}
-.pay-btn:hover{
-  background-color: rgb(208, 35, 35);
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.137);
-  transform: scale(1.01);
-}
+      @media (min-width: 900px) {
+        body {
+          padding-bottom: 40px;
+        }
 
-/* DESKTOP LAYOUT */
-@media(min-width:900px){
-  body{
-    padding-bottom:40px;
-  }
+        .container {
+          max-width: 900px;
+          margin: auto;
+          padding: 20px;
+        }
 
-  .container{
-    max-width:900px;
-    margin: auto;
-    padding: 20px;
-  }
+        .card {
+          margin-bottom: 20px;
+        }
 
-  /* Add some space between the sections */
-  .card {
-    margin-bottom: 20px;  /* Space between cards */
-  }
+        .pay-btn {
+          position: static;
+          width: 100%;
+          border-radius: 14px;
+          margin-top: 15px;
+        }
 
-  .pay-btn{
-    position:static;
-    width:100%;
-    border-radius:14px;
-    margin-top:15px;
-  }
+        .container {
+          padding: 20px;
+        }
 
-  /* Add padding inside the container to give some breathing room */
-  .container {
-    padding: 20px;
-  }
+        input,
+        textarea {
+          margin-bottom: 15px;
+        }
 
-  /* Give some margin for the individual form fields inside the cards */
-  input, textarea {
-    margin-bottom: 15px; /* Space between inputs and textarea */
-  }
+        #summary,
+        .option,
+        .pay-btn {
+          margin-bottom: 15px;
+        }
 
-  /* Add space between the order summary and delivery option */
-  #summary, .option, .pay-btn {
-    margin-bottom: 15px;  /* Space between each section */
-  }
+        input,
+        textarea {
+          padding: 12px;
+          border-radius: 10px;
+          border: 1px solid #ddd;
+        }
+      }
 
-  /* Make sure all inputs have some space */
-  input, textarea {
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-  }
-}
-/* MOBILE Responsiveness */
-@media (max-width: 480px) {
+      @media (max-width: 480px) {
+        .option {
+          font-size: 1rem;
+        }
 
-  /* Adjust font size of options */
-  .option {
-    font-size: 1rem;  /* Smaller font size */
-  }
+        .option input[type="radio"] {
+          width: 16px;
+          height: 16px;
+          margin-right: 8px;
+          transform: scale(0.7);
+        }
 
-  /* Smaller radio buttons on mobile */
-  .option input[type="radio"] {
-    width: 16px;  /* Smaller radio button on mobile */
-    height: 16px;
-    margin-right: 8px;  /* Smaller space */
-    transform: scale(0.7);  /* Even smaller */
-  }
+        .option label {
+          font-size: 1rem;
+        }
+      }
 
-  /* Adjust label font size */
-  .option label {
-    font-size: 1rem;  /* Slightly smaller text on mobile */
-  }
-}
+      body.dark {
+        background: #121212;
+        color: #eee;
+      }
 
- body.dark {
-  background: #121212;
-  color: #eee;
-}
+      body.dark .header,
+      body.dark .container,
+      body.dark .cart-item {
+        background: #1e1e1e;
+        color: #fff;
+      }
 
-body.dark .header,
-body.dark .container,
-body.dark .cart-item {
-  background: #1e1e1e;
-  color: #fff;
-}
-/* ===============================
-   DARK MODE → RED THEME
-   =============================== */
+      body.dark {
+        background: #121212;
+        color: red;
+      }
+    </style>
+  </head>
 
-body.dark {
-  background: #121212;
-  color: red;
-}
+  <body>
+    <div class="container">
+      <div class="card">
+        <h2>Order Summary</h2>
+        <div id="summary"></div>
+        <hr />
+        <p>Subtotal: ₦<span id="subtotal">0</span></p>
+        <p>Delivery: ₦<span id="delivery">2000</span></p>
+        <h3>Total: ₦<span id="total">0</span></h3>
+        <a href="cart.html">← Back to Cart</a>
+      </div>
 
-/* FORCE ALL TEXT TO RED */
- /* body.dark,
-body.dark * {
-  color: red !important;
-}  */
+      <div class="card">
+        <h2>Delivery Option</h2>
+        <div class="option">
+          <input
+            type="radio"
+            name="delivery"
+            checked
+            onclick="setDelivery(2000)"
+          />
+          <label>🚚 Standard (₦2,000)</label>
+        </div>
+        <div class="option">
+          <input type="radio" name="delivery" onclick="setDelivery(3000)" />
+          <label>⚡ Express (₦3,000)</label>
+        </div>
+      </div>
 
-</style> 
+      <div class="card">
+        <h2>Delivery Details</h2>
+        <input id="name" placeholder="Full name" />
+        <input id="phone" placeholder="Phone number" />
+        <textarea id="address" placeholder="Delivery address"></textarea>
+      </div>
 
+      <div class="card">
+        <h2>Payment Method</h2>
+        <div class="option">
+          <input type="radio" checked />
+          <label>💳 Paystack (Secure 🔒)</label>
+        </div>
+      </div>
 
-</head>
-
-<body>
-
-<div class="container">
-
-  <div class="card">
-    <h2>Order Summary</h2>
-    <div id="summary"></div>
-    <hr>
-    <p>Subtotal: ₦<span id="subtotal">0</span></p>
-    <p>Delivery: ₦<span id="delivery">2000</span></p>
-    <h3>Total: ₦<span id="total">0</span></h3>
-    <a href="cart.html">← Back to Cart</a>
-  </div>
-
-    <div class="card">
-    <h2>Delivery Option</h2>
-    <div class="option">
-      <input type="radio" name="delivery" checked onclick="setDelivery(2000)">
-      <label>🚚 Standard (₦2,000)</label>
+      <button class="pay-btn" onclick="submitOrder()">Place Order</button>
     </div>
-    <div class="option">
-      <input type="radio" name="delivery" onclick="setDelivery(3000)">
-      <label>⚡ Express (₦3,000)</label>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Delivery Details</h2>
-    <input id="name" placeholder="Full name">
-    <input id="phone" placeholder="Phone number">
-    <textarea id="address" placeholder="Delivery address"></textarea>
-  </div>
-
-  <div class="card">
-    <h2>Payment Method</h2>
-    <div class="option">
-      <input type="radio" checked>
-      <label>💳 Paystack (Secure 🔒)</label>
-    </div>
-  </div>
-
-  <button class="pay-btn" onclick="submitOrder()">Place Order</button>
-</div>
-
-</body>
-</html> 
-
+  </body>
+</html>
 
 <script>
-        if (localStorage.getItem("theme") === "on") {
+  if (localStorage.getItem("theme") === "on") {
     document.body.classList.add("dark");
   }
 
-firebase.initializeApp({
-  apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
-  authDomain: "taste-lounge-3075.firebaseapp.com",
-  projectId: "taste-lounge-3075"
-});
-
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-const nameInput = document.getElementById("name");
-const phoneInput = document.getElementById("phone");
-const addressInput = document.getElementById("address");
-
-const saved = JSON.parse(localStorage.getItem("deliveryDraft"));
-if (saved) {
-  nameInput.value = saved.name || "";
-  phoneInput.value = saved.phone || "";
-  addressInput.value = saved.address || "";
-}
-
-[nameInput, phoneInput, addressInput].forEach(i => {
-  i.addEventListener("input", () => {
-    localStorage.setItem("deliveryDraft", JSON.stringify({
-      name: nameInput.value,
-      phone: phoneInput.value,
-      address: addressInput.value
-    }));
+  firebase.initializeApp({
+    apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
+    authDomain: "taste-lounge-3075.firebaseapp.com",
+    projectId: "taste-lounge-3075",
   });
-});
 
-const cart = JSON.parse(localStorage.getItem("cart")) || [];
-let deliveryFee = 2000;
+  const db = firebase.firestore();
+  const auth = firebase.auth();
 
-function renderSummary() {
-  let subtotal = 0;
-  summary.innerHTML = "";
+  const nameInput = document.getElementById("name");
+  const phoneInput = document.getElementById("phone");
+  const addressInput = document.getElementById("address");
 
-  cart.forEach(item => {
-    subtotal += item.price * item.quantity;
-    summary.innerHTML += `
+  const saved = JSON.parse(localStorage.getItem("deliveryDraft"));
+  if (saved) {
+    nameInput.value = saved.name || "";
+    phoneInput.value = saved.phone || "";
+    addressInput.value = saved.address || "";
+  }
+
+  [nameInput, phoneInput, addressInput].forEach((i) => {
+    i.addEventListener("input", () => {
+      localStorage.setItem(
+        "deliveryDraft",
+        JSON.stringify({
+          name: nameInput.value,
+          phone: phoneInput.value,
+          address: addressInput.value,
+        }),
+      );
+    });
+  });
+
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  let deliveryFee = 2000;
+
+  function renderSummary() {
+    let subtotal = 0;
+    summary.innerHTML = "";
+
+    cart.forEach((item) => {
+      subtotal += item.price * item.quantity;
+      summary.innerHTML += `
       <div class="item">
         <span>${item.name} x${item.quantity}</span>
         <span>₦${item.price * item.quantity}</span>
       </div>`;
-  });
+    });
 
-  subtotalEl.innerText = subtotal;
-  total.innerText = subtotal + deliveryFee;
+    subtotalEl.innerText = subtotal;
+    total.innerText = subtotal + deliveryFee;
 
-  localStorage.setItem("cartTotal", subtotal + deliveryFee);
-}
-
-function setDelivery(amount) {
-  deliveryFee = amount;
-  delivery.innerText = amount;
-  renderSummary();
-}
-
-
-// function submitOrder() {
-//   if (!cart.length) return alert("Cart is empty");
-//   if (!nameInput.value || !phoneInput.value || !addressInput.value)
-//     return alert("Please fill all details");
-
-//   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-
-//   // ✅ SAVE CHECKOUT DATA TEMPORARILY
-//   localStorage.setItem("pendingOrder", JSON.stringify({
-//     items: cart,
-//     pricing: {
-//       subtotal,
-//       delivery: deliveryFee,
-//       total: subtotal + deliveryFee
-//     },
-//     delivery: {
-//       name: nameInput.value,
-//       phone: phoneInput.value,
-//       address: addressInput.value
-//     }
-//   }));
-
-//   // ✅ ONLY REDIRECT
-//   window.location.href = "taste-lounge-paystack.html";
-// }
-
-async function submitOrder() {
-  if (!cart.length) return alert("Cart is empty");
-  if (!nameInput.value || !phoneInput.value || !addressInput.value)
-    return alert("Please fill all details");
-
-  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Please login again");
-    return;
+    localStorage.setItem("cartTotal", subtotal + deliveryFee);
   }
 
-  // ✅ SAVE USER PROFILE DATA (THIS FIXES YOUR ISSUE)
-  await db.collection("users").doc(user.uid).set({
-    name: nameInput.value,
-    phone: phoneInput.value,
-    address: addressInput.value,
-    email: user.email,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+  function setDelivery(amount) {
+    deliveryFee = amount;
+    delivery.innerText = amount;
+    renderSummary();
+  }
 
-  // ✅ SAVE CHECKOUT DATA TEMPORARILY (UNCHANGED)
-  localStorage.setItem("pendingOrder", JSON.stringify({
-    items: cart,
-    pricing: {
-      subtotal,
-      delivery: deliveryFee,
-      total: subtotal + deliveryFee
-    },
-    delivery: {
-      name: nameInput.value,
-      phone: phoneInput.value,
-      address: addressInput.value
+  async function submitOrder() {
+    if (!cart.length) return alert("Cart is empty");
+    if (!nameInput.value || !phoneInput.value || !addressInput.value)
+      return alert("Please fill all details");
+
+    const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please login again");
+      return;
     }
-  }));
 
-  // ✅ REDIRECT
-  window.location.href = "taste-lounge-paystack.html";
-}
+    await db.collection("users").doc(user.uid).set(
+      {
+        name: nameInput.value,
+        phone: phoneInput.value,
+        address: addressInput.value,
+        email: user.email,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
 
+    localStorage.setItem(
+      "pendingOrder",
+      JSON.stringify({
+        items: cart,
+        pricing: {
+          subtotal,
+          delivery: deliveryFee,
+          total: subtotal + deliveryFee,
+        },
+        delivery: {
+          name: nameInput.value,
+          phone: phoneInput.value,
+          address: addressInput.value,
+        },
+      }),
+    );
 
+    window.location.href = "taste-lounge-paystack.html";
+  }
 
-const summary = document.getElementById("summary");
-const subtotalEl = document.getElementById("subtotal");
-const delivery = document.getElementById("delivery");
+  const summary = document.getElementById("summary");
+  const subtotalEl = document.getElementById("subtotal");
+  const delivery = document.getElementById("delivery");
 
-renderSummary();
+  renderSummary();
 </script>
-
-
-

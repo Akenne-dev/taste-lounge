@@ -14,7 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 
-    <!-- Google Fonts -->
+    
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap"
         rel="stylesheet">
@@ -278,7 +278,7 @@
     border-radius: 10px;
     background-color: whitesmoke;
 }
-/* ⭐ STYLED INPUT */
+
 #resetEmail {
   width: 100%;
   padding: 12px 15px;
@@ -292,13 +292,13 @@
   font-family: "Montserrat", sans-serif;
 }
 
-/* ⭐ FIX PLACEHOLDER */
+
 #resetEmail::placeholder {
   color: #999;
   opacity: 1;
 }
 
-/* ⭐ BEAUTIFUL BUTTON */
+
 #sendResetBtn {
   width: 100%;
   padding: 12px;
@@ -316,13 +316,7 @@
 #sendResetBtn:hover {
   background: #ff4c85;
 }
-/* .forgot{
-    color: #0367a6;
-    font-size: 16px;
-    border:2px solid rgb(0, 238, 255);
-    text-decoration: none;
-    padding: 5px;
-} */
+
 
 
 
@@ -348,20 +342,20 @@
     }
 
 
-    /* 📱 PERFECT RESPONSIVE MOBILE VIEW */
+    
     @media screen and (max-width: 900px) {
 
         body {
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            /* No scrolling */
+            
             margin: 0;
             padding: 0;
             position: relative;
         }
 
-        /* Use WAVE IMAGE as full blurred background */
+        
         .wave {
             position: fixed;
             top: 0;
@@ -371,10 +365,10 @@
             object-fit: cover;
             z-index: -2;
             filter: blur(4px) brightness(1);
-            /* Glass blur */
+            
         }
 
-        /* Remove the rice image section */
+        
         .img {
             display: none !important;
         }
@@ -395,9 +389,9 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            /* padding: 0 20px; */
+            
             margin: 10px 20px 0px 20px;
-            /* backdrop-filter: blur(12px); */
+            
 
         }
 
@@ -426,9 +420,14 @@
         font-size: 20px;
         font-weight: 600;
     }
+    a{
+       color: yellow;
+        font-size: 0.9rem;
+        transition: .3s;
+    }
 }
 
-    /* ----------- FIX FOR LARGE TABLETS & SURFACE PRO (900px–1300px) ----------- */
+    
     @media screen and (max-width: 1300px) {
         .container {
             grid-template-columns: 1fr 1fr;
@@ -451,7 +450,7 @@
         }
     }
 
-    /* ----------- FIX FOR IPAD PRO & TABLETS (768px–900px) ----------- */
+    
     @media screen and (max-width: 900px) {
         .container {
             grid-template-columns: 1fr;
@@ -474,7 +473,7 @@
         }
     }
 
-    /* ----------- FIX FOR SMALL TABLETS & OLD PHONES (600px–767px) ----------- */
+    
     @media screen and (max-width: 767px) {
         .container {
             padding-top: 20px;
@@ -493,7 +492,7 @@
         }
     }
 
-    /* ----------- PERFECT FIX FOR ALL PHONES INCLUDING iPhone 4 ----------- */
+    
     @media screen and (max-width: 480px) {
         body {
             overflow-y: auto;
@@ -519,7 +518,7 @@
         }
     }
 
-    /* ----------- EXTREME SMALL DEVICES FIX (iPhone 4, iPhone SE old) ----------- */
+    
     @media screen and (max-width: 360px) {
         .login-content img {
             height: 80px;
@@ -589,7 +588,7 @@
 
 </html>
 
-<!-- REAL -->
+
 <script>
 
     const inputs = document.querySelectorAll(".input");
@@ -609,7 +608,7 @@
         input.addEventListener("blur", remcl);
     });
 
-    // FIREBASE?
+    
     const firebaseConfig = {
         apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
         authDomain: "taste-lounge-3075.firebaseapp.com",
@@ -619,11 +618,11 @@
         appId: "1:923805907944:web:8c054c78c5cbd75929c25d"
     };
 
-    // Initialize Firebase
+    
     firebase.initializeApp(firebaseConfig);
 
 
-    // passwordtogglelock
+    
     function showPass() {
         let input = document.getElementById("password");
         let icon = document.getElementById("togglePassword");
@@ -641,7 +640,7 @@
 
 
 
-    // LOGIN FUNCTION
+    
   function logIn() {
     setTimeout(() => {
 
@@ -657,7 +656,7 @@
 
       firebase.auth().signInWithEmailAndPassword(email.value.trim(), password.value.trim())
         .then((userCredential) => {
-          // Signed in
+          
           text.innerHTML = "Log in successful! Redirecting...";
           text.classList.add('active');
 
@@ -679,17 +678,17 @@
   }
 
 
-// OPEN MODAL
+
 document.getElementById("forgotPasswordLink").onclick = () => {
     document.getElementById("resetModal").style.display = "flex";
 };
 
-// CLOSE MODAL
+
 document.getElementById("closeReset").onclick = () => {
     document.getElementById("resetModal").style.display = "none";
 };
 
-// SEND PASSWORD RESET EMAIL (Firebase v8)
+
 document.getElementById("sendResetBtn").onclick = () => {
     const email = document.getElementById("resetEmail").value;
 
@@ -725,143 +724,8 @@ document.getElementById("sendResetBtn").onclick = () => {
 
 
 
-<!-- NONESENSE Admin -->
-<!-- <script>
-
-    const inputs = document.querySelectorAll(".input");
-    function addcl() {
-        let parent = this.parentNode.parentNode;
-        parent.classList.add("focus");
-    }
-
-    function remcl() {
-        let parent = this.parentNode.parentNode;
-        if (this.value == "") {
-            parent.classList.remove("focus");
-        }
-    }
-    inputs.forEach(input => {
-        input.addEventListener("focus", addcl);
-        input.addEventListener("blur", remcl);
-    });
-
-    // FIREBASE?
-    const firebaseConfig = {
-        apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
-        authDomain: "taste-lounge-3075.firebaseapp.com",
-        projectId: "taste-lounge-3075",
-        storageBucket: "taste-lounge-3075.firebasestorage.app",
-        messagingSenderId: "923805907944",
-        appId: "1:923805907944:web:8c054c78c5cbd75929c25d"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
 
 
-    // passwordtogglelock
-    function showPass() {
-        let input = document.getElementById("password");
-        let icon = document.getElementById("togglePassword");
-
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.remove("fa-eye");
-            icon.classList.add("fa-eye-slash");
-        } else {
-            input.type = "password";
-            icon.classList.remove("fa-eye-slash");
-            icon.classList.add("fa-eye");
-        }
-    }
-
-
-
-    // LOGIN FUNCTION
-  function logIn() {
-    setTimeout(() => {
-
-      if (password.value.trim().length < 8) {
-        alert('password must be at least 8 characters')
-        return
-      }
-
-      let load = document.getElementById('signUpBtn');
-      load.textContent = 'Loading...';
-      load.disabled = true
-
-
-      firebase.auth().signInWithEmailAndPassword(email.value.trim(), password.value.trim())
-        .then((userCredential) => {
-
-            firebase.firestore()
-  .collection("users")
-  .doc(userCredential.user.uid)
-  .set({
-    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-
-          // Signed in
-          text.innerHTML = "Log in successful! Redirecting...";
-          text.classList.add('active');
-
-                      setTimeout(() => {
-            location.href = "foods.html";
-          }, 3000)
-
-        })
-        .catch((error) => {
-          var errorCode = error.code;
-          var errorMessage = error.message;
-          alert(errorMessage)
-          
-         load.textContent= 'Log In'
-          load.disabled = false
-        });
-    }, 1500)
-
-  }
-
-
-// OPEN MODAL
-document.getElementById("forgotPasswordLink").onclick = () => {
-    document.getElementById("resetModal").style.display = "flex";
-};
-
-// CLOSE MODAL
-document.getElementById("closeReset").onclick = () => {
-    document.getElementById("resetModal").style.display = "none";
-};
-
-// SEND PASSWORD RESET EMAIL (Firebase v8)
-document.getElementById("sendResetBtn").onclick = () => {
-    const email = document.getElementById("resetEmail").value;
-
-    if (!email) {
-        alert("Enter your email first!");
-        return;
-    }
-
-    firebase.auth().sendPasswordResetEmail(email)
-        .then(() => {
-            alert("Password reset link sent! Check your email.");
-            document.getElementById("resetModal").style.display = "none";
-        })
-.catch((error) => {
-    console.log("RESET ERROR:", error.code);
-
-    if (error.code === "auth/user-not-found") {
-        alert("User does not exist");
-    } else if (error.code === "auth/invalid-email") {
-        alert("Invalid email format");
-    } else {
-        alert(error.message);
-    }
-});
-
-};
-
-</script> -->
 
 
 

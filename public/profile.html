@@ -1,905 +1,1086 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Taste Lounge | Profile</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
+    />
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Taste Lounge | Profile</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
+    <link
+      rel="shortcut icon"
+      href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+      type="image/x-icon"
+    />
 
-  <link rel="shortcut icon"
-    href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
-    type="image/x-icon">
-
-  <!-- FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <style>
-    /* SAME CSS AS OTHERS */
-    :root {
-      --yellow: #FBC02D;
-      --red: #ff0000;
-      --cream: #FFF6E9;
-      --black: #1A1A1A;
-      --white: #fff;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Inter, Poppins;
-      background: var(--cream);
-      padding-top: 100px;
-    }
-
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 70px;
-      background: var(--white);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 90px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, .07);
-    }
-
-    @media (max-width: 768px) {
-      .header {
-        padding: 0 16px;
-      }
-    }
-
-    .logo {
-      color: var(--red);
-      font-weight: 900;
-      font-size: 24px;
-    }
-
-    .desktop-nav {
-      display: flex;
-      gap: 60px;
-    }
-
-    .desktop-nav a {
-      font-size: 19px;
-      font-weight: 600;
-      color: var(--black);
-      position: relative;
-      text-decoration: none;
-    }
-
-    .desktop-nav a.active,
-    .desktop-nav a:hover {
-      color: var(--red);
-    }
-
-    .desktop-nav a.active::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      bottom: -6px;
-      width: 100%;
-      height: 3px;
-      background: var(--red);
-      border-radius: 8px;
-    }
-
-    .hamburger {
-      display: none;
-      font-size: 32px;
-      color: var(--red);
-    }
-
-    .mobile-menu {
-      position: fixed;
-      top: 0;
-      left: -100%;
-      width: 260px;
-      height: 100%;
-      background: #ffffffd9;
-      backdrop-filter: blur(16px);
-      padding: 25px;
-      transition: .3s;
-    }
-
-    .mobile-menu .close-btn {
-      font-size: 35px;
-      color: var(--red);
-      margin-bottom: 20px;
-      cursor: pointer;
-    }
-
-    /* ==============================
-   BOTTOM NAV (MOBILE ONLY)
-============================== */
-    .bottom-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 65px;
-      background: var(--white);
-      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.07);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      /* z-index: 3000; */
-      z-index: 1000;
-    }
-
-    .bottom-nav a {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 12px;
-      color: var(--black);
-      text-decoration: none;
-    }
-
-    .bottom-nav i {
-      font-size: 20px;
-      margin-bottom: 3px;
-    }
-
-    .bottom-nav a.active-bottom {
-      color: red;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 25px;
-    }
-
-    h1 {
-      font-size: 34px;
-      color: var(--red);
-      margin-bottom: 15px;
-    }
-
-    @media(max-width:900px) {
-      .desktop-nav {
-        display: none
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+      :root {
+        --yellow: #fbc02d;
+        --red: #ff0000;
+        --cream: #fff6e9;
+        --black: #1a1a1a;
+        --white: #fff;
       }
 
-      .hamburger {
-        display: block
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
 
       body {
-        padding-bottom: 85px
+        font-family: Inter, Poppins;
+        background: var(--cream);
+        padding-top: 100px;
       }
 
-      .bottom-nav {
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        background: var(--white);
         display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 90px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
       }
-    }
 
-    @media(min-width:901px) {
-      .bottom-nav {
-        display: none
+      @media (max-width: 768px) {
+        .header {
+          padding: 0 16px;
+        }
+      }
+
+      .logo {
+        color: var(--red);
+        font-weight: 900;
+        font-size: 24px;
+      }
+
+      .desktop-nav {
+        display: flex;
+        gap: 60px;
+      }
+
+      .desktop-nav a {
+        font-size: 19px;
+        font-weight: 600;
+        color: var(--black);
+        position: relative;
+        text-decoration: none;
+      }
+
+      .desktop-nav a.active,
+      .desktop-nav a:hover {
+        color: var(--red);
+      }
+
+      .desktop-nav a.active::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -6px;
+        width: 100%;
+        height: 3px;
+        background: var(--red);
+        border-radius: 8px;
+      }
+
+      .hamburger {
+        display: none;
+        font-size: 32px;
+        color: var(--red);
       }
 
       .mobile-menu {
-        display: none
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 260px;
+        height: 100%;
+        background: #ffffffd9;
+        backdrop-filter: blur(16px);
+        padding: 25px;
+        transition: 0.3s;
       }
-    }
 
-    :root {
-      --yellow: #FBC02D;
-      --red: #ff0000;
-      --cream: #FFF6E9;
-      --black: #1A1A1A;
-      --white: #fff;
-      --gray: #777;
-      --card: #ffffff;
-      --radius: 18px;
-    }
+      .mobile-menu .close-btn {
+        font-size: 35px;
+        color: var(--red);
+        margin-bottom: 20px;
+        cursor: pointer;
+      }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+      .bottom-nav {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 65px;
+        background: var(--white);
+        box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.07);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
 
-    body {
-      font-family: Inter, Poppins, sans-serif;
-      background: var(--cream);
-      padding-top: 100px;
-    }
+        z-index: 1000;
+      }
 
-    /* ================= CONTAINER ================= */
-    .container {
-      max-width: 1150px;
-      margin: auto;
-      padding: 25px;
-    }
+      .bottom-nav a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 12px;
+        color: var(--black);
+        text-decoration: none;
+      }
 
-    /* ================= PROFILE HEADER ================= */
-    .profile-hero {
-      background: linear-gradient(135deg, #ff0000, #f25656);
-      /* background: linear-gradient(135deg, #ff0000, #ff0000); */
-      border-radius: var(--radius);
-      padding: 30px;
-      color: white;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
+      .bottom-nav i {
+        font-size: 20px;
+        margin-bottom: 3px;
+      }
 
-    .avatar {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      font-weight: bold;
-      color: var(--red);
-    }
+      .bottom-nav a.active-bottom {
+        color: red;
+      }
 
-    .profile-info h2 {
-      font-size: 26px;
-      margin-bottom: 5px;
-    }
+      .container {
+        max-width: 1100px;
+        margin: auto;
+        padding: 25px;
+      }
 
-    .profile-info p {
-      font-size: 14px;
-      opacity: .9;
-    }
+      h1 {
+        font-size: 34px;
+        color: var(--red);
+        margin-bottom: 15px;
+      }
 
-    /* ================= GRID ================= */
-    .profile-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 22px;
-    }
+      @media (max-width: 900px) {
+        .desktop-nav {
+          display: none;
+        }
 
-    /* ================= CARD ================= */
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 22px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, .06);
-    }
+        .hamburger {
+          display: block;
+        }
 
-    .card h3 {
-      font-size: 18px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--red);
-    }
+        body {
+          padding-bottom: 85px;
+        }
 
-    .card ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+        .bottom-nav {
+          display: flex;
+        }
+      }
 
-    .card li {
-      display: flex;
-      justify-content: space-between;
-      font-size: 15px;
-      color: var(--black);
-    }
+      @media (min-width: 901px) {
+        .bottom-nav {
+          display: none;
+        }
 
-    .card li span {
-      color: var(--gray);
-    }
+        .mobile-menu {
+          display: none;
+        }
+      }
 
-    /* ================= BUTTONS ================= */
-    .btn {
-      border: none;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-    }
+      :root {
+        --yellow: #fbc02d;
+        --red: #ff0000;
+        --cream: #fff6e9;
+        --black: #1a1a1a;
+        --white: #fff;
+        --gray: #777;
+        --card: #ffffff;
+        --radius: 18px;
+      }
 
-    .btn-primary {
-      background: var(--red);
-      color: white;
-    }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #ddd;
-    }
+      body {
+        font-family: Inter, Poppins, sans-serif;
+        background: var(--cream);
+        padding-top: 100px;
+      }
 
-    .btn-danger {
-      background: #ffe5e5;
-      color: red;
-    }
+      .container {
+        max-width: 1150px;
+        margin: auto;
+        padding: 25px;
+      }
 
-    .btn-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    /* ================= SETTINGS ================= */
-    .setting-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .setting-item:last-child {
-      border-bottom: none;
-    }
-
-    .toggle {
-      width: 44px;
-      height: 24px;
-      background: #ddd;
-      border-radius: 30px;
-      position: relative;
-    }
-
-    .toggle::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      background: white;
-      border-radius: 50%;
-    }
-
-    .toggle {
-  width: 42px;
-  height: 22px;
-  background: #ccc;
-  border-radius: 22px;
-  position: relative;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.toggle::after {
-  content: "";
-  width: 18px;
-  height: 18px;
-  background: #fff;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: 0.3s;
-}
-
-.toggle.active {
-  background: #31e137;
-}
-
-.toggle.active::after {
-  left: 22px;
-}
-
-
-    /* ================= QUICK ACTIONS ================= */
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-
-    .quick-actions div {
-      background: #fff6f6;
-      padding: 16px;
-      border-radius: 14px;
-      text-align: center;
-      font-weight: 600;
-      color: var(--red);
-    }
-
-    /* ================= FLOATING SUPPORT ================= */
-    .floating-support {
-      position: fixed;
-      right: 18px;
-      bottom: 90px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      /* z-index: 5000; */
-        z-index: 9999;
-     pointer-events: auto;
-    }
-
-    .float-btn {
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 22px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
-        pointer-events: auto;
-
-    }
-
-    .whatsapp {
-      background: #25D366;
-    }
-
-    .support {
-      background: var(--red);
-    }
-
-    /* ================= MOBILE ================= */
-    @media(max-width:600px) {
       .profile-hero {
-        text-align: center;
-        justify-content: center;
+        background: linear-gradient(135deg, #ff0000, #f25656);
+
+        border-radius: var(--radius);
+        padding: 30px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
       }
 
       .avatar {
-        margin: auto;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: bold;
+        color: var(--red);
+      }
+
+      .profile-info h2 {
+        font-size: 26px;
+        margin-bottom: 5px;
+      }
+
+      .profile-info p {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 22px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 22px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+      }
+
+      .card h3 {
+        font-size: 18px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--red);
+      }
+
+      .card ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .card li {
+        display: flex;
+        justify-content: space-between;
+        font-size: 15px;
+        color: var(--black);
+      }
+
+      .card li span {
+        color: var(--gray);
+      }
+
+      .btn {
+        border: none;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .btn-primary {
+        background: var(--red);
+        color: white;
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1px solid #ddd;
+      }
+
+      .btn-danger {
+        background: #ffe5e5;
+        color: red;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .btn-group:hover {
+        color: #666;
+      }
+
+      .setting-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .setting-item:last-child {
+        border-bottom: none;
+      }
+
+      .toggle {
+        width: 44px;
+        height: 24px;
+        background: #ddd;
+        border-radius: 30px;
+        position: relative;
+      }
+
+      .toggle::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        background: white;
+        border-radius: 50%;
+      }
+
+      .toggle {
+        width: 42px;
+        height: 22px;
+        background: #ccc;
+        border-radius: 22px;
+        position: relative;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .toggle::after {
+        content: "";
+        width: 18px;
+        height: 18px;
+        background: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: 0.3s;
+      }
+
+      .toggle.active {
+        background: #31e137;
+      }
+
+      .toggle.active::after {
+        left: 22px;
       }
 
       .quick-actions {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
       }
-    }
 
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
+      .quick-actions div {
+        background: #fff6f6;
+        padding: 16px;
+        border-radius: 14px;
+        text-align: center;
+        font-weight: 600;
+        color: var(--red);
+      }
 
-    .quick-actions button {
-      border: none;
-      background: #ffe5e5;
-      ;
-      color: red;
-      font-weight: 700;
-      border: 1px solid #ffe5e5;
-      padding: 12px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 16px;
-    }
+      .floating-support {
+        position: fixed;
+        right: 18px;
+        bottom: 90px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
 
-    .quick-actions button:hover {
-      opacity: 0.9;
-      background-color: #fff;
-    }
+        z-index: 9999;
+        pointer-events: auto;
+      }
 
-    /* ===============================
-   SAVED ADDRESS MODAL (CENTERED)
-================================ */
-    .address-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .45);
-      display: none;
-      align-items: center;
-      /* ✅ CENTER VERTICALLY */
-      justify-content: center;
-      /* ✅ CENTER HORIZONTALLY */
-      z-index: 9999;
-    }
+      .float-btn {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        pointer-events: auto;
+      }
 
-    .address-modal.show {
-      display: flex;
-    }
+      .whatsapp {
+        background: #25d366;
+      }
 
-    /* MODAL CARD */
-    .address-sheet {
-      background: var(--cream);
-      width: 92%;
-      max-width: 420px;
-      padding: 26px;
-      border-radius: 18px;
-      animation: scaleIn .25s ease;
-    }
+      .support {
+        background: var(--red);
+      }
 
-    /* ANIMATION */
-    @keyframes scaleIn {
-      from {
+      @media (max-width: 600px) {
+        .profile-hero {
+          text-align: center;
+          justify-content: center;
+        }
+
+        .avatar {
+          margin: auto;
+        }
+
+        .quick-actions {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .quick-actions button {
+        border: none;
+
+        background: #ebc1c1;
+        color: red;
+        font-weight: 700;
+        border: 1px solid #ffe5e5;
+        padding: 12px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .quick-actions button:hover {
+        opacity: 0.9;
+        background-color: #d88f8f;
+      }
+
+      .address-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        align-items: center;
+
+        justify-content: center;
+
+        z-index: 9999;
+      }
+
+      .address-modal.show {
+        display: flex;
+      }
+
+      .address-sheet {
+        background: var(--cream);
+        width: 92%;
+        max-width: 420px;
+        padding: 26px;
+        border-radius: 18px;
+        animation: scaleIn 0.25s ease;
+      }
+
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .sheet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        color: red;
+      }
+
+      .close-sheet {
+        font-size: 26px;
+        cursor: pointer;
+      }
+
+      .address-card {
+        padding: 14px;
+        border-radius: 14px;
+        margin-bottom: 14px;
+        box-shadow: 0 0 10px 0 rgba(15, 15, 15, 0.286);
+      }
+
+      .address-card .label {
+        font-size: 15px;
+        color: #777;
+      }
+
+      .address-card .value {
+        font-weight: 600;
+        margin: 6px 0;
+      }
+
+      .use-btn {
+        width: 100%;
+        padding: 10px;
+        border-radius: 12px;
+        border: none;
+        background: red;
+        color: #fff;
+        cursor: pointer;
+      }
+      body.dark {
+        background-color: #121212;
+      }
+
+      body.dark .card {
+        background: #1e1e1e;
+        border-color: #333;
+        color: #ddd;
+      }
+
+      body.dark .bottom-nav {
+        background: #1a1a1a;
+        border-top: 3px solid rgb(86, 82, 82) !important;
+      }
+      body.dark .header {
+        border-bottom: 3px solid rgb(86, 82, 82) !important;
+        background: #1a1a1a;
+      }
+
+      body.dark a {
+        color: #ddd;
+      }
+
+      body.dark .card ul li {
+        color: #ffffff;
+      }
+
+      body.dark .card ul li span {
+        color: #cccccc;
+      }
+      body.dark .btn-outline {
+        color: #ffffff;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+      }
+
+      .modal {
+        background: #fff;
+        width: 90%;
+        max-width: 400px;
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .modal input,
+      .modal textarea {
+        width: 100%;
+        margin: 8px 0;
+        padding: 10px;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+      }
+
+      .mobile-menu {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 260px;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        padding: 25px;
+        z-index: 4000;
+        transition: 0.3s ease;
+      }
+
+      .mobile-menu .close-btn {
+        font-size: 35px;
+        cursor: pointer;
+        color: var(--red);
+        margin-bottom: 20px;
+      }
+
+      .mobile-menu a {
+        display: block;
+        font-size: 19px;
+        padding: 10px 0;
+        font-weight: 600;
+        color: var(--black);
+      }
+      body.dark .mobile-menu a {
+        color: white !important;
+      }
+      body.dark .mobile-menu {
+        background-color: rgba(15, 15, 15, 0.286);
+      }
+
+      .mobile-menu a:hover {
+        color: var(--red);
+      }
+
+      .rating-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
         opacity: 0;
-        transform: scale(.9);
+        transition: opacity 0.3s ease;
       }
 
-      to {
+      .rating-modal.show {
+        display: flex;
         opacity: 1;
+      }
+
+      .rating-content {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .rating-modal.show .rating-content {
         transform: scale(1);
       }
-    }
 
-    /* HEADER */
-    .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      color: red;
-    }
+      .rating-content h3 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+        color: #333;
+      }
 
-    .close-sheet {
-      font-size: 26px;
-      cursor: pointer;
-    }
+      .rating-content p {
+        margin: 0 0 25px 0;
+        color: #666;
+        color: #000;
+        font-size: 14px;
+      }
 
-    /* ADDRESS CARD */
-    .address-card {
-      padding: 14px;
-      border-radius: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 0 10px 0 rgba(15, 15, 15, 0.286);
+      .stars-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 25px;
+      }
 
-    }
+      .star {
+        font-size: 40px;
+        color: #ddd;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
 
-    .address-card .label {
-      font-size: 15px;
-      color: #777;
-    }
+      .star:hover,
+      .star.active {
+        color: #ffbf00;
+        transform: scale(1.1);
+      }
 
-    .address-card .value {
-      font-weight: 600;
-      margin: 6px 0;
-    }
+      .rating-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
 
-    /* BUTTON */
-    .use-btn {
-      width: 100%;
-      padding: 10px;
-      border-radius: 12px;
-      border: none;
-      background: red;
-      color: #fff;
-      cursor: pointer;
-    }
-    body.dark {
-  background-color: #121212;
-  /* color: #f5f5f5; */
-}
+      .rating-buttons button {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
 
+      .btn-cancel {
+        background: #f0f0f0;
+        color: #666;
+      }
 
-body.dark .card {
-  background: #1e1e1e;
-  border-color: #333;
-  color: #ddd;
-}
+      .btn-cancel:hover {
+        background: #e0e0e0;
+      }
 
-body.dark .bottom-nav {
-  background: #1a1a1a;
-      border-top: 3px solid rgb(86, 82, 82) !important;
+      .btn-submit-rating {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, red 0%, red 100%);
+        color: white;
+      }
 
-}
-body.dark .header {
-      border-bottom: 3px solid rgb(86, 82, 82) !important;
-        background: #1a1a1a;
+      .btn-submit-rating:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgb(255, 0, 0);
+      }
 
+      .btn-submit-rating:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
 
-}
+      .success-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        background: white;
+        border-radius: 20px;
+        padding: 60px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
 
-body.dark a {
-  color: #ddd;
-}
-/* ===============================
-   DARK MODE – PERSONAL INFO CARD
-================================ */
-body.dark .card ul li {
-  color: #ffffff;
-}
+      .success-popup.show {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
 
-body.dark .card ul li span {
-  color: #cccccc;
-}
-body.dark .btn-outline{
-  color: #ffffff;
+      .success-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff0101 0%, red 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        animation: pulse 0.6s ease;
+      }
 
-}
+      .success-icon i {
+        font-size: 40px;
+        color: white;
+      }
 
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
+      .success-popup h3 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+        color: #333;
+      }
 
-.modal {
-  background: #fff;
-  width: 90%;
-  max-width: 400px;
-  border-radius: 12px;
-  padding: 20px;
-}
+      .success-popup p {
+        margin: 0;
+        color: #000;
+        font-size: 14px;
+      }
 
-.modal input,
-.modal textarea {
-  width: 100%;
-  margin: 8px 0;
-  padding: 10px;
-}
+      body.dark .rating-content,
+      body.dark .success-popup {
+        background: #2a2a2a;
+        color: #fff;
+      }
 
-.modal-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-}
+      body.dark .rating-content h3,
+      body.dark .success-popup h3 {
+        color: #fff;
+      }
 
+      body.dark .rating-content p,
+      body.dark .success-popup p {
+        color: #ccc;
+      }
 
-    /* ==============================
-   MOBILE SLIDE MENU
-============================== */
-    .mobile-menu {
-      position: fixed;
-      top: 0;
-      left: -100%;
-      width: 260px;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(16px);
-      padding: 25px;
-      z-index: 4000;
-      transition: .3s ease;
-    }
+      body.dark .btn-cancel {
+        background: #444;
+        color: #fff;
+      }
 
-    .mobile-menu .close-btn {
-      font-size: 35px;
-      cursor: pointer;
-      color: var(--red);
-      margin-bottom: 20px;
-    }
+      body.dark .btn-cancel:hover {
+        background: #555;
+      }
+      .btn-primary:hover {
+        transform: scale(1.1);
+      }
+      .btn-outline:hover {
+        transform: scale(1.1);
+      }
+      .btn-outlines:hover {
+        transform: scale(1.1);
+      }
+      .btn-danger:hover {
+        transform: scale(1.1);
+        background-color: beige;
+      }
+    </style>
+  </head>
 
-    .mobile-menu a {
-      display: block;
-      font-size: 19px;
-      padding: 10px 0;
-      font-weight: 600;
-      color: var(--black);
-    }
-        body.dark .mobile-menu a  {
-      color: white !important;
+  <body>
+    <header class="header">
+      <div class="logo">Profile</div>
+      <nav class="desktop-nav">
+        <a href="foods.html">Foods</a>
+        <a href="cart.html">Cart</a>
+        <a href="orders.html">Orders</a>
+        <a href="profile.html" class="active">Profile</a>
+      </nav>
+      <div class="hamburger" id="menuBtn">&#9776;</div>
+    </header>
 
-    }
-            body.dark .mobile-menu   {
-     background-color: rgba(15, 15, 15, 0.286)
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="close-btn" id="closeMenu">×</div>
 
-    }
-    /* MOBILE MENU */
-/* body.dark .mobile-menu {
-  background: rgba(26, 26, 26, 0.95);
-} */
-
-    .mobile-menu a:hover {
-      color: var(--red);
-    }
-
-  </style>
-</head>
-
-<body>
-
-  <header class="header">
-    <div class="logo">Profile</div>
-    <nav class="desktop-nav">
-      <!-- <a href="home.html">Home</a> -->
       <a href="foods.html">Foods</a>
       <a href="cart.html">Cart</a>
       <a href="orders.html">Orders</a>
-      <a href="profile.html" class="active">Profile</a>
+      <a href="profile.html">Profile</a>
+    </div>
+
+    <main class="container">
+      <section class="profile-hero">
+        <div class="avatar" id="avatarInitial">A</div>
+        <div class="profile-info">
+          <h2 id="profileHeroName">Loading...</h2>
+          <p id="profileMeta">Loading...</p>
+        </div>
+      </section>
+
+      <section class="profile-grid">
+        <div class="card">
+          <h3><i class="fa fa-user"></i> Personal Info</h3>
+          <ul>
+            <li>Name <span id="profileInfoName">-</span></li>
+            <li>Email <span id="profileEmail">-</span></li>
+            <li>Phone <span id="profilePhone">-</span></li>
+            <li>Address <span id="profileAddress">-</span></li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa fa-chart-line"></i> Activity</h3>
+          <ul>
+            <li>Total Orders <span id="statOrders">0</span></li>
+            <li>Favorite Meals <span id="statFavorites">0</span></li>
+            <li>Loyalty Points <span id="statPoints">0</span></li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa fa-bolt"></i> Quick Actions</h3>
+          <div class="quick-actions">
+            <button data-action="reorder">Re-order</button>
+            <button data-action="address">Saved Addresses</button>
+            <button data-action="payment">Payment Methods</button>
+            <button data-action="orders">Order History</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa fa-gear"></i> Settings</h3>
+
+          <div class="setting-item">
+            <span>Dark Theme</span>
+            <div class="toggle" data-setting="theme"></div>
+          </div>
+
+          <div class="setting-item">
+            <span>Push Notifications</span>
+            <div class="toggle" data-setting="push"></div>
+          </div>
+
+          <div class="setting-item">
+            <span>Email Alerts</span>
+            <div class="toggle" data-setting="email"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa fa-shield"></i> Account</h3>
+          <div class="btn-group">
+            <button class="btn btn-outline">Edit Profile</button>
+            <button class="btn btn-outlines">Change Password</button>
+
+            <button class="btn btn-primary"
+              onclick="openRatingModal()"
+              id="rateUsBtn"
+            >
+              Rate Us
+            </button>
+
+            <div id="ratingModal" class="rating-modal">
+              <div class="rating-content">
+                <h3>Rate Your Experience</h3>
+                <p>How would you rate Taste Lounge?</p>
+                <div class="stars-container" id="starsContainer">
+                  <i class="fas fa-star star" data-rating="1"></i>
+                  <i class="fas fa-star star" data-rating="2"></i>
+                  <i class="fas fa-star star" data-rating="3"></i>
+                  <i class="fas fa-star star" data-rating="4"></i>
+                  <i class="fas fa-star star" data-rating="5"></i>
+                </div>
+                <div class="rating-buttons">
+                  <button class="btn-cancel" onclick="closeRatingModal()">
+                    Cancel
+                  </button>
+                  <button
+                    class="btn-submit-rating"
+                    onclick="submitRating()"
+                    id="submitRatingBtn"
+                    disabled
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="successPopup" class="success-popup">
+              <div class="success-icon">
+                <i class="fas fa-heart"></i>
+              </div>
+              <h3>Thank You!</h3>
+              <p>We appreciate your feedback</p>
+            </div>
+
+            <button class="btn btn-danger" onclick="logout()" id="logoutBtn">
+              Logout
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="floating-support">
+      <a class="float-btn whatsapp" id="whatsappBtn" title="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+
+      <a class="float-btn support" id="supportBtn" title="Contact Support">
+        <i class="fa fa-headset"></i>
+      </a>
+    </div>
+
+    <nav class="bottom-nav">
+      <a href="foods.html"><i class="fa fa-utensils"></i>Foods</a>
+      <a href="cart.html"><i class="fa fa-shopping-cart"></i>Cart</a>
+      <a href="orders.html"><i class="fa fa-receipt"></i>Orders</a>
+      <a href="profile.html" class="active-bottom"
+        ><i class="fa fa-user"></i>Profile</a
+      >
     </nav>
-    <div class="hamburger" id="menuBtn">&#9776;</div>
-  </header>
 
-  <div class="mobile-menu" id="mobileMenu">
-    <div class="close-btn" id="closeMenu">×</div>
-    <!-- <a href="home.html">Home</a> -->
-    <a href="foods.html">Foods</a>
-    <a href="cart.html">Cart</a>
-    <a href="orders.html">Orders</a>
-    <a href="profile.html">Profile</a>
-  </div>
+    <div id="addressModal" class="address-modal">
+      <div class="address-sheet">
+        <div class="sheet-header">
+          <h3>Saved Addresses</h3>
+          <span class="close-sheet">&times;</span>
+        </div>
 
-  <main class="container">
+        <div class="address-card">
+          <p class="label">Profile Address:</p>
+          <br />
+          <p id="profileAddressModal" class="value">-</p>
+        </div>
 
-    <section class="profile-hero">
-      <div class="avatar" id="avatarInitial">A</div>
-      <div class="profile-info">
-        <!-- <h2 id="profileName">Loading...</h2> -->
-        <h2 id="profileHeroName">Loading...</h2>
-        <p id="profileMeta">Loading...</p>
-      </div>
-    </section>
-
-    <!-- GRID -->
-
-    <section class="profile-grid">
-
-
-      <!-- USER DETAILS -->
-      <div class="card">
-        <h3><i class="fa fa-user"></i> Personal Info</h3>
-        <ul>
-          <li>Name <span id="profileInfoName">-</span></li>
-          <li>Email <span id="profileEmail">-</span></li>
-          <li>Phone <span id="profilePhone">-</span></li>
-          <li>Address <span id="profileAddress">-</span></li>
-        </ul>
-      </div>
-
-
-      <!-- QUICK STATS -->
-      <div class="card">
-        <h3><i class="fa fa-chart-line"></i> Activity</h3>
-        <ul>
-          <li>Total Orders <span id="statOrders">0</span></li>
-          <li>Favorite Meals <span id="statFavorites">0</span></li>
-          <li>Loyalty Points <span id="statPoints">0</span></li>
-        </ul>
-      </div>
-
-
-      <!-- QUICK ACTIONS -->
-
-      <div class="card">
-        <h3><i class="fa fa-bolt"></i> Quick Actions</h3>
-        <div class="quick-actions">
-          <button data-action="reorder">Re-order</button>
-          <button data-action="address">Saved Addresses</button>
-          <button data-action="payment">Payment Methods</button>
-          <button data-action="orders">Order History</button>
+        <div class="address-card">
+          <div class="label">Last delivery address:</div>
+          <br />
+          <div class="value" id="lastAddress">-</div>
         </div>
       </div>
+    </div>
 
+    <div class="modal-overlay" id="editProfileModal">
+      <div class="modal">
+        <h3>Edit Profile</h3>
 
-      <!-- SETTINGS -->
+        <input id="editUsername" placeholder="Username" />
+        <input id="editPhone" placeholder="Phone number" />
+        <textarea id="editAddress" placeholder="Address"></textarea>
 
-      <div class="card">
-  <h3><i class="fa fa-gear"></i> Settings</h3>
-
-  <div class="setting-item">
-    <span>Dark Theme</span>
-    <div class="toggle" data-setting="theme"></div>
-  </div>
-
-  <div class="setting-item">
-    <span>Push Notifications</span>
-    <div class="toggle" data-setting="push"></div>
-  </div>
-
-  <div class="setting-item">
-    <span>Email Alerts</span>
-    <div class="toggle" data-setting="email"></div>
-  </div>
-</div>
-
-
-      <!-- ACCOUNT MANAGEMENT -->
-      <div class="card">
-        <h3><i class="fa fa-shield"></i> Account</h3>
-        <div class="btn-group">
-          <button class="btn btn-outline">Edit Profile</button>
-          <button class="btn btn-outlines">Change Password</button>
-          <button class="btn btn-danger" onclick="logout()" id="logoutBtn">Logout</button>
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeEditProfile()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="saveProfile()">Save</button>
         </div>
       </div>
-
-    </section>
-  </main>
-
-  <!-- FLOATING SUPPORT -->
-
-  <div class="floating-support">
-    <a class="float-btn whatsapp" id="whatsappBtn" title="Chat on WhatsApp">
-  <i class="fab fa-whatsapp"></i>
-</a>
-
-<a class="float-btn support" id="supportBtn" title="Contact Support">
-  <i class="fa fa-headset"></i>
-</a>
-
-  </div>
-
-  <nav class="bottom-nav">
-    <a href="foods.html"><i class="fa fa-utensils"></i>Foods</a>
-    <a href="cart.html"><i class="fa fa-shopping-cart"></i>Cart</a>
-    <a href="orders.html"><i class="fa fa-receipt"></i>Orders</a>
-    <a href="profile.html" class="active-bottom"><i class="fa fa-user"></i>Profile</a>
-  </nav>
-
-  <div id="addressModal" class="address-modal">
-    <div class="address-sheet">
-
-      <div class="sheet-header">
-        <h3>Saved Addresses</h3>
-        <span class="close-sheet">&times;</span>
-      </div>
-
-      <div class="address-card">
-        <p class="label">Profile Address:</p><br>
-        <p id="profileAddressModal" class="value">-</p>
-        <!-- <button class="use-btn" data-use="profile">Use this</button> -->
-      </div>
-
-      <div class="address-card">
-        <div class="label">Last delivery address:</div><br>
-        <div class="value" id="lastAddress">-</div>
-        <!-- <button class="use-btn" data-use="checkout">Use this</button> -->
-
-      </div>
-
-
     </div>
-  </div>
-
-  <div class="modal-overlay" id="editProfileModal">
-  <div class="modal">
-    <h3>Edit Profile</h3>
-
-    <input id="editUsername" placeholder="Username">
-    <input id="editPhone" placeholder="Phone number">
-    <textarea id="editAddress" placeholder="Address"></textarea>
-
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeEditProfile()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveProfile()">Save</button>
-    </div>
-  </div>
-</div>
-
-
-</body>
-
+  </body>
 </html>
 
 <script>
-  menuBtn.onclick = () => mobileMenu.style.left = "0";
-  closeMenu.onclick = () => mobileMenu.style.left = "-100%";
-
-
-  // ===============================
-  // FIREBASE USER DATA
-  // ===============================
+  menuBtn.onclick = () => (mobileMenu.style.left = "0");
+  closeMenu.onclick = () => (mobileMenu.style.left = "-100%");
 
   firebase.initializeApp({
     apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
     authDomain: "taste-lounge-3075.firebaseapp.com",
-    projectId: "taste-lounge-3075"
+    projectId: "taste-lounge-3075",
   });
 
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  firebase.auth().onAuthStateChanged(async user => {
+  firebase.auth().onAuthStateChanged(async (user) => {
     if (!user) {
       location.href = "index.html";
       return;
     }
 
-    // ===============================
-    // LAST DELIVERY ADDRESS
-    // ===============================
     let lastDeliveryAddress = "-";
 
     const lastOrderSnap = await db
@@ -912,92 +1093,71 @@ body.dark .btn-outline{
     if (!lastOrderSnap.empty) {
       const lastOrder = lastOrderSnap.docs[0].data();
       lastDeliveryAddress =
-        lastOrder.delivery?.address ||
-        lastOrder.deliveryInfo?.address ||
-        "-";
+        lastOrder.delivery?.address || lastOrder.deliveryInfo?.address || "-";
     }
 
-    // expose globally for modal
     window.lastDeliveryAddress = lastDeliveryAddress;
 
-
-    // EMAIL
     document.getElementById("profileEmail").textContent = user.email || "-";
 
-    // DEFAULTS
     let username = "Taste Lounge User";
     let phone = "-";
     let address = "-";
 
     const userRef = db.collection("users").doc(user.uid);
-const snap = await userRef.get();
+    const snap = await userRef.get();
 
-console.log("Auth displayName:", user.displayName);
-console.log("Firestore exists:", snap.exists);
+    console.log("Auth displayName:", user.displayName);
+    console.log("Firestore exists:", snap.exists);
 
-if (!snap.exists) {
-  // 🔥 User doc does not exist — create it
-  const fallbackName =
-    user.displayName ||
-    user.email?.split("@")[0] ||
-    "Taste Lounge User";
+    if (!snap.exists) {
+      const fallbackName =
+        user.displayName || user.email?.split("@")[0] || "Taste Lounge User";
 
-  await userRef.set({
-    username: fallbackName,
-    email: user.email,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+      await userRef.set({
+        username: fallbackName,
+        email: user.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
 
-  username = fallbackName;
-} else {
-  const data = snap.data();
-  console.log("Firestore username:", data.username);
+      username = fallbackName;
+    } else {
+      const data = snap.data();
+      console.log("Firestore username:", data.username);
 
-  if (!data.username || data.username.trim() === "") {
-    const fallbackName =
-      user.displayName ||
-      user.email?.split("@")[0] ||
-      "Taste Lounge User";
+      if (!data.username || data.username.trim() === "") {
+        const fallbackName =
+          user.displayName || user.email?.split("@")[0] || "Taste Lounge User";
 
-    await userRef.set(
-      { username: fallbackName },
-      { merge: true }
-    );
+        await userRef.set({ username: fallbackName }, { merge: true });
 
-    username = fallbackName;
-  } else {
-    username = data.username;
-  }
+        username = fallbackName;
+      } else {
+        username = data.username;
+      }
 
-  phone = data.phone || "-";
-  address = data.address
-    ? data.address.charAt(0).toUpperCase() +
-      data.address.slice(1).toLowerCase()
-    : "-";
-}
+      phone = data.phone || "-";
+      address = data.address
+        ? data.address.charAt(0).toUpperCase() +
+          data.address.slice(1).toLowerCase()
+        : "-";
+    }
 
-
-    // 🔹 UPDATE UI (REUSE SAME USERNAME VARIABLE)
     document.getElementById("profileHeroName").textContent = username;
     document.getElementById("profileInfoName").textContent = username;
     document.getElementById("profilePhone").textContent = phone;
     document.getElementById("profileAddress").textContent = address;
 
-    // AVATAR INITIAL
-    document.getElementById("avatarInitial").textContent =
-      username.charAt(0).toUpperCase();
+    document.getElementById("avatarInitial").textContent = username
+      .charAt(0)
+      .toUpperCase();
 
-    // META
     const memberSince = user.metadata.creationTime
       ? new Date(user.metadata.creationTime).getFullYear()
       : "";
 
     document.getElementById("profileMeta").textContent =
       `${user.email} · Member since ${memberSince}`;
-
-    // ===============================
-    // ACTIVITY STATS (ORDERS)
-    // ===============================
 
     const ordersSnap = await db
       .collection("orders")
@@ -1008,65 +1168,50 @@ if (!snap.exists) {
     let totalSpent = 0;
     const mealCount = {};
 
-    ordersSnap.forEach(doc => {
+    ordersSnap.forEach((doc) => {
       const o = doc.data();
 
-      // 💰 Total spent
       totalSpent += Number(o.pricing?.total || 0);
 
-      // 🍽️ Count meals
-      (o.items || []).forEach(item => {
+      (o.items || []).forEach((item) => {
         const name = item.name;
         if (!name) return;
         mealCount[name] = (mealCount[name] || 0) + (item.qty || 1);
       });
     });
 
-    // ⭐ Favorite meals = number of meals ordered more than once
-    const favoriteMeals = Object.values(mealCount)
-      .filter(count => count >= 2).length;
+    const favoriteMeals = Object.values(mealCount).filter(
+      (count) => count >= 2,
+    ).length;
 
-    // 🎯 Loyalty points (₦100 = 1 point)
-    // 🎯 Loyalty points (₦5000 = 1 point)
     const loyaltyPoints = Math.floor(totalSpent / 5000);
 
-    // 🔹 UPDATE UI
     document.getElementById("statOrders").textContent = totalOrders;
     document.getElementById("statFavorites").textContent = favoriteMeals;
     document.getElementById("statPoints").textContent = loyaltyPoints;
 
-    // ===============================
-    // QUICK ACTIONS
-    // ===============================
-    document.querySelectorAll(".quick-actions button").forEach(btn => {
+    document.querySelectorAll(".quick-actions button").forEach((btn) => {
       btn.onclick = async () => {
         const action = btn.dataset.action;
 
-        // 🟢 ORDER HISTORY
         if (action === "orders") {
           location.href = "orders.html";
         }
 
-        // 🟢 SAVED ADDRESSES
         if (action === "address") {
-          location.href = "addresses.html"; // or profile-address.html
+          location.href = "addresses.html";
         }
 
-        // 🟢 PAYMENT METHODS
         if (action === "payment") {
           location.href = "checkout.html";
         }
 
-        // 🟢 RE-ORDER (IMPORTANT)
         if (action === "reorder") {
           location.href = "foods.html";
         }
       };
     });
 
-    // ===============================
-    // SAVED ADDRESSES MODAL (ONLY)
-    // ===============================
     const modal = document.getElementById("addressModal");
     const openBtn = document.querySelector('[data-action="address"]');
     const closeBtn = document.querySelector(".close-sheet");
@@ -1074,13 +1219,15 @@ if (!snap.exists) {
     openBtn.onclick = async () => {
       modal.classList.add("show");
 
-      // Profile address from user card
-      document.getElementById("profileAddressModal").textContent = address ? address.charAt(0).toUpperCase() + address.slice(1).toLowerCase() : "-";
-      document.getElementById("lastAddress").textContent = window.lastDeliveryAddress ? window.lastDeliveryAddress.charAt(0).toUpperCase() + window.lastDeliveryAddress.slice(1).toLowerCase() : "-";
-      // document.getElementById("lastAddress").textContent = (window.lastDeliveryAddress || "-").toUpperCase();
+      document.getElementById("profileAddressModal").textContent = address
+        ? address.charAt(0).toUpperCase() + address.slice(1).toLowerCase()
+        : "-";
+      document.getElementById("lastAddress").textContent =
+        window.lastDeliveryAddress
+          ? window.lastDeliveryAddress.charAt(0).toUpperCase() +
+            window.lastDeliveryAddress.slice(1).toLowerCase()
+          : "-";
 
-
-      // Last checkout address
       const snap = await db
         .collection("orders")
         .where("userId", "==", user.uid)
@@ -1094,13 +1241,13 @@ if (!snap.exists) {
         checkoutAddress = snap.docs[0].data()?.delivery?.address || "-";
       }
 
-      document.getElementById("checkoutAddressModal").textContent = checkoutAddress;
+      document.getElementById("checkoutAddressModal").textContent =
+        checkoutAddress;
     };
 
     closeBtn.onclick = () => modal.classList.remove("show");
 
-    // Use address
-    document.querySelectorAll(".use-btn").forEach(btn => {
+    document.querySelectorAll(".use-btn").forEach((btn) => {
       btn.onclick = () => {
         const type = btn.dataset.use;
         const value =
@@ -1113,17 +1260,13 @@ if (!snap.exists) {
       };
     });
 
-    // // ===============================
-  // // WHATSAPP SUPPORT
-  // // ===============================   
-  
-  const WHATSAPP_NUMBER = "2348071953554"; // your WhatsApp number (no +)
+    const WHATSAPP_NUMBER = "2348071953554";
 
-function openWhatsAppSupport(user) {
-  const name = username || "Customer";
-  const email = user.email || "N/A";
+    function openWhatsAppSupport(user) {
+      const name = username || "Customer";
+      const email = user.email || "N/A";
 
-  const message = `
+      const message = `
 Hello Taste Lounge Support -
 Name: ${name} -
 Email: ${email}
@@ -1131,83 +1274,44 @@ Email: ${email}
 I need help with my order.
   `.trim();
 
-  const url =
-    "https://wa.me/" +
-    WHATSAPP_NUMBER +
-    "?text=" +
-    encodeURIComponent(message);
+      const url =
+        "https://wa.me/" +
+        WHATSAPP_NUMBER +
+        "?text=" +
+        encodeURIComponent(message);
 
-  window.open(url, "_blank");
-}
+      window.open(url, "_blank");
+    }
 
-document.getElementById("whatsappBtn").onclick = () => {
-  const user = firebase.auth().currentUser;
-  if (!user) return alert("Please log in");
-  openWhatsAppSupport(user);
-};
+    document.getElementById("whatsappBtn").onclick = () => {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("Please log in");
+      openWhatsAppSupport(user);
+    };
 
-    // // ===============================
-  // // contact SUPPORT
-  // // =============================== 
-// document.getElementById("supportBtn").onclick = async () => {
-//   const user = firebase.auth().currentUser;
-//   if (!user) return alert("Please log in");
+    const supportBtn = document.getElementById("supportBtn");
 
-//   let lastOrderId = "N/A";
+    if (supportBtn) {
+      supportBtn.onclick = async () => {
+        const user = firebase.auth().currentUser;
+        if (!user) return alert("Please log in");
 
-//   try {
-//     const snap = await db
-//       .collection("orders")
-//       .where("userId", "==", user.uid)
-//       .orderBy("createdAt", "desc")
-//       .limit(1)
-//       .get();
+        let lastOrderId = "N/A";
 
-//     if (!snap.empty) {
-//       lastOrderId = snap.docs[0].id.slice(0, 4).toUpperCase();
-//     }
-//   } catch (e) {}
+        try {
+          const snap = await db
+            .collection("orders")
+            .where("userId", "==", user.uid)
+            .orderBy("createdAt", "desc")
+            .limit(1)
+            .get();
 
-//   const message = `
-// Hello Support -
-// Name: ${username || "Customer"} -
-// Email: ${user.email} -
-// Last Order: #${lastOrderId}
+          if (!snap.empty) {
+            lastOrderId = snap.docs[0].id.slice(0, 4).toUpperCase();
+          }
+        } catch (e) {}
 
-// I need assistance.
-//   `.trim();
-
-//   const url =
-//     "https://wa.me/" +
-//     WHATSAPP_NUMBER +
-//     "?text=" +
-//     encodeURIComponent(message);
-
-//   window.open(url, "_blank");
-// };
-const supportBtn = document.getElementById("supportBtn");
-
-if (supportBtn) {
-  supportBtn.onclick = async () => {
-    const user = firebase.auth().currentUser;
-    if (!user) return alert("Please log in");
-
-    let lastOrderId = "N/A";
-
-    try {
-      const snap = await db
-        .collection("orders")
-        .where("userId", "==", user.uid)
-        .orderBy("createdAt", "desc")
-        .limit(1)
-        .get();
-
-      if (!snap.empty) {
-        lastOrderId = snap.docs[0].id.slice(0, 4).toUpperCase();
-      }
-    } catch (e) {}
-
-    const message = `
+        const message = `
 Hello Support -
 Name: ${username || "Customer"} -
 Email: ${user.email} -
@@ -1216,87 +1320,140 @@ Last Order: #${lastOrderId}
 I need assistance.
     `.trim();
 
-    window.open(
-      "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message),
-      "_blank"
-    );
-  };
-}
+        window.open(
+          "https://wa.me/" +
+            WHATSAPP_NUMBER +
+            "?text=" +
+            encodeURIComponent(message),
+          "_blank",
+        );
+      };
+    }
 
+    const editModal = document.getElementById("editProfileModal");
 
-// EDIT PROFILE
+    document.querySelector(".btn-outline").onclick = () => {
+      openEditProfile();
+    };
+    document.querySelector(".btn-outlines").onclick = () => {
+      changepassword();
+    };
 
-const editModal = document.getElementById("editProfileModal");
+    function openEditProfile() {
+      alert(
+        "This feature is currently under development. Please check back later.",
+      );
+    }
 
-document.querySelector(".btn-outline").onclick = () => {
-  openEditProfile();
-};
-document.querySelector(".btn-outlines").onclick = () => {
-  changepassword();
-};
-
-function openEditProfile() {
-
-  alert("This feature is currently under development. Please check back later.")
-}
-
-function changepassword() {
-  alert("Coming soon 🚧")
-}
-
-
+    function changepassword() {
+      alert("Coming soon 🚧");
+    }
   });
 
-  // 🔴 OUTSIDE onAuthStateChanged (VERY IMPORTANT)
-function logout() {
-    const beConfirm = confirm('Are you sure you want to log out?');
-  
-  if (!beConfirm) {
-    return; // stop everything
+  function logout() {
+    const beConfirm = confirm("Are you sure you want to log out?");
+
+    if (!beConfirm) {
+      return;
+    }
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        window.location.replace("index.html");
+      })
+      .catch((err) => {
+        console.error("Logout error:", err);
+        alert("Logout failed");
+      });
   }
-  firebase.auth().signOut()
-    .then(() => {
-      window.location.replace("index.html");
-    })
-    .catch(err => {
-      console.error("Logout error:", err);
-      alert("Logout failed");
+
+  document.querySelectorAll(".toggle").forEach((toggle) => {
+    const key = toggle.dataset.setting;
+
+    if (localStorage.getItem(key) === "on") {
+      toggle.classList.add("active");
+
+      if (key === "theme") {
+        document.body.classList.add("dark");
+      }
+    }
+
+    toggle.addEventListener("click", () => {
+      toggle.classList.toggle("active");
+
+      const isOn = toggle.classList.contains("active");
+      localStorage.setItem(key, isOn ? "on" : "off");
+
+      if (key === "theme") {
+        document.body.classList.toggle("dark", isOn);
+      }
     });
-}
+  });
 
+  let selectedRating = 0;
 
-
-    // // ===============================
-  // // DARK MODE
-  // // ===============================
-
-document.querySelectorAll(".toggle").forEach(toggle => {
-  const key = toggle.dataset.setting;
-
-  // Load saved state
-  if (localStorage.getItem(key) === "on") {
-    toggle.classList.add("active");
-
-    if (key === "theme") {
-      document.body.classList.add("dark");
-    }
+  function openRatingModal() {
+    document.getElementById("ratingModal").classList.add("show");
+    selectedRating = 0;
+    document
+      .querySelectorAll(".star")
+      .forEach((star) => star.classList.remove("active"));
+    document.getElementById("submitRatingBtn").disabled = true;
   }
 
-  toggle.addEventListener("click", () => {
-    toggle.classList.toggle("active");
+  function closeRatingModal() {
+    document.getElementById("ratingModal").classList.remove("show");
+  }
 
-    const isOn = toggle.classList.contains("active");
-    localStorage.setItem(key, isOn ? "on" : "off");
+  function submitRating() {
+    if (selectedRating === 0) return;
 
-    // Special behavior
-    if (key === "theme") {
-      document.body.classList.toggle("dark", isOn);
-    }
+    closeRatingModal();
+
+    const successPopup = document.getElementById("successPopup");
+    successPopup.classList.add("show");
+
+    setTimeout(() => {
+      successPopup.classList.remove("show");
+    }, 3000);
+  }
+
+  document.querySelectorAll(".star").forEach((star) => {
+    star.addEventListener("click", function () {
+      selectedRating = parseInt(this.dataset.rating);
+
+      document.querySelectorAll(".star").forEach((s) => {
+        const starRating = parseInt(s.dataset.rating);
+        if (starRating <= selectedRating) {
+          s.classList.add("active");
+        } else {
+          s.classList.remove("active");
+        }
+      });
+
+      document.getElementById("submitRatingBtn").disabled = false;
+    });
+
+    star.addEventListener("mouseenter", function () {
+      const hoverRating = parseInt(this.dataset.rating);
+      document.querySelectorAll(".star").forEach((s) => {
+        const starRating = parseInt(s.dataset.rating);
+        if (starRating <= hoverRating) {
+          s.style.color = "#ffc107";
+        }
+      });
+    });
+
+    star.addEventListener("mouseleave", function () {
+      document.querySelectorAll(".star").forEach((s) => {
+        const starRating = parseInt(s.dataset.rating);
+        if (starRating <= selectedRating) {
+          s.style.color = "#ffc107";
+        } else {
+          s.style.color = "#ddd";
+        }
+      });
+    });
   });
-});
-
 </script>
-
-
-
-
