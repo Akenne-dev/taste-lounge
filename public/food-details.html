@@ -3121,7 +3121,7 @@
       let name = "";
       try {
         const snap = await db.collection("users").doc(currentUser.uid).get();
-        name = (snap.exists && snap.data().name) || "";
+        name = (snap.exists && (snap.data().username || snap.data().name)) || "";
       } catch (e) { }
       name = String(name || currentUser.displayName || "").trim();
       if (!name) return "Taste Lounge customer";
