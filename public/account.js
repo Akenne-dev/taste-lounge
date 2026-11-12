@@ -396,7 +396,7 @@ const tlAccount = (() => {
           const status = (o.status && o.status.current) || "paid";
           const earned = Number(o.loyalty.earned) || 0, used = Number(o.loyalty.redeemed) || 0;
           return `<li><span>Order #${esc(o.id.slice(0, 4).toUpperCase())}
-            <small>${status === "delivered" ? "Delivered" : status === "cancelled" ? "Cancelled" : "On the way"}</small></span>
+            <small>${typeof tlStatusLabel === "function" ? esc(tlStatusLabel(o)) : status === "delivered" ? "Delivered" : status === "cancelled" ? "Cancelled" : "In progress"}</small></span>
             <span style="text-align:right">${earned ? `<span class="tl-plus">+${earned}</span>${status === "delivered" ? "" : " <small>(pending)</small>"}` : ""}
             ${used ? `<br><span class="tl-minus">−${used}</span>` : ""}</span></li>`;
         }).join("")}</ul>` : ""}

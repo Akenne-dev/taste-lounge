@@ -105,10 +105,11 @@ service cloud.firestore {
     }
 
     // ================= PROMO CODES (Admin → Promo codes) =================
-    // promos/{CODE}: a customer can look up a code they typed, but can't list them.
+    // promos/{CODE}: a customer can look up a code they typed. Only codes the admin
+    // ticked "Show in the app" (public == true) can be listed; secret codes can't.
     match /promos/{code} {
       allow get: if true;
-      allow list: if isAdmin();
+      allow list: if isAdmin() || resource.data.public == true;
       allow create, delete: if isAdmin();
 
       // admins edit; a customer's checkout only adds 1 to usedCount (within the limit)

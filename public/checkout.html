@@ -589,6 +589,130 @@
       cursor: not-allowed;
       transform: none;
     }
+
+    /* ---------- delivery or pickup (Admin → Store Settings → Pickup) ---------- */
+    .fulfil {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .fulfil-opt {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 14px 10px;
+      border: 2px solid #eee;
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color .2s, background .2s;
+    }
+
+    .fulfil-opt input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      pointer-events: none;
+    }
+
+    .fulfil-opt .fi {
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .fulfil-opt b {
+      font-size: 16px;
+    }
+
+    .fulfil-opt small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .fulfil-opt.on {
+      border-color: var(--red);
+      background: #fff5f5;
+    }
+
+    .fulfil-opt:has(input:focus-visible) {
+      outline: 3px solid #FBC02D;
+      outline-offset: 2px;
+    }
+
+    body.dark .fulfil-opt {
+      border-color: #444;
+    }
+
+    body.dark .fulfil-opt.on {
+      background: #2a1a1a;
+      border-color: var(--red);
+    }
+
+    .pickup-box {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #FFF6E9;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .pickup-box p {
+      margin: 4px 0 0;
+    }
+
+    body.dark .pickup-box {
+      background: #2a2a2a;
+    }
+
+    /* ---------- offers (promo codes shown in the app) ---------- */
+    .offer-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .offer-chips .lbl {
+      flex-basis: 100%;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .offer-chip {
+      border: 1.5px dashed var(--red);
+      border-radius: 12px;
+      padding: 8px 12px;
+      background: #fff5f5;
+      color: var(--black);
+      font: 500 13px Inter, system-ui, sans-serif;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .offer-chip b {
+      font-family: "Courier New", monospace;
+      letter-spacing: .04em;
+      color: var(--red);
+      margin-right: 4px;
+    }
+
+    .offer-chip:focus-visible {
+      outline: 3px solid #FBC02D;
+      outline-offset: 2px;
+    }
+
+    body.dark .offer-chip {
+      background: #2a1a1a;
+      color: #eee;
+    }
   </style>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#ff0000">
@@ -607,7 +731,7 @@
       <hr />
       <div class="sum-row"><span>Subtotal</span><span id="subtotal">₦0</span></div>
       <div class="sum-row discount" id="promoRow" hidden><span id="promoLabel">Promo</span><span id="promoAmount"></span></div>
-      <div class="sum-row"><span>Delivery</span><span id="deliveryDisplay">…</span></div>
+      <div class="sum-row"><span id="deliveryLabel">Delivery</span><span id="deliveryDisplay">…</span></div>
       <div class="sum-row discount" id="pointsRow" hidden><span id="pointsLabel">Points</span><span id="pointsAmount"></span></div>
       <div class="sum-total"><span>Total</span><span id="total">₦0</span></div>
       <p class="earn-note" id="earnNote" hidden></p>
@@ -623,12 +747,26 @@
       </form>
       <div id="promoApplied" class="promo-applied" hidden></div>
       <p class="promo-msg" id="promoMsg" role="status"></p>
+      <!-- codes ticked "Show in the app" in Admin → Promo codes -->
+      <div class="offer-chips" id="offerChips" hidden></div>
 
       <div class="points-box" id="pointsBox" hidden></div>
     </div>
 
     <div class="card">
-      <h2>Delivery Option</h2>
+      <h2 id="fulfilTitle">Delivery Option</h2>
+      <!-- Pickup is switched on in Admin → Store Settings → Pickup -->
+      <div class="fulfil" id="fulfilChoice" role="radiogroup" aria-label="Delivery or pickup" hidden>
+        <label class="fulfil-opt on"><input type="radio" name="fulfil" value="delivery" checked>
+          <span class="fi" aria-hidden="true">🚚</span><b>Delivery</b><small>To your door</small></label>
+        <label class="fulfil-opt"><input type="radio" name="fulfil" value="pickup">
+          <span class="fi" aria-hidden="true">🛍️</span><b>Pickup</b><small>Free · collect it yourself</small></label>
+      </div>
+      <div class="pickup-box" id="pickupSection" hidden>
+        <b>📍 Pick up from</b>
+        <p id="pickupAddress"></p>
+        <p class="muted-text" id="pickupNote"></p>
+      </div>
       <div id="deliverySection">
         <!-- Fees come from Admin → Store Settings -->
         <div class="option" id="deliveryOption1">
@@ -647,7 +785,7 @@
     </div>
 
     <div class="card">
-      <h2>Delivery Details</h2>
+      <h2 id="detailsTitle">Delivery Details</h2>
       <!-- Saved addresses from Profile → Saved Addresses -->
       <div class="addr-chips" id="addrChips" hidden></div>
       <input id="name" placeholder="Full name" autocomplete="name" />
@@ -726,6 +864,13 @@
   let storeStatus = { canOrder: true };
   let loyalty = tlLoyaltyConfig({});
   let deliveryChoice = "standard";
+  // "delivery" or "pickup" (pickup only when switched on in Admin → Store Settings)
+  let fulfil = (() => {
+    try { return localStorage.getItem("tl:fulfil") === "pickup" ? "pickup" : "delivery"; } catch (e) { return "delivery"; }
+  })();
+  const pickupOn = () => !!(settings.pickup && settings.pickup.enabled && String(settings.pickup.address || "").trim());
+  const isPickup = () => fulfil === "pickup" && pickupOn();
+  let offers = []; // promo codes shown in the app
 
   let currentUser = null;
   let userData = {};
@@ -754,6 +899,7 @@
     if (store.expressFee <= 0 && deliveryChoice === "express") deliveryChoice = "standard";
 
     renderPayMethods();
+    renderFulfil();
     renderSummary();
   }, (err) => {
     console.error("Could not load store settings:", err);
@@ -796,6 +942,44 @@
     }
     renderAddressChips();
     renderSummary();
+    loadOffers();
+  });
+
+  /* ---------------- delivery or pickup ---------------- */
+  function renderFulfil() {
+    const on = pickupOn();
+    const pickup = isPickup();
+    $("fulfilChoice").hidden = !on;
+    $("fulfilTitle").textContent = on ? "Delivery or pickup?" : "Delivery Option";
+    document.querySelectorAll('input[name="fulfil"]').forEach((r) => {
+      r.checked = r.value === (pickup ? "pickup" : "delivery");
+      r.closest(".fulfil-opt").classList.toggle("on", r.checked);
+    });
+    $("deliverySection").hidden = pickup;
+    $("pickupSection").hidden = !pickup;
+    if (on) {
+      $("pickupAddress").textContent = settings.pickup.address.trim();
+      $("pickupNote").textContent = String(settings.pickup.note || "").trim();
+      $("pickupNote").hidden = !$("pickupNote").textContent;
+    }
+    $("detailsTitle").textContent = pickup ? "Your Details" : "Delivery Details";
+    addressInput.hidden = pickup;
+    renderAddressChips();
+  }
+
+  document.querySelectorAll('input[name="fulfil"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      fulfil = radio.value;
+      try { localStorage.setItem("tl:fulfil", fulfil); } catch (e) { }
+      // a free-delivery code means nothing for pickup
+      if (isPickup() && promo && promo.type === "free_delivery") {
+        promo = null;
+        renderPromo();
+        promoMessage("That code is for free delivery, so it was removed for pickup.", true);
+      }
+      renderFulfil();
+      renderSummary();
+    });
   });
 
   /* ---------------- totals ---------------- */
@@ -811,14 +995,15 @@
         if (Number(promo.maxDiscount) > 0) promoDiscount = Math.min(promoDiscount, Number(promo.maxDiscount));
       } else if (promo.type === "fixed") {
         promoDiscount = Number(promo.value) || 0;
-      } else if (promo.type === "free_delivery") {
+      } else if (promo.type === "free_delivery" && !isPickup()) {
         freeDeliveryByPromo = true;
       }
     }
 
-    // delivery
-    const freeByAmount = store.freeDeliveryOver > 0 && subtotal > store.freeDeliveryOver;
-    const deliveryFree = freeByAmount || freeDeliveryByPromo;
+    // delivery (pickup is always free)
+    const pickup = isPickup();
+    const freeByAmount = !pickup && store.freeDeliveryOver > 0 && subtotal > store.freeDeliveryOver;
+    const deliveryFree = pickup || freeByAmount || freeDeliveryByPromo;
     const delivery = !storeLoaded || deliveryFree ? 0 : deliveryChoice === "express" ? store.expressFee : store.deliveryFee;
 
     // a discount can't make the order free (there'd be nothing to pay with Paystack)
@@ -865,8 +1050,11 @@
     }
 
     // delivery line + options
+    $("deliveryLabel").textContent = isPickup() ? "Pickup" : "Delivery";
     if (!storeLoaded) {
       $("deliveryDisplay").textContent = "…";
+    } else if (isPickup()) {
+      $("deliveryDisplay").innerHTML = '<span style="color:#4caf50;font-weight:600;">FREE</span>';
     } else if (t.deliveryFree) {
       $("deliveryDisplay").innerHTML = '<span style="color:#4caf50;font-weight:600;">FREE</span>';
       toggleDeliveryOptions(false, t.freeByAmount);
@@ -884,7 +1072,7 @@
     localStorage.setItem("cartTotal", t.total);
 
     $("earnNote").hidden = !(loyalty.enabled && t.earned > 0);
-    $("earnNote").textContent = `⭐ You'll earn ${t.earned.toLocaleString()} points with this order (added once it's delivered).`;
+    $("earnNote").textContent = `⭐ You'll earn ${t.earned.toLocaleString()} points with this order (added once it's ${isPickup() ? "picked up" : "delivered"}).`;
 
     renderPoints(t);
     renderClosed();
@@ -919,6 +1107,7 @@
     if (ms(p.expiresAt) && ms(p.expiresAt) < now) return "That code has expired.";
     if (Number(p.usageLimit) > 0 && (Number(p.usedCount) || 0) >= Number(p.usageLimit)) return "That code has been fully used.";
     if (Number(p.minOrder) > 0 && subtotal < Number(p.minOrder)) return `Spend ${naira(p.minOrder)} or more on food to use this code.`;
+    if (p.type === "free_delivery" && isPickup()) return "That code gives free delivery, so it doesn't apply to pickup orders.";
     if (p.oncePerCustomer && myOrders.some((o) => o.promo && o.promo.code === p.code && (o.status && o.status.current) !== "cancelled")) {
       return "You've already used this code.";
     }
@@ -958,6 +1147,7 @@
   function renderPromo() {
     $("promoForm").hidden = !!promo;
     $("promoApplied").hidden = !promo;
+    renderOffers();
     if (!promo) return;
     const what = promo.type === "percent" ? `${promo.value}% off`
       : promo.type === "fixed" ? `${naira(promo.value)} off`
@@ -973,6 +1163,44 @@
       $("promoInput").focus();
     };
   }
+
+  /* ---------------- offers: codes the kitchen shows in the app ---------------- */
+  async function loadOffers() {
+    try {
+      offers = await tlPublicPromos(db);
+    } catch (err) {
+      console.warn("Offers unavailable:", err.message);
+      offers = [];
+    }
+    renderOffers();
+    // a code the customer tapped on the menu page
+    let pending = null;
+    try {
+      pending = localStorage.getItem(TL_PROMO_KEY);
+      localStorage.removeItem(TL_PROMO_KEY);
+    } catch (e) { }
+    if (pending && !promo) applyCode(pending);
+  }
+
+  function renderOffers() {
+    const box = $("offerChips");
+    const list = promo ? [] : offers;
+    box.hidden = !list.length;
+    box.innerHTML = list.length
+      ? `<span class="lbl">Available offers (tap to use)</span>` + list.map((p) => `
+        <button type="button" class="offer-chip" data-offer="${tlEsc(p.code)}"><b>${tlEsc(p.code)}</b>${tlEsc(p.description || tlPromoOffer(p))}</button>`).join("")
+      : "";
+  }
+
+  function applyCode(code) {
+    $("promoInput").value = code;
+    $("promoForm").dispatchEvent(new Event("submit", { cancelable: true }));
+  }
+
+  $("offerChips").addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-offer]");
+    if (chip) applyCode(chip.dataset.offer);
+  });
 
   /* ---------------- loyalty points ---------------- */
   function renderPoints(t) {
@@ -1018,13 +1246,13 @@
   function renderAddressChips() {
     const list = savedAddresses();
     const box = $("addrChips");
-    box.hidden = !list.length;
+    box.hidden = !list.length || isPickup();
     box.innerHTML = list.map((a, i) => `
       <button type="button" class="chip-btn ${sameAddress(a) ? "on" : ""}" data-addr="${i}">
         <b>${a.isDefault ? "★ " : ""}${tlEsc(a.label || "Address")}</b><span>${tlEsc(a.address)}</span>
       </button>`).join("");
     const isNew = currentUser && addressInput.value.trim() && !list.some(sameAddress);
-    $("saveAddrRow").hidden = !isNew;
+    $("saveAddrRow").hidden = !isNew || isPickup();
   }
 
   $("addrChips").addEventListener("click", (e) => {
@@ -1061,8 +1289,9 @@
       renderClosed();
       return alert(storeStatus.message);
     }
-    if (!nameInput.value.trim() || !phoneInput.value.trim() || !addressInput.value.trim()) {
-      return alert("Please fill all details");
+    const pickup = isPickup();
+    if (!nameInput.value.trim() || !phoneInput.value.trim() || (!pickup && !addressInput.value.trim())) {
+      return alert(pickup ? "Please fill in your name and phone number" : "Please fill all details");
     }
     const user = auth.currentUser;
     if (!user) return alert("Please login again");
@@ -1088,16 +1317,16 @@
       const delivery = {
         name: nameInput.value.trim(),
         phone: phoneInput.value.trim(),
-        address: addressInput.value.trim(),
+        address: pickup ? "" : addressInput.value.trim(),
       };
 
       const profile = {
         name: delivery.name,
         phone: delivery.phone,
-        address: delivery.address,
         email: user.email,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
+      if (!pickup) profile.address = delivery.address;
       // remember a new address (Profile → Saved Addresses)
       const list = savedAddresses();
       if (!$("saveAddrRow").hidden && $("saveAddr").checked && !list.some(sameAddress)) {
@@ -1120,7 +1349,11 @@
           total: t.total,
         },
         delivery,
-        deliveryType: deliveryChoice,
+        deliveryType: pickup ? "pickup" : deliveryChoice,
+        pickup: pickup ? {
+          address: settings.pickup.address.trim(),
+          note: String(settings.pickup.note || "").trim(),
+        } : null,
         promo: promo ? {
           code: promo.code,
           type: promo.type,

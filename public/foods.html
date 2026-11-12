@@ -704,6 +704,98 @@
       color: var(--yellow);
     }
 
+    /* ---------- offers (promo codes shown in the app) ---------- */
+    .offers {
+      max-width: 900px;
+      margin: 0 auto 18px;
+      padding: 0 15px;
+    }
+
+    .offers[hidden] {
+      display: none;
+    }
+
+    .offers-track {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 2px 2px 6px;
+      scrollbar-width: none;
+    }
+
+    .offers-track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .offer-card {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 240px;
+      max-width: 320px;
+      padding: 12px 14px;
+      border: 2px dashed var(--red);
+      border-radius: 14px;
+      background: #fff;
+      color: #1A1A1A;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .offer-card .oc-ico {
+      flex: none;
+      font-size: 24px;
+    }
+
+    .offer-card .oc-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .offer-card .oc-code {
+      font: 800 15px "Courier New", monospace;
+      letter-spacing: .05em;
+      color: var(--red);
+    }
+
+    .offer-card .oc-what {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .offer-card .oc-hint {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .offer-card.is-saved {
+      border-style: solid;
+      background: #f1f8f1;
+      border-color: #2e7d32;
+    }
+
+    .offer-card.is-saved .oc-hint {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+
+    .offer-card:focus-visible {
+      outline: 3px solid var(--yellow);
+      outline-offset: 2px;
+    }
+
+    body.dark .offer-card {
+      background: #1e1e1e;
+      color: #eee;
+    }
+
+    body.dark .offer-card.is-saved {
+      background: #1b2a1b;
+    }
+
     /* ---------- menu filters ---------- */
     .filter-bar {
       display: flex;
@@ -994,6 +1086,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="order-status.js"></script>
+  <script src="order-alerts.js" defer></script>
   <script src="pwa.js" defer></script>
 </head>
 
@@ -1031,6 +1125,11 @@
     <span class="sb-icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
     <div><b id="storeBannerTitle"></b><span id="storeBannerText"></span></div>
   </div>
+
+  <!-- Promo codes ticked "Show in the app" in Admin → Promo codes -->
+  <section class="offers" id="offersStrip" aria-label="Offers" hidden>
+    <div class="offers-track" id="offersTrack"></div>
+  </section>
 
   <section class="search-section">
     <input type="text" placeholder="What are you craving?" class="search-input" id="search" oninput="seek()">
@@ -1471,6 +1570,53 @@
     renderStoreBanner();
   }, (err) => console.warn("Store status unavailable:", err.message));
   setInterval(renderStoreBanner, 60000);
+
+  /* ================= Offers =================
+     Promo codes ticked "Show in the app" in Admin → Promo codes. Tapping one saves
+     it, and checkout applies it automatically. */
+  function savedPromo() {
+    try { return localStorage.getItem(TL_PROMO_KEY); } catch (e) { return null; }
+  }
+
+  let offers = [];
+
+  async function loadOffers() {
+    try {
+      offers = await tlPublicPromos(db);
+    } catch (err) {
+      console.warn("Offers unavailable:", err.message);
+    }
+    renderOffers();
+  }
+
+  function renderOffers() {
+    const strip = document.getElementById("offersStrip");
+    strip.hidden = !offers.length;
+    const saved = savedPromo();
+    document.getElementById("offersTrack").innerHTML = offers.map((p) => {
+      const conditions = [Number(p.minOrder) > 0 ? `Food over ${tlFormat(p.minOrder)}` : "", p.oncePerCustomer ? "One per customer" : ""].filter(Boolean).join(" · ");
+      const isSaved = saved === p.code;
+      return `<button type="button" class="offer-card${isSaved ? " is-saved" : ""}" data-code="${tlEsc(p.code)}" aria-pressed="${isSaved}">
+        <span class="oc-ico" aria-hidden="true">🏷️</span>
+        <span class="oc-text">
+          <span class="oc-code">${tlEsc(p.code)}</span>
+          <span class="oc-what">${tlEsc(p.description || tlPromoOffer(p))}</span>
+          <span class="oc-hint">${isSaved ? "✓ Saved, applied at checkout" : tlEsc(conditions ? conditions + " · Tap to use" : "Tap to use at checkout")}</span>
+        </span>
+      </button>`;
+    }).join("");
+  }
+
+  document.getElementById("offersTrack").addEventListener("click", (e) => {
+    const card = e.target.closest("[data-code]");
+    if (!card) return;
+    const code = card.dataset.code;
+    try { localStorage.setItem(TL_PROMO_KEY, code); } catch (err) { }
+    if (navigator.clipboard) navigator.clipboard.writeText(code).catch(() => { });
+    renderOffers();
+  });
+
+  loadOffers();
 
 
 

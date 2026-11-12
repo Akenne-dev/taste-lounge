@@ -19,6 +19,8 @@
     <script src="auto-logout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="menu-service.js"></script>
+    <script src="order-status.js"></script>
+    <script src="order-alerts.js" defer></script>
 
     <style>
       :root {
@@ -279,8 +281,20 @@
         background: #ffeeba;
       }
       .order-status.delivered {
-        background: #d1ecf1;
-        color: #0c5460;
+        background: #e8f5e9;
+        color: #1b5e20;
+      }
+      .order-status.ready {
+        background: #fff8e1;
+        color: #6d4c00;
+        font-weight: 700;
+      }
+      .order-status.out_for_delivery {
+        color: #6d4c00;
+        font-weight: 700;
+      }
+      .order-type {
+        font-weight: 600;
       }
 
       .status-bar {
@@ -918,6 +932,8 @@
     </nav>
 
     <main class="orders-container">
+      <!-- "Turn on order notifications" (order-alerts.js) -->
+      <div id="notifyPrompt" hidden></div>
       <div id="loadingState">Loading orders…</div>
       <div id="emptyState" style="display: none">
         You have no order yet… <a href="foods.html">Order food</a>
@@ -936,22 +952,6 @@
         </div>
       </div>
     </div>
-
-    <audio id="sound-processing" preload="auto">
-      <source src="sounds-processing.mp3" type="audio/mpeg" />
-    </audio>
-
-    <audio id="sound-out" preload="auto">
-      <source src="sounds-processing.mp3" type="audio/mpeg" />
-    </audio>
-
-    <audio id="sound-delivered" preload="auto">
-      <source src="sounds-processing.mp3" type="audio/mpeg" />
-    </audio>
-
-    <div id="toast" class="toast"></div>
-
-    <div class="status-bar"></div>
 
     <div id="orderSuccessOverlay" class="success-overlay">
       <div class="success-card">
@@ -987,8 +987,6 @@
     document.body.classList.add("dark");
   }
 
-  console.log("SCRIPT IS RUNNING");
-
   firebase.initializeApp({
     apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
     authDomain: "taste-lounge-3075.firebaseapp.com",
@@ -1009,7 +1007,14 @@
     }
   });
 
-  let ordersLoadedOnce = false;
+  /* Live orders. The status (Processing, Ready for pickup, Out for delivery…)
+     is set by the kitchen in Admin → Orders; see order-status.js. */
+  const ordersById = {};
+
+  // "Turn on order notifications" card (order-alerts.js loads with defer)
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.tlOrderAlerts) tlOrderAlerts.renderPrompt(document.getElementById("notifyPrompt"));
+  });
 
   function loadOrders(uid) {
     const list = document.getElementById("ordersList");
@@ -1022,71 +1027,47 @@
 
     db.collection("orders")
       .where("userId", "==", uid)
-
       .orderBy("createdAt", "desc")
       .onSnapshot((snapshot) => {
-        ordersLoadedOnce = true;
-
         loading.style.display = "none";
-        list.innerHTML = "";
-
-        Object.values(activeTimers).forEach(clearInterval);
-        Object.keys(activeTimers).forEach((k) => delete activeTimers[k]);
 
         if (snapshot.empty) {
+          list.innerHTML = "";
           empty.style.display = "block";
           return;
         }
 
         empty.style.display = "none";
-
-        snapshot.forEach((doc) => {
+        list.innerHTML = snapshot.docs.map((doc) => {
           ordersById[doc.id] = doc.data();
-          list.innerHTML += renderOrder(doc.id, doc.data());
-        });
-
-        setTimeout(() => {
-          snapshot.forEach((doc) => {
-            startOrderCountdown(doc.id, doc.data());
-          });
-        }, 0);
+          return renderOrder(doc.id, doc.data());
+        }).join("");
+      }, (err) => {
+        console.error("Orders unavailable:", err);
+        loading.textContent = "Couldn't load your orders. Please refresh.";
       });
   }
 
   function renderOrder(id, o) {
-    const steps = [
-      "Received",
-      "Paid",
-      "Processing",
-      "Out_for_delivery",
-      "Delivered",
-    ];
-    const current = o.status?.current || "pending";
-
-    const date = o.createdAt
-      ? o.createdAt.toDate().toLocaleString()
-      : "Just now";
+    const status = tlStatusOf(o);
+    const date = o.createdAt ? o.createdAt.toDate().toLocaleString() : "Just now";
+    const type = tlIsPickup(o) ? "🛍️ Pickup" : o.deliveryType === "express" ? "⚡ Express delivery" : "🚚 Delivery";
 
     return `
   <div class="order-card" data-id="${id}" ondblclick="revealDelete(this, '${id}')">
 
     <div class="order-header">
       <span class="order-top">Order #${id.slice(0, 4).toUpperCase()}</span>
-      <span class="order-status ${current}">
-        ${current === "delivered" ? "Settled" : current.replace("_", " ")}
-      </span>
+      <span class="order-status ${tlEsc(status)}">${tlEsc(tlStatusLabel(o))}</span>
     </div>
 
-      <div class="order-meta" data-address="${o.delivery?.address || "your location"}">
+    <div class="order-meta">
       <p>Date: ${date}</p>
-      <p>Amount: ₦${o.pricing?.total || "0"}</p>
+      <p>Amount: ${tlFormat(o.pricing?.total)}</p>
+      <p class="order-type">${type}</p>
     </div>
 
-    <div class="countdown" id="timer-${id}" style="min-height:18px;"></div>
-
-    <div class="status-bar">
-      ${steps.map((s) => `<span class="step">${s.split("_")[0]}</span>`).join("")}
-    </div>
+    ${tlStatusTracker(o)}
 
     <div class="order-actions">
       <button class="delete-btn" onclick="showDeleteModal('${id}')">Delete</button>
@@ -1098,8 +1079,6 @@
   }
 
   /* "Order again": same dishes and options, today's prices (see menu-service.js) */
-  const ordersById = {};
-
   async function reorder(orderId, btn) {
     const order = ordersById[orderId];
     const user = auth.currentUser;
@@ -1123,178 +1102,10 @@
     }
   }
 
-  const activeTimers = {};
-
-  function startOrderCountdown(orderId, data) {
-    const card = document.querySelector(`[data-id="${orderId}"]`);
-    if (!card) return;
-
-    if (data.status?.current === "delivered") {
-      settleOrder(card, false);
-      return;
-    }
-
-    // cancelled by the kitchen (Admin → Orders)
-    if (data.status?.current === "cancelled") {
-      const status = card.querySelector(".order-status");
-      status.textContent = "Cancelled";
-      status.className = "order-status cancelled";
-      return;
-    }
-
-    const timerEl = document.getElementById(`timer-${orderId}`);
-    if (!card || !timerEl) return;
-
-    if (!data.lifecycle) {
-      data.lifecycle = { duration: 15 };
-    }
-
-    const duration = Math.min(data.lifecycle.duration, 15) * 1000;
-
-    const startTime = data.createdAt?.toDate().getTime();
-
-    if (!startTime) return;
-
-    const elapsed = Date.now() - startTime;
-
-    if (elapsed >= duration) {
-      timerEl.textContent = "";
-      settleOrder(card);
-      return;
-    }
-
-    timerEl.style.display = "block";
-
-    const steps = card.querySelectorAll(".step");
-    steps[0]?.classList.add("active");
-    steps[1]?.classList.add("active");
-
-    if (activeTimers[orderId]) return;
-
-    activeTimers[orderId] = setInterval(() => {
-      const remaining = Math.max(0, duration - (Date.now() - startTime));
-      const seconds = Math.ceil(remaining / 1000);
-
-      console.log("COUNTDOWN:", seconds);
-      timerEl.textContent = `${seconds}s`;
-
-      if (remaining <= 5000) {
-        timerEl.classList.add("urgent");
-      } else {
-        timerEl.classList.remove("urgent");
-      }
-
-      updateSteps(card, 1 - remaining / duration);
-
-      if (remaining <= 0) {
-        clearInterval(activeTimers[orderId]);
-        delete activeTimers[orderId];
-        timerEl.textContent = "";
-
-        settleOrder(card, true);
-      }
-    }, 1000);
-  }
-
-  function vibrate(pattern) {
-    if ("vibrate" in navigator) {
-      navigator.vibrate(pattern);
-    }
-  }
-
-  const shownToasts = {};
-
-  function showToastOnce(orderId, key, message, type) {
-    const id = `${orderId}-${key}`;
-    if (shownToasts[id]) return;
-
-    shownToasts[id] = true;
-
-    const toast = document.getElementById("toast");
-    toast.className = `toast show ${type}`;
-    toast.textContent = message;
-
-    if (type === "processing") {
-      document
-        .getElementById("sound-processing")
-        ?.play()
-        .catch(() => {});
-      vibrate(150);
-    }
-
-    if (type === "out") {
-      document
-        .getElementById("sound-out")
-        ?.play()
-        .catch(() => {});
-      vibrate([100, 50, 100]);
-    }
-
-    if (type === "delivered") {
-      document
-        .getElementById("sound-delivered")
-        ?.play()
-        .catch(() => {});
-      vibrate([200, 100, 200]);
-    }
-
-    clearTimeout(toast.hideTimer);
-    toast.hideTimer = setTimeout(() => {
-      toast.className = "toast";
-    }, 3000);
-  }
-
-  function updateSteps(card, progress) {
-    const steps = card.querySelectorAll(".step");
-    const orderId = card.dataset.id;
-
-    const address =
-      card.querySelector(".order-meta")?.dataset?.address || "your location";
-
-    steps[0]?.classList.add("active");
-    steps[1]?.classList.add("active");
-
-    if (progress >= 0.33) {
-      steps[2]?.classList.add("active");
-      setTimeout(() => {
-        showToastOnce(orderId, "processing", "PROCESSING ORDER", "processing");
-      }, 600);
-    }
-
-    if (progress >= 0.66) {
-      steps[3]?.classList.add("active");
-      setTimeout(() => {
-        showToastOnce(orderId, "out", "🚚 ORDER OUT FOR DELIVERY", "out");
-      }, 600);
-    }
-
-    if (progress >= 0.98) {
-      steps[4]?.classList.add("active");
-      setTimeout(() => {
-        showToastOnce(
-          orderId,
-          "delivered",
-          `ORDER DELIVERED TO YOUR LOCATION ➡️ ${address} `,
-          "delivered",
-        );
-      }, 900);
-    }
-  }
-
-  function settleOrder(card, isNew = false) {
-    const status = card.querySelector(".order-status");
-    status.textContent = "Settled";
-    status.className = "order-status settled";
-    card.querySelectorAll(".step").forEach((s) => s.classList.add("active"));
-
-    if (isNew) {
-      const orderId = card.dataset.id;
-
-      setTimeout(() => {
-        showOrderSuccessOnce(orderId);
-      }, 2000);
-    }
-  }
+  // "Enjoy!" when the kitchen marks an order delivered / picked up while you're watching
+  document.addEventListener("tl:order-status", (e) => {
+    if (e.detail.status === "delivered") setTimeout(() => showOrderSuccessOnce(e.detail.id), 1200);
+  });
 
   function showOrderSuccessOnce(orderId) {
     const key = `success-shown-${orderId}`;

@@ -266,9 +266,13 @@
           paidAt: firebase.firestore.FieldValue.serverTimestamp(),
         },
 
-        status: { current: "paid" },
+        // the kitchen moves it on from Admin → Orders (see order-status.js)
+        status: { current: "paid", times: { paid: firebase.firestore.FieldValue.serverTimestamp() } },
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
+      if (pending.pickup && pending.deliveryType === "pickup") {
+        order.pickup = { address: String(pending.pickup.address || ""), note: String(pending.pickup.note || "") };
+      }
       if (pending.promo) order.promo = pending.promo;
       if (pending.loyalty) {
         order.loyalty = {

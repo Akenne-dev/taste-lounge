@@ -450,6 +450,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="order-status.js"></script>
+  <script src="order-alerts.js" defer></script>
   <script src="pwa.js" defer></script>
 </head>
 
@@ -511,7 +513,7 @@
   const db = firebase.firestore();
 
   // Store settings (delivery fee, free-delivery amount) are managed in the admin panel
-  const store = { deliveryFee: 0, freeDeliveryOver: 0 };
+  const store = { deliveryFee: 0, freeDeliveryOver: 0, pickup: false };
   let storeLoaded = false;
   let storeStatus = { canOrder: true };
   // live, so pausing orders in the admin shows up here straight away
@@ -519,6 +521,7 @@
     const s = snap.exists ? snap.data() : {};
     store.deliveryFee = Number(s.deliveryFee) || 0;
     store.freeDeliveryOver = Number(s.freeDeliveryOver) || 0;
+    store.pickup = !!(s.pickup && s.pickup.enabled && String(s.pickup.address || "").trim());
     storeStatus = tlStoreStatus(s);
     storeLoaded = true;
     renderCart();
@@ -666,6 +669,7 @@
         <p>Delivery: ${deliveryDisplay}</p>
         ${isFree ? `<p style="color: #4caf50; font-size: 14px;">✓ Free delivery for orders over ₦${freeOver.toLocaleString()}!</p>` : ''}
         ${storeLoaded && !isFree && freeOver > 0 ? `<p style="font-size: 14px; opacity: .8;">Spend over ₦${freeOver.toLocaleString()} for free delivery</p>` : ''}
+        ${store.pickup && delivery > 0 ? '<p style="font-size: 14px; opacity: .8;">🛍️ Or pick it up yourself for free. Choose Pickup at checkout.</p>' : ''}
         <h2>Total: ₦${total.toLocaleString()}</h2>
         ${storeStatus.canOrder ? "" : `
           <div class="closed-note" role="status">

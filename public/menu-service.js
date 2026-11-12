@@ -136,6 +136,29 @@ function tlRatingBadge(rating) {
 
 /* ---------------- Helpers ---------------- */
 
+/* ---------- promo codes shown in the app ----------
+ * Admin → Promo codes → "Show in the app". Secret codes (not ticked) still work
+ * when typed at checkout, but are never listed. */
+const TL_PROMO_KEY = "tl:promoCode"; // a code tapped on the menu, applied at checkout
+
+async function tlPublicPromos(db) {
+  const snap = await db.collection("promos").where("public", "==", true).get();
+  const now = Date.now();
+  const ms = (ts) => (ts && ts.toMillis ? ts.toMillis() : 0);
+  return snap.docs
+    .map((d) => ({ ...d.data(), code: d.id }))
+    .filter((p) => p.active !== false
+      && !(ms(p.startsAt) > now)
+      && !(ms(p.expiresAt) && ms(p.expiresAt) < now)
+      && !(Number(p.usageLimit) > 0 && (Number(p.usedCount) || 0) >= Number(p.usageLimit)));
+}
+
+function tlPromoOffer(p) {
+  if (p.type === "percent") return `${p.value}% off your food${Number(p.maxDiscount) > 0 ? ` (up to ${tlFormat(p.maxDiscount)})` : ""}`;
+  if (p.type === "fixed") return `${tlFormat(p.value)} off your food`;
+  return "Free delivery";
+}
+
 function tlFormat(amount) {
   return "₦" + Number(amount || 0).toLocaleString("en-US");
 }

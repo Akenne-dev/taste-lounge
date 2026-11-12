@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
   <head>
+    <meta charset="utf-8" />
     <title>Order Receipt</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
 
@@ -15,6 +16,8 @@
     <script src="auto-logout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="menu-service.js"></script>
+    <script src="order-status.js"></script>
+    <script src="order-alerts.js" defer></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -195,39 +198,37 @@
     receiptEl.innerHTML = "<p>Invalid order.</p>";
   }
 
-  auth.onAuthStateChanged(async (user) => {
+  // Live: the status changes as the kitchen works on the order (Admin → Orders)
+  auth.onAuthStateChanged((user) => {
     if (!user) {
       window.location.href = "log-in.html";
       return;
     }
+    if (!orderId) return;
 
-    const snap = await db.collection("orders").doc(orderId).get();
+    db.collection("orders").doc(orderId).onSnapshot((snap) => {
+      if (!snap.exists) {
+        receiptEl.innerHTML = "<p>Order not found.</p>";
+        return;
+      }
 
-    if (!snap.exists) {
-      receiptEl.innerHTML = "<p>Order not found.</p>";
-      return;
-    }
+      const order = snap.data();
+      if (order.userId !== user.uid) {
+        receiptEl.innerHTML = "<p>Access denied.</p>";
+        return;
+      }
 
-    const order = snap.data();
+      window.currentOrderShortId = snap.id.slice(0, 4).toUpperCase();
+      window.currentOrderDate = order.createdAt?.toDate
+        ? order.createdAt.toDate().toLocaleString()
+        : "";
+      window.currentOrder = { id: snap.id, ...order };
 
-    window.currentOrder = order;
-
-    window.currentOrderShortId = snap.id.slice(0, 4).toUpperCase();
-    window.currentOrderDate = order.createdAt?.toDate
-      ? order.createdAt.toDate().toLocaleString()
-      : "";
-
-    if (order.userId !== user.uid) {
-      receiptEl.innerHTML = "<p>Access denied.</p>";
-      return;
-    }
-
-    window.currentOrder = {
-      id: snap.id,
-      ...order,
-    };
-
-    renderReceipt(window.currentOrder);
+      renderReceipt(window.currentOrder);
+    }, (err) => {
+      console.error("Order unavailable:", err);
+      receiptEl.innerHTML = "<p>Couldn't load this order. Please refresh.</p>";
+    });
   });
 
   function renderReceipt(o) {
@@ -236,9 +237,10 @@
       : "";
 
     const delivery = o.delivery || o.deliveryInfo || {};
+    const pickup = tlIsPickup(o);
 
     receiptEl.innerHTML = `
-    
+
     <button type="submit" onclick="cancel()" class="cancel">x</button>
     <div class="log"><img src="taste-lounge-logo.png" alt="">
     <p style="font-weight:600;">Thanks for your patronage </p>
@@ -246,16 +248,23 @@
 
     <hr>
 
-    
+
     <p><strong>Order: #</strong>${o.id ? o.id.slice(0, 4).toUpperCase() : "-"}</p>
     <p><strong>Date: </strong>${orderDate}</p>
+    <p><strong>Status: </strong>${tlEsc(tlStatusLabel(o))}</p>
+
+    ${tlStatusTracker(o)}
+    <div id="notifyPrompt" hidden></div>
 
     <hr>
 
-    
+
     <p><strong>Name:</strong> ${tlEsc(delivery.name || "-")}</p>
     <p><strong>Phone:</strong> ${tlEsc(delivery.phone || "-")}</p>
-    <p><strong>Address:</strong> ${tlEsc(delivery.address || "-")}</p>
+    ${pickup ? `
+    <p><strong>🛍️ Pickup from:</strong> ${tlEsc(o.pickup?.address || "our shop")}</p>
+    ${o.pickup?.note ? `<p style="font-size:14px;color:#555;">${tlEsc(o.pickup.note)}</p>` : ""}` : `
+    <p><strong>Address:</strong> ${tlEsc(delivery.address || "-")}</p>`}
 
     <hr>
 
@@ -295,7 +304,7 @@
     </div>` : ""}
 
     <div class="row">
-      <span>Delivery</span>
+      <span>${pickup ? "Pickup" : "Delivery"}</span>
       <span>${Number(o.pricing?.delivery) ? tlFormat(o.pricing.delivery) : "Free"}</span>
     </div>
 
@@ -312,7 +321,7 @@
 
     ${Number(o.loyalty?.earned) > 0 && o.status?.current !== "cancelled" ? `
     <p style="margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#fff8e1;color:#7a5a00;font-size:14px;">
-      ⭐ ${o.status?.current === "delivered" ? "You earned" : "You'll earn"} ${Number(o.loyalty.earned).toLocaleString()} points with this order${o.status?.current === "delivered" ? "" : " once it's delivered"}.
+      ⭐ ${o.status?.current === "delivered" ? "You earned" : "You'll earn"} ${Number(o.loyalty.earned).toLocaleString()} points with this order${o.status?.current === "delivered" ? "" : (pickup ? " once it's picked up" : " once it's delivered")}.
     </p>` : ""}
 
     <br>
@@ -329,6 +338,7 @@
 </div>
 
   `;
+    if (window.tlOrderAlerts) tlOrderAlerts.renderPrompt(document.getElementById("notifyPrompt"));
   }
 
   function cancel() {
@@ -401,7 +411,9 @@
     y += 6;
     pdf.text(`Phone: ${d.phone || "-"}`, 10, y);
     y += 6;
-    pdf.text(`Address: ${d.address || "-"}`, 10, y);
+    pdf.text(tlIsPickup(window.currentOrder)
+      ? `Pickup from: ${window.currentOrder.pickup?.address || "our shop"}`
+      : `Address: ${d.address || "-"}`, 10, y);
 
     y += 10;
     pdf.setDrawColor("#000");
@@ -447,7 +459,7 @@
 
     y += 6;
 
-    pdf.text("Delivery", 10, y);
+    pdf.text(tlIsPickup(window.currentOrder) ? "Pickup" : "Delivery", 10, y);
 
     pdf.text(`NGN ${formatMoney(p.delivery)}`, 190, y, { align: "right" });
 
