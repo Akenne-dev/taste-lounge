@@ -16,6 +16,7 @@
     />
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="auto-logout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <style>
@@ -947,34 +948,9 @@
     if (!user) {
       window.location.href = "log-in.html";
     } else {
-      const pendingOrder = JSON.parse(localStorage.getItem("pendingOrder"));
-
-      if (pendingOrder) {
-        const ORDER_LIFECYCLE_SECONDS = 15;
-
-        const orderData = {
-          userId: user.uid,
-          email: user.email || "",
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          status: { current: "paid" },
-          lifecycle: { duration: ORDER_LIFECYCLE_SECONDS },
-          delivery: pendingOrder.delivery,
-          items: pendingOrder.items.map((i) => ({
-            name: i.name,
-            qty: i.quantity,
-            price: i.price,
-          })),
-          pricing: pendingOrder.pricing,
-        };
-
-        try {
-          await db.collection("orders").add(orderData);
-          localStorage.removeItem("pendingOrder");
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
+      // Orders are only created by taste-lounge-paystack.html after a successful
+      // payment. (This page used to save any leftover "pendingOrder" as a paid
+      // order, which created paid orders for checkouts that were never paid.)
       loadOrders(user.uid);
     }
   });

@@ -1,0 +1,207 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // ================= ORDERS =================
+    match /orders/{orderId} {
+
+      // User creates own order (can't create orders for someone else)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      // User reads own orders
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+
+      // Admin reads ALL orders
+      allow read: if isAdmin();
+
+      // Admin updates order status
+      allow update: if isAdmin();
+
+      // User deletes own order
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ================= USERS =================
+    match /users/{userId} {
+
+      // User reads & writes own profile
+      allow read, write: if isSignedIn()
+        && request.auth.uid == userId;
+
+      // Admin reads all users
+      allow read: if isAdmin();
+    }
+
+    // ================= MENU (managed in the admin panel) =================
+    // Everyone can read the menu; only admins can change it.
+
+    match /foods/{foodId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /extras/{extraId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // settings/store: delivery fees, free-delivery amount, deals banner
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ================= WEBSITE CONTENT (landing pages) =================
+    // site/general, site/home, site/gallery, site/about, site/story
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ================= REVIEWS & RATINGS =================
+    // reviews/{foodId}__{uid}  — one review per customer per dish
+    // ratings/{foodId}         — running totals { sum, count } for the average
+    //
+    // There is no server, so these rules keep the totals honest: every review
+    // write must change the totals by exactly the right amount, in the same
+    // batch/transaction, and totals can't change without a matching review change.
+
+    function ratingPath(foodId) {
+      return /databases/$(database)/documents/ratings/$(foodId);
+    }
+
+    function reviewPath(foodId, uid) {
+      return /databases/$(database)/documents/reviews/$(foodId + "__" + uid);
+    }
+
+    function totalsBefore(foodId) {
+      return exists(ratingPath(foodId)) ? get(ratingPath(foodId)).data : { "sum": 0, "count": 0 };
+    }
+
+    function totalsAfter(foodId) {
+      return existsAfter(ratingPath(foodId)) ? getAfter(ratingPath(foodId)).data : { "sum": 0, "count": 0 };
+    }
+
+    // totals move by (sumDelta, countDelta) in this request
+    function totalsMove(foodId, sumDelta, countDelta) {
+      return totalsAfter(foodId).sum == totalsBefore(foodId).sum + sumDelta
+        && totalsAfter(foodId).count == totalsBefore(foodId).count + countDelta;
+    }
+
+    function validReview(d) {
+      return d.keys().hasOnly(["foodId", "userId", "userName", "rating", "comment", "orderId", "hidden", "createdAt", "updatedAt"])
+        && d.keys().hasAll(["foodId", "userId", "userName", "rating", "comment", "orderId", "hidden", "createdAt", "updatedAt"])
+        && d.rating is int && d.rating >= 1 && d.rating <= 5
+        && d.comment is string && d.comment.size() <= 500
+        && d.userName is string && d.userName.size() >= 1 && d.userName.size() <= 40
+        && d.orderId is string && d.hidden is bool
+        && d.createdAt is timestamp
+        && d.updatedAt == request.time;
+    }
+
+    // "Verified order": the customer's own paid order contains this dish
+    function boughtIt(orderId, foodId) {
+      let order = get(/databases/$(database)/documents/orders/$(orderId)).data;
+      return order.userId == request.auth.uid
+        && foodId in order.get("foodIds", [])
+        && order.get("payment", {}).get("status", "") == "success";
+    }
+
+    match /reviews/{reviewId} {
+      // public sees visible reviews; customers also see their own hidden one.
+      // (resource == null: checking for a review that doesn't exist yet reveals nothing)
+      allow read: if resource == null
+        || resource.data.hidden == false
+        || isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && reviewId == request.resource.data.foodId + "__" + request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.hidden == false
+        && request.resource.data.createdAt == request.time
+        && validReview(request.resource.data)
+        && boughtIt(request.resource.data.orderId, request.resource.data.foodId)
+        && totalsMove(request.resource.data.foodId, request.resource.data.rating, 1);
+
+      // customer edits their own review (a hidden review stays hidden and out of the totals)
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.foodId == resource.data.foodId
+        && request.resource.data.orderId == resource.data.orderId
+        && request.resource.data.hidden == resource.data.hidden
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validReview(request.resource.data)
+        && totalsMove(resource.data.foodId,
+             resource.data.hidden ? 0 : request.resource.data.rating - resource.data.rating, 0);
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && totalsMove(resource.data.foodId,
+             resource.data.hidden ? 0 : 0 - resource.data.rating,
+             resource.data.hidden ? 0 : -1);
+
+      // admins hide/unhide or delete any review (the admin page fixes the totals too)
+      allow update, delete: if isAdmin();
+    }
+
+    // the customer's own review of this dish, before and after this request
+    function myReviewBefore(foodId) {
+      return exists(reviewPath(foodId, request.auth.uid)) ? get(reviewPath(foodId, request.auth.uid)).data : null;
+    }
+
+    function myReviewAfter(foodId) {
+      return existsAfter(reviewPath(foodId, request.auth.uid)) ? getAfter(reviewPath(foodId, request.auth.uid)).data : null;
+    }
+
+    function totalsMatchMyReview(foodId, next) {
+      let before = myReviewBefore(foodId);
+      let after = myReviewAfter(foodId);
+      let old = totalsBefore(foodId);
+      return (before == null && after != null && after.hidden == false
+                && next.sum == old.sum + after.rating && next.count == old.count + 1)
+        || (before != null && after != null && before.hidden == false && after.hidden == false
+                && next.sum == old.sum - before.rating + after.rating && next.count == old.count)
+        || (before != null && after == null && before.hidden == false
+                && next.sum == old.sum - before.rating && next.count == old.count - 1);
+    }
+
+    match /ratings/{foodId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      // customers only move the totals together with their own review of this dish
+      allow create, update: if isSignedIn()
+        && request.resource.data.keys().hasOnly(["sum", "count"])
+        && request.resource.data.sum is int
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0
+        && totalsMatchMyReview(foodId, request.resource.data);
+    }
+
+    // ================= ADMINS =================
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false; // NO frontend writes
+    }
+  }
+}

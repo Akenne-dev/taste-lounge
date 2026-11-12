@@ -1,0 +1,3239 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#FFF6E9" />
+  <meta name="description" content="Freshly prepared meals from Taste Lounge, delivered hot to your door." />
+  <title>Food Details — Taste Lounge</title>
+
+  <link rel="shortcut icon"
+    href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+    type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="auto-logout.js"></script>
+  <script src="menu-service.js"></script>
+
+  <style>
+    /* ============ Design tokens (Taste Lounge theme) ============ */
+    :root {
+      --red: #ff0000;
+      --red-strong: #d90000;
+      --red-grad: linear-gradient(120deg, #ff0000, #ff5252);
+      --red-soft: #fff1f1;
+      --yellow: #FBC02D;
+      --yellow-soft: #fff8e1;
+      --cream: #FFF6E9;
+      --black: #1A1A1A;
+      --white: #fff;
+      --green: #2e9e4f;
+
+      --bg: #ffffff;
+      --bg-glow: #FFF6E9;
+      --surface: #ffffff;
+      --surface-2: #FFF6E9;
+      --text: #1A1A1A;
+      --text-2: #3d3a37;
+      --muted: #77706a;
+      --border: #f1e4d3;
+      --border-strong: #d9cbb8;
+      --ring: rgba(255, 0, 0, 0.22);
+      --star-empty: #e2dbd2;
+      --sk-1: #f3ece3;
+      --sk-2: #fbf7f2;
+
+      --shadow-sm: 0 2px 8px rgba(26, 26, 26, 0.06);
+      --shadow-md: 0 12px 30px rgba(26, 26, 26, 0.09);
+      --shadow-lg: 0 24px 60px rgba(26, 26, 26, 0.14);
+      --radius: 20px;
+    }
+
+    body.dark {
+      --bg: #121212;
+      --bg-glow: #1b1717;
+      --surface: #1e1e1e;
+      --surface-2: #262222;
+      --text: #f3f3f3;
+      --text-2: #d6d1cd;
+      --muted: #a9a3a0;
+      --border: #332f2f;
+      --border-strong: #4a4545;
+      --red-soft: rgba(255, 0, 0, 0.13);
+      --yellow-soft: rgba(251, 192, 45, 0.1);
+      --ring: rgba(255, 82, 82, 0.35);
+      --star-empty: #4a4545;
+      --sk-1: #232020;
+      --sk-2: #2d2929;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+      --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Poppins", Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(1200px 420px at 50% -60px, var(--bg-glow), transparent 70%),
+        var(--bg);
+      background-repeat: no-repeat;
+      color: var(--text);
+      min-height: 100vh;
+      padding-top: 70px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--ring);
+      outline-offset: 2px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .img-fallback {
+      object-fit: contain !important;
+      padding: 18%;
+      background: var(--surface-2);
+    }
+
+    /* ============ Header / navigation (matches the rest of the app) ============ */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 90px;
+      z-index: 3000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: var(--white);
+      color: var(--red);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: background .2s, color .2s, transform .2s;
+    }
+
+    .back-btn:hover {
+      background: var(--red);
+      color: var(--white);
+      transform: translateX(-2px);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--red);
+      letter-spacing: -0.01em;
+    }
+
+    .desktop-nav {
+      display: flex;
+      gap: 60px;
+    }
+
+    .desktop-nav a {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--black);
+      text-decoration: none;
+      position: relative;
+      transition: color .2s;
+    }
+
+    .desktop-nav a:hover,
+    .desktop-nav a.active {
+      color: var(--red);
+    }
+
+    .desktop-nav a.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 3px;
+      background: var(--red);
+      border-radius: 8px;
+    }
+
+    .hamburger {
+      font-size: 32px;
+      cursor: pointer;
+      color: var(--red);
+      display: none;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 260px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      padding: 25px;
+      z-index: 4000;
+      transition: .3s ease;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .mobile-menu.open {
+      left: 0;
+    }
+
+    .mobile-menu .close-btn {
+      font-size: 35px;
+      cursor: pointer;
+      color: var(--red);
+      margin-bottom: 20px;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+
+    .mobile-menu a {
+      display: block;
+      font-size: 19px;
+      padding: 10px 0;
+      font-weight: 600;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .mobile-menu a:hover {
+      color: var(--red);
+    }
+
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: var(--white);
+      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.07);
+      justify-content: space-around;
+      align-items: center;
+      z-index: 3000;
+    }
+
+    .bottom-nav a {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .bottom-nav i {
+      font-size: 20px;
+      margin-bottom: 3px;
+    }
+
+    .bottom-nav a.active-bottom {
+      color: var(--red);
+    }
+
+    .cart-badge {
+      display: none;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: var(--red);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 18px;
+      text-align: center;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .cart-badge.is-visible {
+      display: inline-block;
+    }
+
+    .bottom-nav .cart-badge {
+      position: absolute;
+      top: -6px;
+      right: -12px;
+      margin: 0;
+    }
+
+    .cart-badge.bump {
+      animation: bump .55s cubic-bezier(.3, 1.6, .5, 1);
+    }
+
+    /* ============ Page layout ============ */
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 26px 24px 70px;
+    }
+
+    .crumbs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .crumbs a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .crumbs a:hover {
+      color: var(--red);
+    }
+
+    .crumbs i {
+      font-size: 10px;
+      opacity: .6;
+    }
+
+    .crumbs [aria-current] {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .product {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 52px;
+      align-items: start;
+    }
+
+    /* ---- Gallery ---- */
+    .gallery {
+      position: sticky;
+      top: 94px;
+    }
+
+    .media-frame {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      max-height: max(340px, calc(100vh - 250px)); /* keeps the sticky gallery on-screen on short laptops */
+      width: 100%;
+      border-radius: 28px;
+      overflow: hidden;
+      background: var(--surface-2);
+      box-shadow: var(--shadow-lg);
+      isolation: isolate;
+    }
+
+    .media-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+      animation: zoomIn .9s cubic-bezier(.2, .8, .2, 1) backwards;
+    }
+
+    .media-frame:hover img {
+      transform: scale(1.05);
+    }
+
+    .media-frame::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 40%;
+      background: linear-gradient(to top, rgba(0, 0, 0, .35), transparent);
+      pointer-events: none;
+    }
+
+    .media-badges {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .pill-red {
+      background: var(--red);
+      color: var(--white);
+      box-shadow: 0 6px 16px rgba(255, 0, 0, .35);
+    }
+
+    .pill-yellow {
+      background: var(--yellow);
+      color: var(--black);
+    }
+
+    .pill-green {
+      background: var(--white);
+      color: #1f8a46;
+    }
+
+    .media-actions {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .icon-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, .94);
+      color: var(--black);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s, color .2s;
+    }
+
+    .icon-btn:hover {
+      transform: scale(1.08);
+      color: var(--red);
+    }
+
+    .icon-btn.is-active {
+      color: var(--red);
+    }
+
+    .icon-btn.is-active i {
+      animation: heartPop .45s cubic-bezier(.3, 1.6, .5, 1);
+    }
+
+
+
+
+    .perks {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .perks li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 12px;
+    }
+
+    .perks i {
+      color: var(--red);
+      font-size: 18px;
+      margin-top: 2px;
+    }
+
+    .perks strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .perks span {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ---- Info column ---- */
+    .cat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--red-soft);
+      color: var(--red);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .title {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.12;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 14px 0 10px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .meta-row strong {
+      color: var(--text);
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--border-strong);
+    }
+
+
+
+
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0 14px;
+    }
+
+    .price {
+      font-size: clamp(30px, 3.4vw, 38px);
+      font-weight: 800;
+      color: var(--red);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    .old-price {
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .save {
+      align-self: center;
+      background: var(--yellow);
+      color: var(--black);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .per-item {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .desc {
+      color: var(--text-2);
+      line-height: 1.75;
+      font-size: 15.5px;
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 10px;
+      margin: 24px 0;
+    }
+
+    .fact {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .fact:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .fact>i {
+      color: var(--red);
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .fact span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .fact strong {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .spice-meter {
+      display: flex;
+      gap: 3px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--star-empty);
+    }
+
+    .spice-meter .on {
+      color: var(--red);
+    }
+
+    .notice {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: var(--yellow-soft);
+      border: 1px solid rgba(251, 192, 45, .6);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .notice i {
+      color: #d39a00;
+      margin-top: 3px;
+    }
+
+    .block {
+      margin-bottom: 24px;
+    }
+
+    .block-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      margin-left: auto;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .tag-req {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    body.dark .tag-req {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .tag-opt {
+      background: var(--surface-2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    /* sizes */
+    .sizes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .size-card {
+      position: relative;
+      cursor: pointer;
+      display: block;
+    }
+
+    .size-card input,
+    .extra-row input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    .size-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      height: 100%;
+      padding: 14px 40px 14px 16px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+
+    .size-card:hover .size-body {
+      border-color: rgba(255, 0, 0, .45);
+    }
+
+    .size-card input:checked+.size-body {
+      border-color: var(--red);
+      background: var(--red-soft);
+      box-shadow: 0 8px 20px rgba(255, 0, 0, .12);
+    }
+
+    .size-card input:focus-visible+.size-body {
+      outline: 3px solid var(--ring);
+      outline-offset: 2px;
+    }
+
+    .size-name {
+      font-weight: 700;
+    }
+
+    .size-hint {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .size-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--red);
+      margin-top: 6px;
+    }
+
+    .size-check {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      color: var(--red);
+      font-size: 18px;
+      opacity: 0;
+      transform: scale(.4);
+      transition: opacity .2s, transform .25s cubic-bezier(.3, 1.6, .5, 1);
+    }
+
+    .size-card input:checked~.size-check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* extras */
+    .extras {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .extra-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+
+    .extra-row:hover {
+      border-color: rgba(255, 0, 0, .4);
+    }
+
+    .extra-row.is-on {
+      border-color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .check {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 2px solid var(--border-strong);
+      display: grid;
+      place-items: center;
+      color: var(--white);
+      font-size: 11px;
+      transition: background .2s, border-color .2s;
+    }
+
+    .check i {
+      transform: scale(0);
+      transition: transform .2s cubic-bezier(.3, 1.6, .5, 1);
+    }
+
+    .extra-row input:checked+.check {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .extra-row input:checked+.check i {
+      transform: scale(1);
+    }
+
+    .extra-row input:focus-visible+.check {
+      outline: 3px solid var(--ring);
+      outline-offset: 2px;
+    }
+
+    .extra-name {
+      flex: 1;
+      font-size: 14.5px;
+      font-weight: 500;
+    }
+
+    .extra-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .extra-row.is-on .extra-price {
+      color: var(--red);
+    }
+
+    /* ingredients */
+    .chips {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chips li {
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: border-color .2s, color .2s;
+    }
+
+    .chips li:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* note */
+    .note {
+      width: 100%;
+      min-height: 76px;
+      resize: vertical;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 14.5px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .note::placeholder {
+      color: var(--muted);
+    }
+
+    .note:focus {
+      outline: none;
+      border-color: var(--red);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    .counter {
+      text-align: right;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* free-delivery meter */
+    .meter {
+      background: var(--yellow-soft);
+      border: 1px dashed rgba(251, 192, 45, .9);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      transition: background .3s, border-color .3s;
+    }
+
+    .meter-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .meter-text i {
+      color: #d39a00;
+      font-size: 16px;
+    }
+
+    .meter-track {
+      position: relative;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, .08);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    body.dark .meter-track {
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .meter-preview,
+    .meter-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      border-radius: inherit;
+      transition: width .6s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .meter-preview {
+      background: repeating-linear-gradient(45deg, rgba(255, 0, 0, .35) 0 6px, rgba(255, 0, 0, .18) 6px 12px);
+    }
+
+    .meter-fill {
+      background: linear-gradient(90deg, #ff5252, var(--red));
+    }
+
+    .meter.is-unlocked {
+      background: rgba(46, 158, 79, .1);
+      border-color: rgba(46, 158, 79, .55);
+    }
+
+    .meter.is-unlocked .meter-text i {
+      color: var(--green);
+    }
+
+    .meter.is-unlocked .meter-fill,
+    .meter.is-unlocked .meter-preview {
+      background: linear-gradient(90deg, #46c46d, var(--green));
+    }
+
+    /* buy bar */
+    .buy-bar {
+      position: sticky;
+      bottom: 16px;
+      z-index: 20;
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      padding: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+    }
+
+    .stepper button {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      border: none;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: background .15s, color .15s, transform .1s;
+    }
+
+    .stepper button:hover:not(:disabled) {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    .stepper button:active:not(:disabled) {
+      transform: scale(.92);
+    }
+
+    .stepper button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .stepper output {
+      min-width: 40px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 17px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 52px;
+      padding: 0 8px 0 20px;
+      border: none;
+      border-radius: 14px;
+      background: var(--red-grad);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 10px 24px rgba(255, 0, 0, .3);
+      transition: transform .15s, box-shadow .2s, background .3s;
+    }
+
+    .btn-primary::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(110deg, transparent, rgba(255, 255, 255, .35), transparent);
+      transform: skewX(-20deg);
+      transition: left .7s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(255, 0, 0, .38);
+    }
+
+    .btn-primary:hover::after {
+      left: 130%;
+    }
+
+    .btn-primary:active {
+      transform: scale(.98);
+    }
+
+    .btn-primary.is-added {
+      background: linear-gradient(120deg, var(--green), #46c46d);
+      box-shadow: 0 10px 24px rgba(46, 158, 79, .35);
+    }
+
+    .btn-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .btn-total {
+      background: rgba(255, 255, 255, .2);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      padding: 0 20px;
+      border-radius: 14px;
+      border: 2px solid var(--red);
+      background: transparent;
+      color: var(--red);
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .2s, color .2s;
+    }
+
+    .btn-ghost:hover {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    .btn-ghost:disabled {
+      opacity: .7;
+      cursor: progress;
+    }
+
+    .tick {
+      animation: tick .35s ease;
+    }
+
+    /* ============ Related ============ */
+    .related {
+      margin-top: 72px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(20px, 2.4vw, 26px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .section-head h2::after {
+      content: "";
+      display: block;
+      width: 44px;
+      height: 4px;
+      border-radius: 4px;
+      background: var(--red-grad);
+      margin-top: 6px;
+    }
+
+    .section-head a {
+      color: var(--red);
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .section-head a i {
+      transition: transform .2s;
+    }
+
+    .section-head a:hover i {
+      transform: translateX(4px);
+    }
+
+    .rel-track {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: calc((100% - 3 * 18px) / 4);
+      gap: 18px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 6px 4px 20px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-strong) transparent;
+    }
+
+    .rel-card {
+      scroll-snap-align: start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform .25s, box-shadow .25s;
+    }
+
+    .rel-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .rel-img {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: var(--surface-2);
+    }
+
+    .rel-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .5s;
+    }
+
+    .rel-card:hover .rel-img img {
+      transform: scale(1.06);
+    }
+
+
+
+    .rel-body {
+      padding: 12px 14px 14px;
+    }
+
+    .rel-body h3 {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rel-cat {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 2px 0 10px;
+    }
+
+    .rel-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rel-foot strong {
+      color: var(--red);
+      font-size: 16px;
+    }
+
+    .rel-add {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: none;
+      background: var(--red);
+      color: var(--white);
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(255, 0, 0, .3);
+      transition: transform .2s;
+    }
+
+    .rel-add:hover {
+      transform: rotate(90deg) scale(1.05);
+    }
+
+    .rel-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--red);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 999px;
+      box-shadow: 0 4px 10px rgba(255, 0, 0, .3);
+    }
+
+    .unavailable-chip {
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .media-frame.is-unavailable img {
+      filter: grayscale(.85);
+    }
+
+    .btn-primary:disabled {
+      background: var(--border-strong);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary:disabled::after {
+      display: none;
+    }
+
+    /* ============ Ratings & reviews ============ */
+    .tl-stars {
+      --pct: 0%;
+      display: inline-block;
+      font-size: 16px;
+      line-height: 1;
+      letter-spacing: 2px;
+      vertical-align: middle;
+    }
+
+    .tl-stars::before {
+      content: "★★★★★";
+      background: linear-gradient(90deg, var(--yellow) var(--pct), var(--star-empty) var(--pct));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .tl-stars.lg {
+      font-size: 24px;
+    }
+
+    .meta-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .meta-rating strong {
+      color: var(--text);
+    }
+
+    .meta-rating:hover {
+      color: var(--red);
+    }
+
+    .reviews {
+      margin-top: 72px;
+      scroll-margin-top: 90px;
+    }
+
+    .rv-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .rv-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .rv-score {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .rv-big {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .rv-total {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .rv-bar {
+      display: grid;
+      grid-template-columns: 34px 1fr 30px;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 6px 0;
+    }
+
+    .rv-bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .rv-bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--yellow);
+      transition: width .6s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .rv-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .rv-note {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .rv-note i {
+      color: var(--red);
+      margin-right: 6px;
+    }
+
+    /* star picker: radios styled as big stars */
+    .star-picker {
+      display: inline-flex;
+      flex-direction: row-reverse;
+      gap: 4px;
+      margin: 10px 0 4px;
+    }
+
+    .star-picker input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+    }
+
+    .star-picker label {
+      font-size: 34px;
+      line-height: 1;
+      color: var(--star-empty);
+      cursor: pointer;
+      transition: transform .15s, color .15s;
+    }
+
+    .star-picker label:hover,
+    .star-picker label:hover~label,
+    .star-picker input:checked~label {
+      color: var(--yellow);
+    }
+
+    .star-picker label:hover {
+      transform: scale(1.15);
+    }
+
+    .star-picker input:focus-visible+label {
+      outline: 3px solid var(--ring);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    .star-hint {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      min-height: 18px;
+      margin-bottom: 10px;
+    }
+
+    .rv-form .note {
+      min-height: 90px;
+    }
+
+    .rv-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .rv-actions .btn-primary {
+      flex: 0 0 auto;
+      justify-content: center;
+      padding: 0 22px;
+      min-height: 46px;
+    }
+
+    .rv-actions .btn-ghost {
+      min-height: 46px;
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0 8px;
+      font-size: 14px;
+    }
+
+    .btn-link:hover {
+      color: var(--red);
+    }
+
+    .rv-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .rv-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      animation: fadeUp .45s cubic-bezier(.2, .8, .2, 1) backwards;
+    }
+
+    .rv-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .rv-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--red-soft);
+      color: var(--red);
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .rv-who {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .rv-who strong {
+      display: block;
+      font-size: 14.5px;
+    }
+
+    .rv-meta {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .rv-verified {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--green);
+      background: rgba(46, 158, 79, .1);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .rv-text {
+      margin-top: 10px;
+      color: var(--text-2);
+      line-height: 1.65;
+      font-size: 14.5px;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+
+    .rv-empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 26px 10px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 16px;
+    }
+
+    .rv-more {
+      display: block;
+      margin: 18px auto 0;
+      min-height: 46px;
+    }
+
+    .rv-hidden-note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #a87800;
+      background: var(--yellow-soft);
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .rv-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .reviews {
+        margin-top: 48px;
+      }
+    }
+
+    /* ============ States ============ */
+    .skeleton {
+      background: linear-gradient(90deg, var(--sk-1) 25%, var(--sk-2) 37%, var(--sk-1) 63%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s ease infinite;
+      border-radius: 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      max-width: 460px;
+      margin: 60px auto;
+      padding: 40px 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .empty-emoji {
+      font-size: 64px;
+      margin-bottom: 10px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .empty-state h1 {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .empty-state .btn-primary {
+      display: inline-flex;
+      justify-content: center;
+      padding: 0 28px;
+    }
+
+    /* ============ Toast & fly-to-cart ============ */
+    .toast {
+      position: fixed;
+      top: 86px;
+      right: 24px;
+      z-index: 5000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: min(390px, calc(100vw - 32px));
+      padding: 10px 12px 10px 10px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transform: translateY(-16px) scale(.98);
+      pointer-events: none;
+      transition: opacity .3s, transform .4s cubic-bezier(.2, .9, .3, 1.25);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .toast-media {
+      flex-shrink: 0;
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background: var(--red-soft);
+      color: var(--red);
+      font-size: 20px;
+    }
+
+    .toast-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .toast-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .toast-body strong {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    .toast-body strong i {
+      color: var(--green);
+    }
+
+    .toast-body span {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast-cta {
+      flex-shrink: 0;
+      background: var(--red);
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .toast-cta[hidden] {
+      display: none;
+    }
+
+    .toast-close {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .fly-img {
+      position: fixed;
+      z-index: 6000;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--white);
+      box-shadow: 0 10px 30px rgba(255, 0, 0, .4);
+      pointer-events: none;
+    }
+
+    /* ============ Animations ============ */
+    .reveal {
+      animation: fadeUp .6s cubic-bezier(.2, .8, .2, 1) backwards;
+      animation-delay: calc(var(--d, 0) * 70ms);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(1.08);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0 50%;
+      }
+    }
+
+    @keyframes bump {
+      0% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.5);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes heartPop {
+      0% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.45);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes tick {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      45% {
+        transform: translateY(-5px);
+        opacity: .4;
+      }
+
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ============ Responsive ============ */
+    @media (max-width: 1100px) {
+      .header {
+        padding: 0 40px;
+      }
+
+      .product {
+        gap: 36px;
+      }
+
+      .perks li {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .rel-track {
+        grid-auto-columns: calc((100% - 2 * 18px) / 3);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .desktop-nav {
+        display: none;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .bottom-nav {
+        display: flex;
+      }
+
+      .header {
+        padding: 0 16px;
+      }
+
+      body {
+        padding-bottom: 165px;
+      }
+
+      .page {
+        padding: 14px 16px 24px;
+      }
+
+      .crumbs {
+        margin-bottom: 14px;
+        font-size: 13px;
+      }
+
+      .product {
+        grid-template-columns: 1fr;
+        gap: 22px;
+      }
+
+      /* let the gallery's children join the grid so perks can move below the info */
+      .gallery {
+        display: contents;
+      }
+
+      .media-frame {
+        order: 1;
+        aspect-ratio: 4 / 3;
+        max-height: none;
+        border-radius: 22px;
+      }
+
+      .info {
+        order: 2;
+      }
+
+      .perks {
+        order: 3;
+        margin-top: 0;
+      }
+
+      .buy-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 65px;
+        z-index: 2900;
+        border: none;
+        border-top: 1px solid var(--border);
+        border-radius: 20px 20px 0 0;
+        padding: 12px 16px;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, .1);
+        animation: slideUp .45s cubic-bezier(.2, .8, .2, 1) both;
+      }
+
+      .btn-ghost {
+        display: none;
+      }
+
+      .related {
+        margin-top: 48px;
+      }
+
+      .rel-track {
+        grid-auto-columns: 42%;
+        gap: 14px;
+      }
+
+      .toast {
+        left: 50%;
+        right: auto;
+        top: 80px;
+        transform: translate(-50%, -16px) scale(.98);
+      }
+
+      .toast.show {
+        transform: translate(-50%, 0);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .media-frame {
+        aspect-ratio: 1 / 1;
+        border-radius: 20px;
+      }
+
+      .icon-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+      }
+
+      .facts {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .perks {
+        grid-template-columns: 1fr;
+      }
+
+      .perks li {
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .sizes {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .size-body {
+        padding: 12px 34px 12px 14px;
+      }
+
+      .rel-track {
+        grid-auto-columns: 64%;
+      }
+
+      .stepper button {
+        width: 38px;
+        height: 38px;
+      }
+
+      .stepper output {
+        min-width: 34px;
+      }
+
+      .btn-primary {
+        font-size: 15px;
+        padding-left: 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .btn-label i {
+        display: none;
+      }
+
+      .lbl-long {
+        display: none;
+      }
+
+      .stepper output {
+        min-width: 28px;
+      }
+    }
+
+    @media (min-width: 381px) {
+      .lbl-short {
+        display: none;
+      }
+    }
+
+    /* ============ Dark mode (body.dark, toggled from profile settings) ============ */
+    body.dark .header {
+      background: #1a1a1a;
+      box-shadow: none;
+      border-bottom: 3px solid rgb(86, 82, 82);
+    }
+
+    body.dark .desktop-nav a,
+    body.dark .mobile-menu a {
+      color: var(--white);
+    }
+
+    body.dark .desktop-nav a.active,
+    body.dark .desktop-nav a:hover {
+      color: var(--red);
+    }
+
+    body.dark .back-btn {
+      background: #2a2a2a;
+    }
+
+    body.dark .mobile-menu {
+      background: rgba(26, 26, 26, 0.95);
+    }
+
+    body.dark .bottom-nav {
+      background: #1a1a1a;
+      border-top: 3px solid rgb(86, 82, 82);
+    }
+
+    body.dark .bottom-nav a {
+      color: var(--white);
+    }
+
+    body.dark .bottom-nav a.active-bottom {
+      color: var(--red);
+    }
+
+    body.dark .icon-btn {
+      background: rgba(30, 30, 30, .9);
+      color: var(--white);
+    }
+
+    body.dark .icon-btn.is-active,
+    body.dark .icon-btn:hover {
+      color: #ff5252;
+    }
+
+    body.dark .pill-green {
+      background: #1e1e1e;
+      color: #6ad08a;
+    }
+
+
+    body.dark .price,
+    body.dark .rel-foot strong,
+    body.dark .cat-chip,
+    body.dark .size-price {
+      color: #ff4d4d;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "on") document.body.classList.add("dark");
+    } catch (e) { }
+  </script>
+
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" id="backBtn" type="button" aria-label="Go back">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <div class="logo">Details</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="foods.html" class="active">Foods</a>
+      <a href="cart.html">Cart<span class="cart-badge"></span></a>
+      <a href="orders.html">Orders</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+
+    <button class="hamburger" id="menuBtn" type="button" aria-label="Open menu">&#9776;</button>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="close-btn" id="closeMenu" type="button" aria-label="Close menu">×</button>
+    <a href="foods.html">Foods</a>
+    <a href="cart.html">Cart<span class="cart-badge"></span></a>
+    <a href="orders.html">Orders</a>
+    <a href="profile.html">Profile</a>
+  </div>
+
+  <main class="page">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="foods.html"><i class="fa-solid fa-utensils" style="font-size:12px;opacity:1"></i> Foods</a>
+      <i class="fa-solid fa-chevron-right"></i>
+      <span id="crumbCat">Menu</span>
+      <i class="fa-solid fa-chevron-right"></i>
+      <span id="crumbName" aria-current="page">Loading…</span>
+    </nav>
+
+    <div id="product">
+      <!-- Skeleton shown while the dish loads -->
+      <section class="product" aria-busy="true" aria-label="Loading dish">
+        <div class="gallery">
+          <div class="media-frame skeleton"></div>
+        </div>
+        <div class="info">
+          <div class="skeleton" style="width:150px;height:30px;border-radius:999px"></div>
+          <div class="skeleton" style="width:85%;height:46px;margin:18px 0 12px"></div>
+          <div class="skeleton" style="width:55%;height:18px"></div>
+          <div class="skeleton" style="width:140px;height:40px;margin:22px 0"></div>
+          <div class="skeleton" style="width:100%;height:16px;margin-bottom:10px"></div>
+          <div class="skeleton" style="width:92%;height:16px;margin-bottom:10px"></div>
+          <div class="skeleton" style="width:70%;height:16px;margin-bottom:26px"></div>
+          <div class="skeleton" style="width:100%;height:84px;border-radius:16px"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Ratings & reviews (customers with a paid order of this dish can review it) -->
+    <section class="reviews" id="reviews" hidden>
+      <div class="section-head">
+        <h2>Ratings &amp; reviews</h2>
+      </div>
+      <div class="rv-grid">
+        <div class="rv-card" id="rvSummary"></div>
+        <div class="rv-card" id="rvMine"></div>
+      </div>
+      <div class="rv-list" id="rvList"></div>
+      <button type="button" class="btn-ghost rv-more" id="rvMore" hidden>Show more reviews</button>
+    </section>
+
+    <section class="related" id="related" hidden>
+      <div class="section-head">
+        <h2>You might also like</h2>
+        <a href="foods.html">See full menu <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+      <div class="rel-track" id="relTrack"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main">
+    <a href="foods.html" class="active-bottom"><i class="fa fa-utensils"></i><span>Foods</span></a>
+    <a href="cart.html"><i class="fa fa-shopping-cart"></i><span>Cart</span><span class="cart-badge"></span></a>
+    <a href="orders.html"><i class="fa fa-receipt"></i><span>Orders</span></a>
+    <a href="profile.html"><i class="fa fa-user"></i><span>Profile</span></a>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="toast-media" id="toastMedia"></div>
+    <div class="toast-body">
+      <strong id="toastTitle"></strong>
+      <span id="toastText"></span>
+    </div>
+    <a href="cart.html" class="toast-cta" id="toastCta">View cart</a>
+    <button class="toast-close" id="toastClose" type="button" aria-label="Dismiss"><i
+        class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <script>
+    /* ================= Firebase ================= */
+    const firebaseConfig = {
+      apiKey: "AIzaSyAW3atuDYr7OeuT2b-Tn_ooD93ZfPqMA4g",
+      authDomain: "taste-lounge-3075.firebaseapp.com",
+      projectId: "taste-lounge-3075",
+      storageBucket: "taste-lounge-3075.firebasestorage.app",
+      messagingSenderId: "923805907944",
+      appId: "1:923805907944:web:8c054c78c5cbd75929c25d"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    /* ================= Constants & state ================= */
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const requestedId = new URLSearchParams(location.search).get("id") || "";
+    const MAX_QTY = 20;
+    const FAV_KEY = "tl:favorites";
+    const SPICE_LABELS = ["Not spicy", "Mild", "Medium", "Hot"];
+
+    let menu = null; // loaded from Firestore — see menu-service.js
+    let currentUser = null;
+    const state = { food: null, size: null, picked: [], qty: 1, note: "" };
+
+    /* ================= Navigation ================= */
+    const mobileMenu = $("#mobileMenu");
+    $("#menuBtn").onclick = () => mobileMenu.classList.add("open");
+    $("#closeMenu").onclick = () => mobileMenu.classList.remove("open");
+
+    $("#backBtn").onclick = () => {
+      const cameFromApp = document.referrer && new URL(document.referrer).origin === location.origin;
+      if (cameFromApp && history.length > 1) history.back();
+      else location.href = "foods.html";
+    };
+
+    /* ================= Storage helpers ================= */
+    function readCart() {
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart"));
+        return Array.isArray(cart) ? cart : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function writeCart(cart) {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    function cartCount(cart) {
+      return cart.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
+    }
+
+    function cartSubtotal(cart) {
+      return cart.reduce((sum, i) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0);
+    }
+
+    function readFavs() {
+      try {
+        const favs = JSON.parse(localStorage.getItem(FAV_KEY));
+        return Array.isArray(favs) ? favs : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    /* ================= Firebase cart sync ================= */
+    // cart.html reloads the cart from Firebase, so every change is pushed there too.
+    let needsSync = false;
+    let syncing = null;
+
+    function syncCart(cart) {
+      const user = auth.currentUser;
+      if (!user) {
+        needsSync = true; // pushed as soon as auth is ready
+        return;
+      }
+      needsSync = false;
+      const write = db.collection("users").doc(user.uid)
+        .set({ cart }, { merge: true })
+        .catch((err) => console.error("Cart sync failed:", err));
+      const done = Promise.race([write, new Promise((r) => setTimeout(r, 3000))]);
+      syncing = done;
+      done.then(() => {
+        if (syncing === done) syncing = null;
+      });
+    }
+
+    function whenSynced() {
+      return syncing || Promise.resolve();
+    }
+
+    // Don't leave for the cart until the latest change has reached Firebase.
+    document.addEventListener("click", (e) => {
+      const link = e.target.closest('a[href="cart.html"], a[href="checkout.html"]');
+      if (!link || !syncing || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      whenSynced().then(() => (location.href = link.href));
+    });
+
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        location.href = "log-in.html";
+        return;
+      }
+      if (needsSync) syncCart(readCart());
+      currentUser = user;
+      if (state.food) loadMyReview();
+    });
+
+    /* ================= Cart badge ================= */
+    function updateBadges(cart = readCart(), bump = false) {
+      const count = cartCount(cart);
+      document.querySelectorAll(".cart-badge").forEach((badge) => {
+        badge.textContent = count > 99 ? "99+" : count;
+        badge.classList.toggle("is-visible", count > 0);
+        if (bump) {
+          badge.classList.remove("bump");
+          void badge.offsetWidth;
+          badge.classList.add("bump");
+        }
+      });
+    }
+
+    /* ================= Pricing helpers ================= */
+    // Portion sizes and extras are set per dish in Admin → Foods.
+    function unitPrice(food, size, picked) {
+      return food.price + (size ? size.price : 0) + picked.reduce((sum, e) => sum + e.price, 0);
+    }
+
+    function isDefaultSize(food, size) {
+      return !size || !food.sizes.length || size.id === food.sizes[0].id;
+    }
+
+    // Same dish + same options = same cart line. The default options use the
+    // plain food id, so it merges with "Add to Cart" on the foods page.
+    function lineId(food, size, picked) {
+      const parts = [food.id];
+      if (!isDefaultSize(food, size)) parts.push(size.id);
+      picked.map((e) => e.id).sort().forEach((id) => parts.push(id));
+      return parts.join("__");
+    }
+
+    function lineName(food, size, picked) {
+      let name = food.name;
+      if (!isDefaultSize(food, size)) name += ` (${size.label})`;
+      if (picked.length) name += " + " + picked.map((e) => e.name).join(", ");
+      return name;
+    }
+
+    /* ================= Add to cart ================= */
+    function addToCart(food, { size = null, picked = [], qty = 1, note = "" } = {}, sourceEl) {
+      if (!food.available) return;
+      if (!size && food.sizes.length) size = food.sizes[0];
+
+      const cart = readCart();
+      const id = lineId(food, size, picked);
+      const price = unitPrice(food, size, picked);
+      const name = lineName(food, size, picked);
+      const existing = cart.find((item) => item.id === id);
+
+      if (existing) {
+        existing.quantity = (Number(existing.quantity) || 0) + qty;
+        existing.price = price;
+        if (note) existing.note = note;
+      } else {
+        cart.push({
+          id,
+          foodId: food.id,
+          name,
+          price,
+          image: food.img,
+          quantity: qty,
+          size: size ? size.label : null,
+          extras: picked.map((e) => e.name),
+          note,
+        });
+      }
+
+      writeCart(cart);
+      syncCart(cart);
+      flyToCart(sourceEl, food.img, () => updateBadges(cart, true));
+      showToast({
+        img: food.img,
+        title: "Added to cart",
+        text: `${qty} × ${name} · ${tlFormat(price * qty)}`,
+        cta: true,
+      });
+      updateMeter();
+    }
+
+    function flyToCart(sourceEl, imgSrc, done) {
+      const target = [...document.querySelectorAll('.desktop-nav a[href="cart.html"], .bottom-nav a[href="cart.html"]')]
+        .find((el) => el.offsetParent !== null);
+      if (reduceMotion || !sourceEl || !target || !imgSrc || !Element.prototype.animate) return done();
+
+      const s = sourceEl.getBoundingClientRect();
+      const t = target.getBoundingClientRect();
+      const size = 72;
+      const startX = s.left + s.width / 2 - size / 2;
+      const startY = s.top + s.height / 2 - size / 2;
+      const dx = t.left + t.width / 2 - (startX + size / 2);
+      const dy = t.top + t.height / 2 - (startY + size / 2);
+
+      const clone = document.createElement("img");
+      clone.src = imgSrc;
+      clone.alt = "";
+      clone.className = "fly-img";
+      clone.style.left = startX + "px";
+      clone.style.top = startY + "px";
+      document.body.appendChild(clone);
+
+      const anim = clone.animate([
+        { transform: "translate(0, 0) scale(.6)", opacity: 0 },
+        { transform: "translate(0, -30px) scale(1.1)", opacity: 1, offset: 0.2 },
+        { transform: `translate(${dx}px, ${dy}px) scale(.25)`, opacity: .7 },
+      ], { duration: 850, easing: "cubic-bezier(.55, 0, .3, 1)" });
+
+      // finish once, even if the animation is paused (e.g. background tab)
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        clone.remove();
+        done();
+      };
+      anim.onfinish = finish;
+      setTimeout(finish, 1000);
+    }
+
+    /* ================= Toast ================= */
+    let toastTimer;
+    const toast = $("#toast");
+
+    function showToast({ img, icon = "fa-solid fa-circle-check", title, text, cta = false }) {
+      $("#toastMedia").innerHTML = img
+        ? `<img src="${tlEsc(img)}" alt="" onerror="${TL_IMG_FALLBACK}">`
+        : `<i class="${icon}"></i>`;
+      $("#toastTitle").innerHTML = (cta ? '<i class="fa-solid fa-circle-check"></i> ' : "") + tlEsc(title);
+      $("#toastText").textContent = text;
+      $("#toastCta").hidden = !cta;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, 4000);
+    }
+
+    function hideToast() {
+      toast.classList.remove("show");
+    }
+
+    $("#toastClose").onclick = hideToast;
+    toast.addEventListener("mouseenter", () => clearTimeout(toastTimer));
+    toast.addEventListener("mouseleave", () => (toastTimer = setTimeout(hideToast, 2000)));
+
+    /* ================= Render: product ================= */
+    // Only the details the admin filled in are shown.
+    function factsFor(f) {
+      const facts = [];
+      if (f.prepTime) facts.push({ icon: "fa-regular fa-clock", label: "Ready in", value: f.prepTime });
+      if (f.calories !== null) facts.push({ icon: "fa-solid fa-fire", label: "Calories", value: `${f.calories.toLocaleString("en-US")} kcal` });
+      if (f.serves !== null) facts.push({ icon: "fa-solid fa-user-group", label: "Serves", value: f.serves === 1 ? "1 person" : `${f.serves} people` });
+      if (f.spice !== null && SPICE_LABELS[f.spice]) {
+        facts.push({ icon: "fa-solid fa-pepper-hot", label: "Spice level", value: SPICE_LABELS[f.spice], spice: f.spice });
+      }
+      return facts;
+    }
+
+    function productTemplate(f) {
+      const name = tlEsc(f.name);
+      const discount = f.oldPrice > f.price ? Math.round((1 - f.price / f.oldPrice) * 100) : 0;
+      const facts = factsFor(f);
+      const deliveryTime = menu.settings.deliveryTime;
+      let d = 0; // stagger index for the entrance animation
+
+      const factsHtml = facts.length ? `
+        <div class="facts reveal" style="--d:${++d}">
+          ${facts.map((x) => `
+            <div class="fact">
+              <i class="${x.icon}"></i>
+              <span>${x.label}</span>
+              <strong>${tlEsc(x.value)}</strong>
+              ${typeof x.spice === "number" ? `<span class="spice-meter" aria-hidden="true">${[1, 2, 3]
+                .map((i) => `<i class="fa-solid fa-pepper-hot ${i <= x.spice ? "on" : ""}"></i>`).join("")}</span>` : ""}
+            </div>`).join("")}
+        </div>` : "";
+
+      const sizesHtml = f.sizes.length ? `
+        <div class="block reveal" style="--d:${++d}" role="radiogroup" aria-labelledby="sizeTitle">
+          <div class="block-title" id="sizeTitle">Choose your portion <span class="tag tag-req">Required</span></div>
+          <div class="sizes">
+            ${f.sizes.map((s, i) => `
+              <label class="size-card">
+                <input type="radio" name="size" value="${tlEsc(s.id)}" ${i === 0 ? "checked" : ""}>
+                <span class="size-body">
+                  <span class="size-name">${tlEsc(s.label)}</span>
+                  ${s.note ? `<span class="size-hint">${tlEsc(s.note)}</span>` : ""}
+                  <span class="size-price">${s.price ? "+" + tlFormat(s.price) : "Included"}</span>
+                </span>
+                <i class="fa-solid fa-circle-check size-check"></i>
+              </label>`).join("")}
+          </div>
+        </div>` : "";
+
+      const extrasHtml = f.extras.length ? `
+        <div class="block reveal" style="--d:${++d}" role="group" aria-labelledby="extrasTitle">
+          <div class="block-title" id="extrasTitle">Add extras <span class="tag tag-opt">Optional</span></div>
+          <div class="extras">
+            ${f.extras.map((x) => `
+              <label class="extra-row">
+                <input type="checkbox" name="extra" value="${tlEsc(x.id)}">
+                <span class="check"><i class="fa-solid fa-check"></i></span>
+                <span class="extra-name">${tlEsc(x.name)}</span>
+                <span class="extra-price">${x.price ? "+" + tlFormat(x.price) : "Free"}</span>
+              </label>`).join("")}
+          </div>
+        </div>` : "";
+
+      const ingredientsHtml = f.ingredients.length ? `
+        <div class="block reveal" style="--d:${++d}">
+          <h2 class="block-title">What's inside</h2>
+          <ul class="chips">${f.ingredients.map((i) => `<li>${tlEsc(i)}</li>`).join("")}</ul>
+        </div>` : "";
+
+      const metaBits = [
+        `<span id="metaRating">${metaRatingHtml(f.rating)}</span>`,
+        f.prepTime ? `<span><i class="fa-regular fa-clock"></i> ${tlEsc(f.prepTime)}</span>` : "",
+        f.vegetarian ? `<span><i class="fa-solid fa-leaf" style="color:#2e9e4f"></i> Vegetarian</span>` : "",
+        !f.available ? `<span class="unavailable-chip"><i class="fa-solid fa-ban"></i> Currently unavailable</span>` : "",
+      ].filter(Boolean).join('<span class="dot"></span>');
+
+      return `
+        <section class="product">
+          <div class="gallery">
+            <div class="media-frame${f.available ? "" : " is-unavailable"}">
+              <img id="heroImg" src="${tlEsc(f.img || "taste-lounge-logo.png")}" alt="${name}" onerror="${TL_IMG_FALLBACK}">
+              <div class="media-badges">
+                ${f.badge ? `<span class="pill pill-red">${tlEsc(f.badge)}</span>` : ""}
+                ${discount ? `<span class="pill pill-yellow">-${discount}%</span>` : ""}
+                ${f.vegetarian ? `<span class="pill pill-green"><i class="fa-solid fa-leaf"></i> Veg</span>` : ""}
+              </div>
+              <div class="media-actions">
+                <button class="icon-btn" id="favBtn" type="button" aria-pressed="false" aria-label="Save to favourites">
+                  <i class="fa-regular fa-heart"></i>
+                </button>
+                <button class="icon-btn" id="shareBtn" type="button" aria-label="Share this dish">
+                  <i class="fa-solid fa-share-nodes"></i>
+                </button>
+              </div>
+            </div>
+
+            <ul class="perks">
+              <li><i class="fa-solid fa-truck-fast"></i><div><strong>Fast delivery</strong><span>${deliveryTime ? "Hot at your door in " + tlEsc(deliveryTime) : "Delivered hot to your door"}</span></div></li>
+              <li><i class="fa-solid fa-utensils"></i><div><strong>Cooked fresh</strong><span>Prepared only when you order</span></div></li>
+              <li><i class="fa-solid fa-shield-halved"></i><div><strong>Secure checkout</strong><span>Pay safely with Paystack</span></div></li>
+            </ul>
+          </div>
+
+          <div class="info">
+            ${f.category ? `<span class="cat-chip reveal">${tlEsc(tlCategoryLabel(f))}</span>` : ""}
+            <h1 class="title reveal" style="--d:${++d}">${name}</h1>
+            ${metaBits ? `<div class="meta-row reveal" style="--d:${++d}">${metaBits}</div>` : ""}
+
+            <div class="price-row reveal" style="--d:${++d}">
+              <span class="price" id="unitPrice">${tlFormat(f.price)}</span>
+              ${discount ? `<s class="old-price" id="oldPrice">${tlFormat(f.oldPrice)}</s><span class="save">Save ${discount}%</span>` : ""}
+              <span class="per-item">per item</span>
+            </div>
+
+            ${f.description ? `<p class="desc reveal" style="--d:${++d}">${tlEsc(f.description)}</p>` : ""}
+
+            ${factsHtml}
+
+            ${f.adult ? `<div class="notice reveal" style="--d:${++d}"><i class="fa-solid fa-circle-exclamation"></i><span><strong>18+ only.</strong> ID may be requested on delivery. Please drink responsibly.</span></div>` : ""}
+
+            ${sizesHtml}
+            ${extrasHtml}
+            ${ingredientsHtml}
+
+            <div class="block reveal" style="--d:${++d}">
+              <label class="block-title" for="note">Special instructions <span class="tag tag-opt">Optional</span></label>
+              <textarea class="note" id="note" maxlength="140" rows="2"
+                placeholder="E.g. less pepper, no onions, sauce on the side…"></textarea>
+              <div class="counter"><span id="noteCount">0</span>/140</div>
+            </div>
+
+            <div class="meter reveal" id="meter" style="--d:${++d}" hidden>
+              <div class="meter-text" id="meterText"></div>
+              <div class="meter-track" aria-hidden="true">
+                <div class="meter-preview" id="meterPreview"></div>
+                <div class="meter-fill" id="meterFill"></div>
+              </div>
+            </div>
+
+            <div class="buy-bar" id="buyBar">
+              <div class="stepper" role="group" aria-label="Quantity">
+                <button type="button" id="qtyMinus" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                <output id="qtyVal" aria-live="polite">1</output>
+                <button type="button" id="qtyPlus" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              ${f.available ? `
+                <button type="button" class="btn-primary" id="addBtn">
+                  <span class="btn-label" id="addLabel"><i class="fa-solid fa-bag-shopping"></i><span class="lbl-long">Add to cart</span><span class="lbl-short">Add</span></span>
+                  <span class="btn-total" id="totalVal">${tlFormat(f.price)}</span>
+                </button>
+                <button type="button" class="btn-ghost" id="buyNowBtn">Buy now</button>` : `
+                <button type="button" class="btn-primary" id="addBtn" disabled>
+                  <span class="btn-label"><i class="fa-solid fa-ban"></i> Unavailable</span>
+                  <span class="btn-total" id="totalVal">${tlFormat(f.price)}</span>
+                </button>`}
+            </div>
+          </div>
+        </section>`;
+    }
+
+    function renderFood(food) {
+      Object.assign(state, { food, size: food.sizes[0] || null, picked: [], qty: 1, note: "" });
+
+      document.title = `${food.name} — Taste Lounge`;
+      const meta = document.querySelector('meta[name="description"]');
+      if (meta && food.description) meta.setAttribute("content", food.description);
+
+      $("#crumbCat").textContent = food.category ? food.category.name : "Menu";
+      $("#crumbName").textContent = food.name;
+
+      $("#product").innerHTML = productTemplate(food);
+      bindProduct();
+      renderRelated(food);
+      loadReviews();
+      if (currentUser) loadMyReview();
+      updatePrice(false);
+      updateFavButton();
+    }
+
+    function showNotFound(message) {
+      $("#crumbName").textContent = "Not found";
+      $("#product").innerHTML = `
+        <div class="empty-state reveal">
+          <div class="empty-emoji">🍽️</div>
+          <h1>Dish not found</h1>
+          <p>${tlEsc(message || "This dish may have been removed from the menu, or the link is broken.")}</p>
+          <a class="btn-primary" href="foods.html"><span class="btn-label"><i class="fa-solid fa-utensils"></i> Browse the menu</span></a>
+        </div>`;
+    }
+
+    /* ================= Interactions ================= */
+    function bindProduct() {
+      const product = $("#product");
+      const food = state.food;
+
+      product.addEventListener("change", (e) => {
+        if (e.target.name === "size") {
+          state.size = food.sizes.find((s) => s.id === e.target.value) || food.sizes[0];
+          updatePrice();
+        }
+        if (e.target.name === "extra") {
+          e.target.closest(".extra-row").classList.toggle("is-on", e.target.checked);
+          const checked = [...product.querySelectorAll('input[name="extra"]:checked')].map((i) => i.value);
+          state.picked = food.extras.filter((x) => checked.includes(x.id));
+          updatePrice();
+        }
+      });
+
+      const note = $("#note");
+      note.addEventListener("input", () => {
+        state.note = note.value.trim();
+        $("#noteCount").textContent = note.value.length;
+      });
+
+      $("#qtyMinus").onclick = () => setQty(state.qty - 1);
+      $("#qtyPlus").onclick = () => setQty(state.qty + 1);
+      $("#favBtn").onclick = toggleFav;
+      $("#shareBtn").onclick = shareDish;
+
+      if (!food.available) return;
+
+      $("#addBtn").onclick = () => {
+        const hero = $("#heroImg");
+        const heroVisible = hero && hero.getBoundingClientRect().bottom > 80;
+        addToCart(food, currentSelection(), heroVisible ? hero : $("#addBtn"));
+        celebrateButton();
+      };
+
+      $("#buyNowBtn").onclick = (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        btn.textContent = "Opening cart…";
+        addToCart(food, currentSelection(), $("#heroImg"));
+        whenSynced().then(() => (location.href = "cart.html"));
+      };
+    }
+
+    function currentSelection() {
+      return { size: state.size, picked: state.picked.slice(), qty: state.qty, note: state.note };
+    }
+
+    function setQty(n) {
+      state.qty = Math.max(1, Math.min(MAX_QTY, n));
+      updatePrice();
+      if (n > MAX_QTY) {
+        showToast({ icon: "fa-solid fa-circle-info", title: "That's a feast!", text: `For more than ${MAX_QTY}, please order in a new batch.` });
+      }
+    }
+
+    let addedTimer;
+    function celebrateButton() {
+      const btn = $("#addBtn");
+      const label = $("#addLabel");
+      btn.classList.add("is-added");
+      label.innerHTML = '<i class="fa-solid fa-check"></i><span class="lbl-long">Added!</span><span class="lbl-short">Added</span>';
+      clearTimeout(addedTimer);
+      addedTimer = setTimeout(() => {
+        btn.classList.remove("is-added");
+        label.innerHTML = '<i class="fa-solid fa-bag-shopping"></i><span class="lbl-long">Add to cart</span><span class="lbl-short">Add</span>';
+      }, 1600);
+    }
+
+    function retick(el) {
+      if (!el || reduceMotion) return;
+      el.classList.remove("tick");
+      void el.offsetWidth;
+      el.classList.add("tick");
+    }
+
+    function updatePrice(animate = true) {
+      const f = state.food;
+      const unit = unitPrice(f, state.size, state.picked);
+      const unitEl = $("#unitPrice");
+      const totalEl = $("#totalVal");
+      const unitChanged = unitEl.textContent !== tlFormat(unit);
+
+      unitEl.textContent = tlFormat(unit);
+      if ($("#oldPrice")) $("#oldPrice").textContent = tlFormat(f.oldPrice + (unit - f.price));
+      totalEl.textContent = tlFormat(unit * state.qty);
+      $("#qtyVal").textContent = state.qty;
+      $("#qtyMinus").disabled = state.qty <= 1;
+      $("#qtyPlus").disabled = state.qty >= MAX_QTY;
+
+      if (animate) {
+        retick(totalEl);
+        if (unitChanged) retick(unitEl);
+      }
+      updateMeter();
+    }
+
+    // Free-delivery progress (threshold set in Admin → Store Settings):
+    // solid = already in the cart, striped = after adding the current selection.
+    function updateMeter() {
+      const meter = $("#meter");
+      if (!state.food || !meter) return;
+      const goalAmount = menu.settings.freeDeliveryOver;
+      meter.hidden = !goalAmount || !state.food.available;
+      if (meter.hidden) return;
+
+      const inCart = cartSubtotal(readCart());
+      const selection = unitPrice(state.food, state.size, state.picked) * state.qty;
+      const after = inCart + selection;
+      const pct = (v) => Math.min(100, (v / goalAmount) * 100) + "%";
+      const goal = tlFormat(goalAmount);
+
+      $("#meterFill").style.width = pct(inCart);
+      $("#meterPreview").style.width = pct(after);
+
+      let html;
+      if (inCart > goalAmount) {
+        html = `<i class="fa-solid fa-gift"></i><span>Your cart already qualifies for <strong>FREE delivery</strong> 🎉</span>`;
+      } else if (after > goalAmount) {
+        html = `<i class="fa-solid fa-gift"></i><span>Add this and you unlock <strong>FREE delivery</strong> 🎉</span>`;
+      } else {
+        const left = goalAmount - after;
+        html = left > 0
+          ? `<i class="fa-solid fa-truck-fast"></i><span>Add this and you're <strong>${tlFormat(left)}</strong> away from <strong>FREE delivery</strong> (orders over ${goal})</span>`
+          : `<i class="fa-solid fa-truck-fast"></i><span>One more item unlocks <strong>FREE delivery</strong> (orders over ${goal})</span>`;
+      }
+      $("#meterText").innerHTML = html;
+      meter.classList.toggle("is-unlocked", after > goalAmount);
+    }
+
+    /* ================= Favourites & share ================= */
+    function updateFavButton() {
+      const btn = $("#favBtn");
+      if (!btn || !state.food) return;
+      const on = readFavs().includes(state.food.id);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on);
+      btn.setAttribute("aria-label", on ? "Remove from favourites" : "Save to favourites");
+      btn.innerHTML = `<i class="${on ? "fa-solid" : "fa-regular"} fa-heart"></i>`;
+    }
+
+    function toggleFav() {
+      const id = state.food.id;
+      const favs = readFavs();
+      const on = !favs.includes(id);
+      const next = on ? [...favs, id] : favs.filter((x) => x !== id);
+      try {
+        localStorage.setItem(FAV_KEY, JSON.stringify(next));
+      } catch (e) { }
+      updateFavButton();
+      showToast({
+        icon: on ? "fa-solid fa-heart" : "fa-regular fa-heart",
+        title: on ? "Saved to favourites" : "Removed from favourites",
+        text: state.food.name,
+      });
+    }
+
+    async function shareDish() {
+      const data = {
+        title: `${state.food.name} — Taste Lounge`,
+        text: `Check out ${state.food.name} (${tlFormat(state.food.price)}) on Taste Lounge 😋`,
+        url: location.href,
+      };
+      if (navigator.share) {
+        try {
+          await navigator.share(data);
+        } catch (e) { /* user cancelled */ }
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(location.href);
+        showToast({ icon: "fa-solid fa-link", title: "Link copied", text: "Share it with someone hungry!" });
+      } catch (e) {
+        showToast({ icon: "fa-solid fa-link", title: "Copy this link", text: location.href });
+      }
+    }
+
+    /* ================= Related dishes ================= */
+    function renderRelated(food) {
+      const available = menu.foods.filter((f) => f.available && f.id !== food.id);
+      const sameCat = available.filter((f) => food.categoryId && f.categoryId === food.categoryId);
+      const highlights = available.filter((f) => (f.trending || f.popular) && !sameCat.includes(f));
+
+      const seen = new Set([food.name]);
+      const list = [];
+      for (const f of [...sameCat, ...highlights]) {
+        if (seen.has(f.name)) continue;
+        seen.add(f.name);
+        list.push(f);
+        if (list.length === 8) break;
+      }
+      $("#related").hidden = list.length === 0;
+      if (!list.length) return;
+
+      $("#relTrack").innerHTML = list.map((f) => `
+        <article class="rel-card" data-food-id="${tlEsc(f.id)}" tabindex="0" role="link" aria-label="View ${tlEsc(f.name)}">
+          <div class="rel-img">
+            <img src="${tlEsc(f.img || "taste-lounge-logo.png")}" alt="${tlEsc(f.name)}" loading="lazy" onerror="${TL_IMG_FALLBACK}">
+            ${f.badge ? `<span class="rel-badge">${tlEsc(f.badge)}</span>` : ""}
+          </div>
+          <div class="rel-body">
+            <h3>${tlEsc(f.name)}</h3>
+            <p class="rel-cat">${tlEsc(tlCategoryLabel(f))}${f.rating ? ` · <span style="color:var(--yellow)">★</span> ${f.rating.avg.toFixed(1)}` : ""}</p>
+            <div class="rel-foot">
+              <strong>${tlFormat(f.price + (f.sizes[0] ? f.sizes[0].price : 0))}</strong>
+              <button class="rel-add" type="button" data-add="${tlEsc(f.id)}" aria-label="Add ${tlEsc(f.name)} to cart">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </article>`).join("");
+    }
+
+    // Card clicks open that dish; the "+" button adds it without leaving the page.
+    $("#relTrack").addEventListener("click", (e) => {
+      const add = e.target.closest("[data-add]");
+      if (add) {
+        const food = menu && menu.findFood(add.dataset.add);
+        if (food) addToCart(food, {}, add.closest(".rel-card").querySelector("img"));
+        return;
+      }
+      const card = e.target.closest("[data-food-id]");
+      if (card) location.href = tlDetailsUrl(card.dataset.foodId);
+    });
+
+    $("#relTrack").addEventListener("keydown", (e) => {
+      if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-food-id]")) {
+        e.preventDefault();
+        location.href = tlDetailsUrl(e.target.dataset.foodId);
+      }
+    });
+
+    /* ================= Ratings & reviews =================
+       Only customers with a paid order containing this dish can review it
+       (enforced by the Firestore rules). Each review and the dish's totals
+       (ratings/{foodId}: { sum, count }) are written together in a transaction. */
+    const REVIEW_PAGE = 5;
+    const STAR_WORDS = ["", "Terrible", "Poor", "Okay", "Good", "Excellent"];
+    const rv = { list: [], shown: REVIEW_PAGE, totals: null, mine: null, orderId: null, editing: false };
+
+    const millis = (ts) => (ts && ts.toMillis ? ts.toMillis() : 0);
+
+    function metaRatingHtml(rating) {
+      return rating
+        ? `<a href="#reviews" class="meta-rating">${tlStarsHtml(rating.avg)} <strong>${rating.avg.toFixed(1)}</strong> (${rating.count} rating${rating.count === 1 ? "" : "s"})</a>`
+        : `<a href="#reviews" class="meta-rating"><i class="fa-regular fa-star"></i> No ratings yet</a>`;
+    }
+
+    function reviewDate(ts) {
+      if (!millis(ts)) return "Just now";
+      const days = Math.floor((Date.now() - millis(ts)) / 86400000);
+      if (days < 1) return "Today";
+      if (days < 2) return "Yesterday";
+      if (days < 30) return `${days} days ago`;
+      return new Date(millis(ts)).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    async function loadReviews() {
+      const food = state.food;
+      $("#reviews").hidden = false;
+      try {
+        const [snap, totalsSnap] = await Promise.all([
+          db.collection("reviews").where("foodId", "==", food.id).where("hidden", "==", false).get(),
+          db.collection("ratings").doc(food.id).get(),
+        ]);
+        rv.list = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => millis(b.createdAt) - millis(a.createdAt));
+        rv.totals = tlRatingFrom(totalsSnap.exists ? totalsSnap.data() : null);
+      } catch (err) {
+        console.error("Could not load reviews:", err);
+        rv.list = [];
+        rv.totals = food.rating;
+      }
+      food.rating = rv.totals;
+      $("#metaRating").innerHTML = metaRatingHtml(rv.totals);
+      renderReviewSummary();
+      renderReviewList();
+      // arrived from a "★ Rate" link (…#reviews): scroll once the section exists
+      if (location.hash === "#reviews" && !rv.scrolled) {
+        rv.scrolled = true;
+        $("#reviews").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+      }
+    }
+
+    function renderReviewSummary() {
+      const t = rv.totals;
+      if (!t) {
+        $("#rvSummary").innerHTML = `<h3>No ratings yet</h3>
+          <p class="rv-note">Ordered ${tlEsc(state.food.name)}? Be the first to tell others how it was.</p>`;
+        return;
+      }
+      const counts = [0, 0, 0, 0, 0, 0];
+      rv.list.forEach((r) => counts[r.rating]++);
+      const listed = rv.list.length || 1;
+      $("#rvSummary").innerHTML = `
+        <div class="rv-score">
+          <div class="rv-big">${t.avg.toFixed(1)}</div>
+          <div>${tlStarsHtml(t.avg, "lg")}<div class="rv-total">Based on ${t.count} rating${t.count === 1 ? "" : "s"}</div></div>
+        </div>
+        ${[5, 4, 3, 2, 1].map((n) => `
+          <div class="rv-bar">
+            <span>${n} ★</span>
+            <div class="rv-bar-track"><div class="rv-bar-fill" style="width:${(counts[n] / listed) * 100}%"></div></div>
+            <span>${counts[n]}</span>
+          </div>`).join("")}`;
+    }
+
+    function reviewItemHtml(r) {
+      const initial = String(r.userName || "?").trim().charAt(0).toUpperCase();
+      const edited = millis(r.updatedAt) - millis(r.createdAt) > 60000;
+      return `
+        <article class="rv-item">
+          <div class="rv-head">
+            <div class="rv-avatar" aria-hidden="true">${tlEsc(initial)}</div>
+            <div class="rv-who">
+              <strong>${tlEsc(r.userName)}</strong>
+              <span class="rv-meta">${reviewDate(r.createdAt)}${edited ? " · edited" : ""}</span>
+            </div>
+            <span class="rv-verified"><i class="fa-solid fa-circle-check"></i> Verified order</span>
+          </div>
+          <div style="margin-top:8px">${tlStarsHtml(r.rating)}</div>
+          ${r.comment ? `<p class="rv-text">${tlEsc(r.comment)}</p>` : ""}
+        </article>`;
+    }
+
+    function renderReviewList() {
+      const shown = rv.list.slice(0, rv.shown);
+      $("#rvList").innerHTML = shown.length
+        ? shown.map(reviewItemHtml).join("")
+        : `<div class="rv-empty">No reviews yet — customers who order this dish can leave the first one.</div>`;
+      $("#rvMore").hidden = rv.list.length <= rv.shown;
+    }
+
+    $("#rvMore").onclick = () => {
+      rv.shown += REVIEW_PAGE;
+      renderReviewList();
+    };
+
+    // Has this customer reviewed the dish, and do they have a paid order containing it?
+    async function loadMyReview() {
+      const food = state.food;
+      if (!currentUser || !food) return;
+      $("#rvMine").innerHTML = `<h3>Your review</h3><p class="rv-note">Checking your orders…</p>`;
+      try {
+        const [mineSnap, orderSnap] = await Promise.all([
+          db.collection("reviews").doc(`${food.id}__${currentUser.uid}`).get(),
+          db.collection("orders").where("userId", "==", currentUser.uid).get(),
+        ]);
+        rv.mine = mineSnap.exists ? mineSnap.data() : null;
+        const paid = orderSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((o) => Array.isArray(o.foodIds) && o.foodIds.includes(food.id) && o.payment && o.payment.status === "success")
+          .sort((a, b) => millis(b.createdAt) - millis(a.createdAt));
+        rv.orderId = paid.length ? paid[0].id : null;
+      } catch (err) {
+        console.error("Could not check your review:", err);
+        $("#rvMine").innerHTML = `<h3>Your review</h3><p class="rv-note">We couldn't check your orders right now. Please refresh to try again.</p>`;
+        return;
+      }
+      renderMyReview();
+    }
+
+    function renderMyReview() {
+      const box = $("#rvMine");
+      const food = state.food;
+
+      if (rv.mine && !rv.editing) {
+        box.innerHTML = `
+          <h3>Your review</h3>
+          <div>${tlStarsHtml(rv.mine.rating, "lg")} <strong style="margin-left:6px">${STAR_WORDS[rv.mine.rating]}</strong></div>
+          ${rv.mine.comment ? `<p class="rv-text">${tlEsc(rv.mine.comment)}</p>` : ""}
+          ${rv.mine.hidden ? `<p class="rv-hidden-note"><i class="fa-solid fa-eye-slash"></i> The restaurant has hidden this review, so it doesn't count towards the rating.</p>` : ""}
+          <div class="rv-actions">
+            <button type="button" class="btn-ghost" id="rvEdit"><i class="fa-solid fa-pen"></i> Edit</button>
+            <button type="button" class="btn-link" id="rvDelete">Delete</button>
+          </div>`;
+        $("#rvEdit").onclick = () => {
+          rv.editing = true;
+          renderMyReview();
+        };
+        $("#rvDelete").onclick = deleteMyReview;
+        return;
+      }
+
+      if (!rv.mine && !rv.orderId) {
+        box.innerHTML = `
+          <h3>Rate this dish</h3>
+          <p class="rv-note"><i class="fa-solid fa-receipt"></i>Only customers who've ordered ${tlEsc(food.name)} can review it, so every review comes from a real order.</p>`;
+        return;
+      }
+
+      const current = rv.mine ? rv.mine.rating : 0;
+      const comment = rv.mine ? rv.mine.comment : "";
+      box.innerHTML = `
+        <form class="rv-form" id="rvForm" novalidate>
+          <h3>${rv.mine ? "Edit your review" : "Rate this dish"}</h3>
+          ${rv.mine ? "" : `<p class="rv-note">You've ordered this — how was it?</p>`}
+          <div class="star-picker" role="radiogroup" aria-label="Your rating">
+            ${[5, 4, 3, 2, 1].map((n) => `
+              <input type="radio" name="rvStar" id="rvStar${n}" value="${n}" ${n === current ? "checked" : ""}>
+              <label for="rvStar${n}" title="${STAR_WORDS[n]}" aria-label="${n} star${n > 1 ? "s" : ""}: ${STAR_WORDS[n]}">★</label>`).join("")}
+          </div>
+          <div class="star-hint" id="rvHint">${current ? STAR_WORDS[current] : "Tap a star to rate"}</div>
+          <textarea class="note" id="rvComment" maxlength="500"
+            placeholder="What did you like? Taste, portion, packaging… (optional)">${tlEsc(comment)}</textarea>
+          <div class="counter"><span id="rvCount">${comment.length}</span>/500</div>
+          <div class="rv-actions">
+            <button type="submit" class="btn-primary" id="rvSubmit"><span class="btn-label">${rv.mine ? "Save changes" : "Post review"}</span></button>
+            ${rv.mine ? `<button type="button" class="btn-link" id="rvCancel">Cancel</button>` : ""}
+          </div>
+        </form>`;
+
+      $("#rvForm").addEventListener("change", (e) => {
+        if (e.target.name === "rvStar") $("#rvHint").textContent = STAR_WORDS[e.target.value];
+      });
+      $("#rvComment").addEventListener("input", (e) => ($("#rvCount").textContent = e.target.value.length));
+      if ($("#rvCancel")) {
+        $("#rvCancel").onclick = () => {
+          rv.editing = false;
+          renderMyReview();
+        };
+      }
+      $("#rvForm").addEventListener("submit", submitMyReview);
+    }
+
+    // Public name on the review: "Ada O." from the profile name, never the email.
+    async function reviewerName() {
+      let name = "";
+      try {
+        const snap = await db.collection("users").doc(currentUser.uid).get();
+        name = (snap.exists && snap.data().name) || "";
+      } catch (e) { }
+      name = String(name || currentUser.displayName || "").trim();
+      if (!name) return "Taste Lounge customer";
+      const parts = name.split(/\s+/);
+      const short = parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1].charAt(0)}.` : parts[0];
+      return (short.charAt(0).toUpperCase() + short.slice(1)).slice(0, 40);
+    }
+
+    async function submitMyReview(e) {
+      e.preventDefault();
+      const picked = $("#rvForm").querySelector('input[name="rvStar"]:checked');
+      if (!picked) {
+        showToast({ icon: "fa-solid fa-star", title: "Pick a rating", text: "Tap 1 to 5 stars first." });
+        return;
+      }
+      const rating = Number(picked.value);
+      const comment = $("#rvComment").value.trim().slice(0, 500);
+      const btn = $("#rvSubmit");
+      btn.disabled = true;
+      btn.querySelector(".btn-label").textContent = "Saving…";
+
+      const food = state.food;
+      const reviewRef = db.collection("reviews").doc(`${food.id}__${currentUser.uid}`);
+      const totalsRef = db.collection("ratings").doc(food.id);
+      try {
+        const userName = await reviewerName();
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+        await db.runTransaction(async (tx) => {
+          const reviewSnap = await tx.get(reviewRef);
+          const totalsSnap = await tx.get(totalsRef);
+          const totals = totalsSnap.exists ? totalsSnap.data() : { sum: 0, count: 0 };
+          if (!reviewSnap.exists) {
+            tx.set(reviewRef, {
+              foodId: food.id, userId: currentUser.uid, userName, rating, comment,
+              orderId: rv.orderId, hidden: false, createdAt: now, updatedAt: now,
+            });
+            tx.set(totalsRef, { sum: totals.sum + rating, count: totals.count + 1 });
+          } else {
+            const old = reviewSnap.data();
+            tx.update(reviewRef, { rating, comment, userName, updatedAt: now });
+            if (!old.hidden && old.rating !== rating) {
+              tx.set(totalsRef, { sum: totals.sum - old.rating + rating, count: totals.count });
+            }
+          }
+        });
+        rv.editing = false;
+        showToast({ icon: "fa-solid fa-star", title: "Thanks for your review!", text: `${rating}★ for ${food.name}` });
+        await Promise.all([loadReviews(), loadMyReview()]);
+      } catch (err) {
+        console.error("Could not save review:", err);
+        showToast({ icon: "fa-solid fa-circle-exclamation", title: "Couldn't save your review", text: "Please try again in a moment." });
+        btn.disabled = false;
+        btn.querySelector(".btn-label").textContent = rv.mine ? "Save changes" : "Post review";
+      }
+    }
+
+    async function deleteMyReview() {
+      if (!confirm("Delete your review?")) return;
+      const food = state.food;
+      const reviewRef = db.collection("reviews").doc(`${food.id}__${currentUser.uid}`);
+      const totalsRef = db.collection("ratings").doc(food.id);
+      try {
+        await db.runTransaction(async (tx) => {
+          const reviewSnap = await tx.get(reviewRef);
+          const totalsSnap = await tx.get(totalsRef);
+          if (!reviewSnap.exists) return;
+          const old = reviewSnap.data();
+          const totals = totalsSnap.exists ? totalsSnap.data() : { sum: 0, count: 0 };
+          tx.delete(reviewRef);
+          if (!old.hidden) tx.set(totalsRef, { sum: totals.sum - old.rating, count: totals.count - 1 });
+        });
+        rv.editing = false;
+        showToast({ icon: "fa-regular fa-trash-can", title: "Review deleted", text: food.name });
+        await Promise.all([loadReviews(), loadMyReview()]);
+      } catch (err) {
+        console.error("Could not delete review:", err);
+        showToast({ icon: "fa-solid fa-circle-exclamation", title: "Couldn't delete your review", text: "Please try again in a moment." });
+      }
+    }
+
+    /* ================= Boot ================= */
+    function refreshFromStorage() {
+      updateBadges();
+      updateMeter();
+      updateFavButton();
+    }
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === "cart" || e.key === FAV_KEY) refreshFromStorage();
+    });
+    window.addEventListener("pageshow", refreshFromStorage); // back/forward cache
+
+    async function boot() {
+      updateBadges();
+      if (!requestedId) {
+        showNotFound("No dish was selected. Pick something delicious from the menu!");
+        return;
+      }
+      try {
+        menu = await tlLoadMenu(db);
+      } catch (err) {
+        console.error("Error loading menu:", err);
+        showNotFound("We couldn't load this dish right now. Please check your connection and try again.");
+        return;
+      }
+      const food = menu.findFood(requestedId);
+      if (food) renderFood(food);
+      else showNotFound();
+    }
+
+    boot();
+  </script>
+</body>
+
+</html>

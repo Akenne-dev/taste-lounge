@@ -1,313 +1,406 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Taste Lounge — Checkout</title>
 
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
-    />
-    <link
-      rel="shortcut icon"
-      href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
-      type="image/x-icon"
-    />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taste Lounge — Checkout</title>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
+  <link rel="shortcut icon"
+    href="https://www.summahealth.org/-/media/project/summahealth/website/page-content/flourish/2_18a_fl_fastfood_400x400.webp?la=en&h=400&w=400&hash=145DC0CF6234A159261389F18A36742A"
+    type="image/x-icon" />
 
-    <style>
-      :root {
-        --red: #ff0000;
-        --cream: #fff6e9;
-        --white: #fff;
-        --black: #1a1a1a;
-        --muted: #777;
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="auto-logout.js"></script>
+  <script src="micro-interactions.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <style>
+    :root {
+      --red: #ff0000;
+      --cream: #fff6e9;
+      --white: #fff;
+      --black: #1a1a1a;
+      --muted: #777;
+    }
+
+    * {
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    /* Animation Keyframes */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
       }
 
-      * {
-        box-sizing: border-box;
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
       }
 
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    body {
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system;
+      background: var(--cream);
+      margin: 0;
+      padding-bottom: 90px;
+      color: var(--black);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      grid-template-columns: 1.2fr 1fr;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--white);
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      font-size: 18px;
+      transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      opacity: 0;
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .card:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    body.dark .card {
+      background: #1e1e1e;
+      color: #fff;
+
+      box-shadow: 0 12px 30px rgba(191, 179, 179, 0.215);
+    }
+
+    .card h2 {
+      color: var(--red);
+      margin-bottom: 14px;
+      font-size: 22px;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 15px;
+    }
+
+    .item span:last-child {
+      font-weight: 600;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 14px 0;
+    }
+
+    .card h3 {
+      font-size: 22px;
+      margin-top: 8px;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 10px;
+      color: var(--red);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    body.dark .card {
+      background: #1e1e1e;
+      color: #fff;
+
+      box-shadow: 0 12px 30px rgba(191, 179, 179, 0.215);
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      margin-bottom: 12px;
+      font-size: 15px;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--red);
+      outline: none;
+      background: #fff5f5;
+      box-shadow: 0 0 15px rgba(220, 20, 60, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .option {
+      align-items: center;
+      margin: 12px 0;
+      font-size: 1.1rem;
+    }
+
+    .option input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      cursor: pointer;
+      transform: scale(0.8);
+    }
+
+    .option label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.1rem;
+      color: #d61b1b;
+      display: inline-block;
+    }
+
+    body.dark .option label {
+      color: #fff;
+    }
+
+    .option:hover {
+      border-color: var(--red);
+    }
+
+    .option input {
+      transform: scale(1.2);
+    }
+
+    .option:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .option.disabled-delivery {
+      background: #f0f0f0;
+      padding: 12px;
+      border-radius: 8px;
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    body.dark .option.disabled-delivery {
+      background: #2a2a2a;
+    }
+
+    .delivery-free-badge {
+      display: inline-block;
+      background: #4caf50;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 8px;
+      font-weight: 600;
+    }
+
+    .pay-btn {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--red);
+      color: white;
+      padding: 18px;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 -4px 20px rgba(220, 20, 60, 0.3);
+    }
+
+    .pay-btn:hover {
+      background-color: rgb(208, 35, 35);
+      box-shadow: 0 -8px 30px rgba(220, 20, 60, 0.5);
+      transform: translateY(-3px);
+    }
+
+    .pay-btn:active {
+      transform: translateY(-1px);
+    }
+
+    @media (min-width: 900px) {
       body {
-        font-family:
-          Inter,
-          system-ui,
-          -apple-system;
-        background: var(--cream);
-        margin: 0;
-        padding-bottom: 90px;
-        color: var(--black);
+        padding-bottom: 40px;
       }
 
       .container {
-        max-width: 1000px;
+        max-width: 900px;
         margin: auto;
         padding: 20px;
-        grid-template-columns: 1.2fr 1fr;
-        align-items: start;
       }
 
       .card {
-        background: var(--white);
-        padding: 20px;
-        border-radius: 18px;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
         margin-bottom: 20px;
-        font-size: 18px;
-      }
-      body.dark .card {
-        background: #1e1e1e;
-        color: #fff;
-
-        box-shadow: 0 12px 30px rgba(191, 179, 179, 0.215);
       }
 
-      .card h2 {
-        color: var(--red);
-        margin-bottom: 14px;
-        font-size: 22px;
+      .pay-btn {
+        position: static;
+        width: 100%;
+        border-radius: 14px;
+        margin-top: 15px;
       }
 
-      .item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        font-size: 15px;
-      }
-
-      .item span:last-child {
-        font-weight: 600;
-      }
-
-      hr {
-        border: none;
-        border-top: 1px solid #eee;
-        margin: 14px 0;
-      }
-
-      .card h3 {
-        font-size: 22px;
-        margin-top: 8px;
-      }
-
-      a {
-        display: inline-block;
-        margin-top: 10px;
-        color: var(--red);
-        text-decoration: none;
-        font-weight: 600;
-      }
-      body.dark .card {
-        background: #1e1e1e;
-        color: #fff;
-
-        box-shadow: 0 12px 30px rgba(191, 179, 179, 0.215);
+      .container {
+        padding: 20px;
       }
 
       input,
       textarea {
-        width: 100%;
-        padding: 14px;
-        border-radius: 12px;
+        margin-bottom: 15px;
+      }
+
+      #summary,
+      .option,
+      .pay-btn {
+        margin-bottom: 15px;
+      }
+
+      input,
+      textarea {
+        padding: 12px;
+        border-radius: 10px;
         border: 1px solid #ddd;
-        margin-bottom: 12px;
-        font-size: 15px;
       }
+    }
 
-      input:focus,
-      textarea:focus {
-        border-color: var(--red);
-        outline: none;
-        background: #fff5f5;
-      }
-
+    @media (max-width: 480px) {
       .option {
-        align-items: center;
-        margin: 12px 0;
-        font-size: 1.1rem;
+        font-size: 1rem;
       }
 
       .option input[type="radio"] {
-        width: 18px;
-        height: 18px;
-        margin-right: 10px;
-        cursor: pointer;
-        transform: scale(0.8);
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        transform: scale(0.7);
       }
 
       .option label {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 1.1rem;
-        color: #d61b1b;
-        display: inline-block;
+        font-size: 1rem;
       }
-      body.dark .option label {
-        color: #fff;
-      }
+    }
 
-      .option:hover {
-        border-color: var(--red);
-      }
+    body.dark {
+      background: #121212;
+      color: #eee;
+    }
 
-      .option input {
-        transform: scale(1.2);
-      }
+    body.dark .header,
+    body.dark .container,
+    body.dark .cart-item {
+      background: #1e1e1e;
+      color: #fff;
+    }
 
-      .pay-btn {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--red);
-        color: white;
-        padding: 18px;
-        font-size: 18px;
-        font-weight: 700;
-        border: none;
-        cursor: pointer;
-        z-index: 10;
-      }
-      .pay-btn:hover {
-        background-color: rgb(208, 35, 35);
-        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.137);
-        transform: scale(1.01);
-      }
+    body.dark {
+      background: #121212;
+      color: red;
+    }
+  </style>
+</head>
 
-      @media (min-width: 900px) {
-        body {
-          padding-bottom: 40px;
-        }
-
-        .container {
-          max-width: 900px;
-          margin: auto;
-          padding: 20px;
-        }
-
-        .card {
-          margin-bottom: 20px;
-        }
-
-        .pay-btn {
-          position: static;
-          width: 100%;
-          border-radius: 14px;
-          margin-top: 15px;
-        }
-
-        .container {
-          padding: 20px;
-        }
-
-        input,
-        textarea {
-          margin-bottom: 15px;
-        }
-
-        #summary,
-        .option,
-        .pay-btn {
-          margin-bottom: 15px;
-        }
-
-        input,
-        textarea {
-          padding: 12px;
-          border-radius: 10px;
-          border: 1px solid #ddd;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .option {
-          font-size: 1rem;
-        }
-
-        .option input[type="radio"] {
-          width: 16px;
-          height: 16px;
-          margin-right: 8px;
-          transform: scale(0.7);
-        }
-
-        .option label {
-          font-size: 1rem;
-        }
-      }
-
-      body.dark {
-        background: #121212;
-        color: #eee;
-      }
-
-      body.dark .header,
-      body.dark .container,
-      body.dark .cart-item {
-        background: #1e1e1e;
-        color: #fff;
-      }
-
-      body.dark {
-        background: #121212;
-        color: red;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="container">
-      <div class="card">
-        <h2>Order Summary</h2>
-        <div id="summary"></div>
-        <hr />
-        <p>Subtotal: ₦<span id="subtotal">0</span></p>
-        <p>Delivery: ₦<span id="delivery">2000</span></p>
-        <h3>Total: ₦<span id="total">0</span></h3>
-        <a href="cart.html">← Back to Cart</a>
-      </div>
-
-      <div class="card">
-        <h2>Delivery Option</h2>
-        <div class="option">
-          <input
-            type="radio"
-            name="delivery"
-            checked
-            onclick="setDelivery(2000)"
-          />
-          <label>🚚 Standard (₦2,000)</label>
-        </div>
-        <div class="option">
-          <input type="radio" name="delivery" onclick="setDelivery(3000)" />
-          <label>⚡ Express (₦3,000)</label>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Delivery Details</h2>
-        <input id="name" placeholder="Full name" />
-        <input id="phone" placeholder="Phone number" />
-        <textarea id="address" placeholder="Delivery address"></textarea>
-      </div>
-
-      <div class="card">
-        <h2>Payment Method</h2>
-        <div class="option">
-          <input type="radio" checked />
-          <label>💳 Paystack (Secure 🔒)</label>
-        </div>
-      </div>
-
-      <button class="pay-btn" onclick="submitOrder()">Place Order</button>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Order Summary</h2>
+      <div id="summary"></div>
+      <hr />
+      <p>Subtotal: ₦<span id="subtotal">0</span></p>
+      <p>Delivery: <span id="deliveryDisplay">…</span></p>
+      <h3>Total: ₦<span id="total">0</span></h3>
+      <a href="cart.html">← Back to Cart</a>
     </div>
-  </body>
+
+    <div class="card">
+      <h2>Delivery Option</h2>
+      <div id="deliverySection">
+        <!-- Fees come from Admin → Store Settings -->
+        <div class="option" id="deliveryOption1">
+          <input type="radio" name="delivery" id="standard" checked onclick="setDelivery('standard')" />
+          <label for="standard">🚚 Standard (<span id="standardFee">…</span>)</label>
+        </div>
+        <div class="option" id="deliveryOption2">
+          <input type="radio" name="delivery" id="express" onclick="setDelivery('express')" />
+          <label for="express">⚡ Express (<span id="expressFee">…</span>)</label>
+        </div>
+        <div id="freeDeliveryMsg"
+          style="display: none; margin-top: 10px; padding: 10px; background: #e8f5e9; border-radius: 8px; color: #2e7d32; font-weight: 600;">
+          ✓ Free Delivery! Your order qualifies for free delivery (over ₦<span id="freeOver"></span>)
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Delivery Details</h2>
+      <input id="name" placeholder="Full name" />
+      <input id="phone" placeholder="Phone number" />
+      <textarea id="address" placeholder="Delivery address"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Payment Method</h2>
+      <div class="option">
+        <input type="radio" checked />
+        <label>💳 Paystack (Secure 🔒)</label>
+      </div>
+    </div>
+
+    <button class="pay-btn" onclick="submitOrder()">Place Order</button>
+  </div>
+</body>
+
 </html>
 
 <script>
@@ -349,7 +442,34 @@
   });
 
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  let deliveryFee = 2000;
+
+  // Delivery prices are managed in Admin → Store Settings
+  const store = { deliveryFee: 0, expressFee: 0, freeDeliveryOver: 0 };
+  let storeLoaded = false;
+  let deliveryChoice = "standard";
+  let deliveryFee = 0;
+
+  const naira = (n) => "₦" + Number(n || 0).toLocaleString();
+
+  db.collection("settings").doc("store").get()
+    .then((snap) => {
+      if (snap.exists) {
+        const s = snap.data();
+        store.deliveryFee = Number(s.deliveryFee) || 0;
+        store.expressFee = Number(s.expressFee) || 0;
+        store.freeDeliveryOver = Number(s.freeDeliveryOver) || 0;
+      }
+    })
+    .catch((err) => console.error("Could not load store settings:", err))
+    .finally(() => {
+      storeLoaded = true;
+      document.getElementById("standardFee").textContent = store.deliveryFee ? naira(store.deliveryFee) : "Free";
+      document.getElementById("expressFee").textContent = naira(store.expressFee);
+      document.getElementById("freeOver").textContent = store.freeDeliveryOver.toLocaleString();
+      // hide Express if the admin hasn't set a price for it
+      document.getElementById("deliveryOption2").style.display = store.expressFee > 0 ? "" : "none";
+      renderSummary();
+    });
 
   function renderSummary() {
     let subtotal = 0;
@@ -365,19 +485,71 @@
     });
 
     subtotalEl.innerText = subtotal;
-    total.innerText = subtotal + deliveryFee;
 
+    const isFree = store.freeDeliveryOver > 0 && subtotal > store.freeDeliveryOver;
+    if (!storeLoaded) {
+      deliveryFee = 0;
+      document.getElementById("deliveryDisplay").textContent = "…";
+    } else if (isFree) {
+      deliveryFee = 0;
+      deliveryChoice = "standard";
+      document.getElementById("deliveryDisplay").innerHTML = '<span style="color: #4caf50; font-weight: 600;">FREE</span>';
+      disableDeliveryOptions();
+    } else {
+      enableDeliveryOptions();
+      deliveryFee = deliveryChoice === "express" ? store.expressFee : store.deliveryFee;
+      document.getElementById("deliveryDisplay").textContent = deliveryFee ? naira(deliveryFee) : "FREE";
+    }
+
+    total.innerText = subtotal + deliveryFee;
     localStorage.setItem("cartTotal", subtotal + deliveryFee);
   }
 
-  function setDelivery(amount) {
-    deliveryFee = amount;
-    delivery.innerText = amount;
+  function disableDeliveryOptions() {
+    const deliverySection = document.getElementById("deliverySection");
+    const freeDeliveryMsg = document.getElementById("freeDeliveryMsg");
+    const deliveryOptions = document.querySelectorAll("#deliverySection .option");
+
+    // Grey out the delivery options
+    deliveryOptions.forEach((option) => {
+      option.classList.add("disabled-delivery");
+      option.querySelectorAll("input").forEach((input) => {
+        input.disabled = true;
+      });
+    });
+
+    // Show the free delivery message
+    freeDeliveryMsg.style.display = "block";
+
+    // Reset to standard (first option)
+    document.getElementById("standard").checked = true;
+  }
+
+  function enableDeliveryOptions() {
+    const deliverySection = document.getElementById("deliverySection");
+    const freeDeliveryMsg = document.getElementById("freeDeliveryMsg");
+    const deliveryOptions = document.querySelectorAll("#deliverySection .option");
+
+    // Enable the delivery options
+    deliveryOptions.forEach((option) => {
+      option.classList.remove("disabled-delivery");
+      option.querySelectorAll("input").forEach((input) => {
+        input.disabled = false;
+      });
+    });
+
+    // Hide the free delivery message
+    freeDeliveryMsg.style.display = "none";
+  }
+
+  function setDelivery(choice) {
+    deliveryChoice = choice;
     renderSummary();
   }
 
   async function submitOrder() {
     if (!cart.length) return alert("Cart is empty");
+    if (!storeLoaded) return alert("Still loading delivery prices — please try again in a moment.");
     if (!nameInput.value || !phoneInput.value || !addressInput.value)
       return alert("Please fill all details");
 
@@ -422,7 +594,6 @@
 
   const summary = document.getElementById("summary");
   const subtotalEl = document.getElementById("subtotal");
-  const delivery = document.getElementById("delivery");
 
   renderSummary();
 </script>

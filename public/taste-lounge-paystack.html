@@ -15,6 +15,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="auto-logout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -230,9 +231,13 @@
       document.getElementById("loading-state").style.display = "block";
       document.getElementById("paystackForm").style.display = "none";
 
+      // dishes in this order — lets the customer review them later ("verified order")
+      const foodIds = [...new Set((pending.items || []).map((i) => i.foodId).filter(Boolean))];
+
       await db.collection("orders").add({
         userId: user.uid,
         items: pending.items,
+        foodIds,
         pricing: pending.pricing,
         delivery: pending.delivery,
 

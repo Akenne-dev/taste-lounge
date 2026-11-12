@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en" data-cms-page="about">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,7 +11,10 @@
     />
     <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore-compat.js"></script>
+    <script src="site-content.js"></script>
 
+    <script src="auto-logout.js"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap"
       rel="stylesheet"
@@ -465,7 +468,6 @@
         position: relative;
         width: 100%;
         height: 880px;
-        background-image: url("https://media.fiveguys.com/us/2025/07/slider-section-bkg-1.jpg");
         background-size: cover;
         background-position: center;
         border-radius: 10px;
@@ -691,7 +693,7 @@
   <body>
     <header>
       <div class="top-bar">
-        <div class="logo">TASTE LOUNGE</div>
+        <div class="logo" data-cms="general.brandName"></div>
         <a href="log-in.html" class="btn-order"
           >ORDER NOW
           <svg
@@ -714,12 +716,12 @@
           <li>
             <a
               href="#"
-              onclick="alert('Coming soon! Our crew is still working on this.')"
+              onclick="siteAlert('crewMessage'); return false;"
               >THE CREW</a
             >
           </li>
           <li>
-            <a href="#" onclick="alert('We deliver across the country!')"
+            <a href="#" onclick="siteAlert('locationMessage'); return false;"
               >LOCATION</a
             >
           </li>
@@ -732,13 +734,13 @@
 
     <div class="mobile-nav">
       <div class="mobile-top">
-        <div class="mobile-logo">TASTE LOUNGE</div>
+        <div class="mobile-logo" data-cms="general.brandName"></div>
         <div class="hamburger-menu">&#9776;</div>
       </div>
 
       <div class="mobile-menu-panel">
         <div class="mobile-menu-header">
-          <div class="mobile-menu-logo">TASTE LOUNGE</div>
+          <div class="mobile-menu-logo" data-cms="general.brandName"></div>
           <div class="close-menu">&times;</div>
         </div>
 
@@ -748,12 +750,12 @@
           <li>
             <a
               href="#"
-              onclick="alert('Coming soon! Our crew is still working on this.')"
+              onclick="siteAlert('crewMessage'); return false;"
               >THE CREW</a
             >
           </li>
           <li>
-            <a href="#" onclick="alert('We deliver across the country!')"
+            <a href="#" onclick="siteAlert('locationMessage'); return false;"
               >LOCATION</a
             >
           </li>
@@ -766,109 +768,64 @@
 
     <section class="about-sec-1">
       <div class="about-img">
-        <img
-          src="https://media.fiveguys.com/us/2025/07/About-Our-Food-Hero.jpg"
-          alt=""
-        />
+        <img data-cms-src="about.heroImage" alt="" />
       </div>
-
       <div class="about-text">
-        <h1>Prepared With <br /><span>Purpose</span></h1>
-
-        <p>
-          From the way we wrap our burgers to how we flip the patties and source
-          the potatoes, there’s a method to everything we do at Taste Lounge.
-        </p>
+        <h1><bdi data-cms="about.heroTitle"></bdi> <br /><span data-cms="about.heroHighlight"></span></h1>
+        <p data-cms="about.heroText"></p>
       </div>
     </section>
-
     <div class="section2">
-      <h1>THE TASTE LOUNGE WAY</h1>
-
-      <div class="image-overlay-box">
+      <h1 data-cms="about.wayHeading"></h1>
+      <div class="image-overlay-box" data-cms-bg="about.wayImage">
         <div class="overlay-dark"></div>
-
         <div class="section2-content">
-          <h1>Real Food, <span>Really Handmade.</span></h1>
-          <p>
-            When we say our food is handmade, we mean it. Our beef is
-            hand-pattied and fries are sliced fresh in-store. Each morning, our
-            skilled team tears lettuce by hand, chops onions, slices peppers and
-            prepares every ingredient carefully to give you the highest quality
-            meals.
-          </p>
+          <h1><bdi data-cms="about.wayTitle"></bdi> <span data-cms="about.wayHighlight"></span></h1>
+          <p data-cms="about.wayText"></p>
         </div>
       </div>
     </div>
-
     <div class="section3">
-      <h1 style="text-decoration: underline">OUR PREPARATION</h1>
-
+      <h1 style="text-decoration: underline" data-cms="about.prepHeading"></h1>
       <div class="section3-wrap">
-        <img
-          src="https://i.ytimg.com/vi/lxCY5fObe30/maxresdefault.jpg"
-          alt=""
-        />
+        <img data-cms-src="about.prepImage" alt="" />
         <div class="section3-text">
-          <h1>The Why Behind <span>The Soup</span></h1>
-          <p>
-            A lot of thought and craft goes into our Soup. We carefully source
-            our veggies and hand-cut them in-store. Using 100% refined palmoil
-            oil, we fry them through a three-step process that gives Taste
-            Lounge soup their signature crispness, flavor, and unforgettable
-            taste.
-          </p>
+          <h1><bdi data-cms="about.prepTitle"></bdi> <span data-cms="about.prepHighlight"></span></h1>
+          <p data-cms="about.prepText"></p>
         </div>
       </div>
     </div>
-
     <section class="hours-card">
-      <h3>🕒 Opening Hours</h3>
-      <ul>
-        <li><span>Mon – Fri</span><span>9:00 AM – 6:00 PM</span></li>
-        <li><span>Saturday</span><span>10:00 AM – 4:00 PM</span></li>
-        <li><span>Sunday</span><span>Closed</span></li>
+      <h3 data-cms="general.hoursTitle"></h3>
+      <ul data-cms-list="general.hours">
+        <template><li><span data-cms=".days"></span><span data-cms=".time"></span></li></template>
       </ul>
     </section>
-
     <div class="section4">
-      <h1>Hungry? Start Your Order.</h1>
-      <a href="log-in.html" class="order-btn">ORDER NOW</a>
+      <h1 data-cms="about.ctaTitle"></h1>
+      <a href="log-in.html" class="order-btn" data-cms="about.ctaButton"></a>
     </div>
-
+    
     <footer>
-      <div>
-        <h3>Menu</h3>
-        <p>Jollof • Fried Rice • Pasta • Drinks • Swallow</p>
-      </div>
-
-      <div>
-        <h3>Contact</h3>
-        <p>📥 fumilolakadri@gmail.com<br />📍 Delivery, Nationwide</p>
-      </div>
-
-      <div>
-        <h3>Follow Us</h3>
-        <div class="social-icons">
-          <a href="https://www.instagram.com/akennebaby/?hl=en" class="icon"
-            ><i class="fab fa-instagram"></i
-          ></a>
-          <a href="https://www.facebook.com/" class="icon"
-            ><i class="fab fa-facebook-f"></i
-          ></a>
-          <a href="https://www.tiktok.com/@akennebaby" class="icon"
-            ><i class="fab fa-tiktok"></i
-          ></a>
-          <a href="https://x.com/" class="icon"
-            ><i class="fab fa-twitter"></i
-          ></a>
-        </div>
-      </div>
-    </footer>
-
-    <div class="copyright-bar">
-      Copyright © 2026 Taste Lounge Enterprises, LLC. All rights reserved.
+    <div>
+      <h3>Menu</h3>
+      <p data-cms="general.footerMenuText"></p>
     </div>
+    <div>
+      <h3>Contact</h3>
+      <p>📥 <span data-cms="general.email"></span><br />📍 <span data-cms="general.location"></span></p>
+    </div>
+    <div>
+      <h3>Follow Us</h3>
+      <div class="social-icons">
+        <a data-cms-href="general.instagram" class="icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a data-cms-href="general.facebook" class="icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a data-cms-href="general.tiktok" class="icon" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a data-cms-href="general.twitter" class="icon" aria-label="X (Twitter)"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+  </footer>
+  <div class="copyright-bar" data-cms="general.copyright"></div>
   </body>
 </html>
 <script>

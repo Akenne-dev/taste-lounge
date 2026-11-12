@@ -13,7 +13,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="auto-logout.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="menu-service.js"></script>
 
 
 
@@ -235,7 +237,11 @@
     .carousel-track {
       display: flex;
       gap: 15px;
-      animation: slide 30s linear infinite;
+    }
+
+    /* JS sets --slide-to and the duration from the number of deals */
+    .carousel-track.is-sliding {
+      animation: slide var(--slide-time, 30s) linear infinite;
     }
 
     .deal-card {
@@ -254,7 +260,7 @@
       }
 
       100% {
-        transform: translateX(-300%);
+        transform: translateX(var(--slide-to, -300%));
       }
     }
 
@@ -739,6 +745,118 @@
         body.dark .no-match {
       color: white !important;
     }
+
+    /* ---------- Clickable food cards → food-details.html ---------- */
+    [data-food-id] {
+      cursor: pointer;
+      transition: transform .25s ease, box-shadow .25s ease, opacity .3s ease;
+    }
+
+    .trend-card[data-food-id]:hover,
+    .food-card[data-food-id]:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+    }
+
+    .meal-card[data-food-id]:hover {
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+    }
+
+    [data-food-id]:focus-visible {
+      outline: 3px solid rgba(255, 0, 0, 0.45);
+      outline-offset: 3px;
+    }
+
+    [data-food-id] img {
+      transition: transform .5s ease;
+    }
+
+    .trend-card[data-food-id]:hover img,
+    .food-card[data-food-id]:hover img {
+      transform: scale(1.04);
+    }
+
+    .view-details {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--red);
+      margin-top: 4px;
+    }
+
+    .view-details i {
+      font-size: 10px;
+      transition: transform .2s ease;
+    }
+
+    [data-food-id]:hover .view-details i {
+      transform: translateX(3px);
+    }
+
+    [data-add] {
+      cursor: pointer;
+    }
+
+    /* loading placeholders while the menu loads from Firestore */
+    .skeleton-box {
+      border-color: transparent !important;
+      color: transparent !important;
+      background: linear-gradient(90deg, #f1ece6 25%, #faf7f3 37%, #f1ece6 63%) !important;
+      background-size: 400% 100% !important;
+      animation: menuShimmer 1.4s ease infinite;
+      box-shadow: none !important;
+      pointer-events: none;
+    }
+
+    body.dark .skeleton-box {
+      background: linear-gradient(90deg, #232020 25%, #2d2929 37%, #232020 63%) !important;
+      background-size: 400% 100% !important;
+    }
+
+    @keyframes menuShimmer {
+      0% { background-position: 100% 50%; }
+      100% { background-position: 0 50%; }
+    }
+
+    /* rating badge on cards (from customer reviews) */
+    .tl-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin: 2px 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .tl-rating > span:first-child {
+      color: var(--yellow);
+    }
+
+    .tl-rating-count {
+      font-weight: 500;
+      color: #777;
+    }
+
+    body.dark .tl-rating {
+      color: #fff;
+    }
+
+    body.dark .tl-rating-count {
+      color: #bbb;
+    }
+
+    .sold-out {
+      opacity: .55;
+    }
+
+    .modal-empty {
+      text-align: center;
+      padding: 30px 10px;
+      color: #777;
+    }
   </style>
 </head>
 
@@ -781,13 +899,9 @@
 
 
   
-  <section class="deals-carousel">
-    <div class="carousel-track">
-      <div class="deal-card">🔥 20% Off All Burgers — Today Only!</div>
-      <div class="deal-card">🍲 New Meal Alert: Coconut Jollof Rice!</div>
-      <div class="deal-card">🚚 Free Delivery for Orders Above ₦20,000!</div>
-      <div class="deal-card">💥 Boneless Chicken — ₦4500 → ₦3200!</div>
-    </div>
+  <!-- Deals come from Admin → Store Settings -->
+  <section class="deals-carousel" id="dealsSection" hidden>
+    <div class="carousel-track" id="dealsTrack"></div>
   </section>
 
   <p id="noResults" class="no-match"
@@ -800,210 +914,35 @@
   <section class="category-scroll">
     <h2>Categories</h2>
 
-    <div class="cat-container">
-
-      <div class="cat-box" onclick="openFoodModal(naijaFoods, 'Nigerian Dishes 🇳🇬')">Nigerian Dishes</div>
-
-      
-
-      <div class="cat-box" onclick="openFoodModal(continentalFoods, 'Continental Dishes 🌐')">Continental</div>
-
-      <div class="cat-box" onclick="openFoodModal(burgerFoods, 'Burgers & Fries 🍔')">Burgers & Fries</div>
-
-      <div class="cat-box" onclick="openFoodModal(riceFoods, 'Rice Bowls 🍚')">Rice Bowls</div>
-
-      <div class="cat-box" onclick="openFoodModal(drinksFoods, 'Drinks & Smoothies 🧃')">Drinks & Smoothies</div>
-
+    <!-- Categories come from Admin → Categories -->
+    <div class="cat-container" id="catContainer">
+      <div class="cat-box skeleton-box" style="width:150px">&nbsp;</div>
+      <div class="cat-box skeleton-box" style="width:120px">&nbsp;</div>
+      <div class="cat-box skeleton-box" style="width:140px">&nbsp;</div>
     </div>
 
   </section>
 
+  <p id="menuError" class="no-match" style="display:none; text-align:center; margin:20px; font-size:16px; color:red;"></p>
 
-  
-  <section class="trending-section">
-    <h2>Trending Meals 🔥</h2>
-
-    <div class="trending-track">
-      <div class="trend-card">
-        <img src="home-jollof.jpg">
-        <p class="name">Jollof Turkey Deluxe</p>
-        <p class="price">₦3,800</p>
-
-        <button onclick="addToCart({
-  id:'jollof_001',
-  name:'Jollof Turkey Deluxe',
-  price:3800,
-  image:'home-jollof.jpg'
-})">
-          Add to Cart
-        </button>
-
-      </div>
-
-      <div class="trend-card">
-        <img src="https://www.howtocook.recipes/wp-content/uploads/2021/05/Ratatouille-recipe.jpg">
-        <p class="name">Ratatouille</p>
-        <p class="price">₦14,000</p>
-        <button onclick="addToCart({
-  id:'Ratatouille_002',
-  name:'Ratatouille',
-  price:14000,
-  image:'ratatouilee.jpg'
-})">
-          Add to Cart
-      </div>
-
-
-      <div class="trend-card">
-        <img src="https://dooneyskitchen.com/wp-content/uploads/2021/03/nkwobi-2.jpg">
-        <p class="name">Nkwobi</p>
-        <p class="price">₦5,000</p>
-
-        <button onclick="addToCart({
-  id:'Nkwobi-f',
-  name:'Nkwobi',
-  price:5000,
-  image:'nkwobi.jpg'
-})">
-          Add to Cart
-      </div>
-
-      <div class="trend-card">
-        <img src="garri-pounded-yam-served-with-efo-riro-vegetable-soup_539365-1068.jpg">
-        <p class="name">Iyan & Efo-Riro</p>
-        <p class="price">₦6,500</p>
-        <button onclick="addToCart({
-  id:'Iyan & Efo-Riro-f',
-  name:'Iyan & Efo-Riro',
-  price:6500,
-  image:'garri-pounded-yam-served-with-efo-riro-vegetable-soup_539365-1068.jpg'
-})">
-          Add to Cart
-      </div>
-
-      <div class="trend-card">
-        <img src="fried-chicken-with-french-fries-nuggets-meal_1339-78221.jpg">
-        <p class="name">Chicken & chips</p>
-        <p class="price">₦4,000</p>
-        <button onclick="addToCart({
-  id:'Chicken & chips-f',
-  name:'Chicken & chips',
-  price:4000,
-  image:'fried-chicken-with-french-fries-nuggets-meal_1339-78221.jpg'
-})">
-          Add to Cart
-      </div>
-
-      <div class="trend-card">
-        <img src="https://media.fiveguys.com/us/2025/07/About-Our-Food-Hero.jpg">
-        <p class="name">Classic Burger</p>
-        <p class="price">₦3,500</p>
-        <button onclick="addToCart({
-  id:'Burger-f',
-  name:'Classic Burger',
-  price:3500,
-  image:'burger.jpg'
-})">
-          Add to Cart
-      </div>
-
-      <div class="trend-card">
-        <img src="https://farmingfarmersfarms.com/wp-content/uploads/2025/09/Egusi-Soup.jpg">
-        <p class="name">Egusi & Beef</p>
-        <p class="price">₦4,500</p>
-        <button onclick="addToCart({
-  id:'Egusi & Beef-f',
-  name:'Egusi & Beef',
-  price:4500,
-  image:'Egusi.jpg'
-})">
-          Add to Cart
-
-      </div>
+  <!-- Trending / Popular dishes are ticked in Admin → Foods -->
+  <section class="trending-section" id="trendingSection">
+    <h2></h2>
+    <div class="trending-track" id="trendingTrack">
+      <div class="trend-card skeleton-box" style="height:250px"></div>
+      <div class="trend-card skeleton-box" style="height:250px"></div>
+      <div class="trend-card skeleton-box" style="height:250px"></div>
     </div>
   </section>
 
-  <div class="trend-card" data-name="Jollof Turkey Deluxe">
-
-    
-    <section class="popular-section">
-      <h2>Popular This Week ⭐</h2>
-
-      <div class="popular-grid">
-        <div class="food-card">
-          <img src="two-milkshakes-with-chocolate-strawberry_140725-68.jpg">
-          <h3>Milkshake</h3>
-          <p class="price">₦3,000</p>
-          <button onclick="addToCart({
-  id:'Milkshake-f',
-  name:'Milkshake',
-  price:3000,
-  image:'two-milkshakes-with-chocolate-strawberry_140725-68.jpg'
-})">
-            Add to Cart
-        </div>
-
-        <div class="food-card">
-          <img
-            src="https://simshomekitchen.com/wp-content/uploads/2025/09/Tripe-goat-meat-pepper-soup-in-a-pink-bowl-garnished-with-chillies-and-spinach.-A-spoon-and-red-cloth.jpg">
-          <h3>Assorted Pepper Soup</h3>
-          <p class="price">₦4000</p>
-          <button onclick="addToCart({
-  id:'Assorted pepper soup-f',
-  name:'Assorted Pepper Soup',
-  price:4000,
-  image:'download.jpg'
-})">
-            Add to Cart
-        </div>
-
-        <div class="food-card">
-          <!-- <img src="fried-sweet-ans-sour-chicken-with-steamed-rice-close-up_177613-3387.jpg"> -->
-          <img src="https://i.pinimg.com/736x/52/f0/32/52f0328d3f17af25800af7ec1729e411.jpg">
-          <h3>Coconut jollof Rice</h3>
-          <p class="price">₦4,500</p>
-          <button onclick="addToCart({
-  id:'Fried Rice-f',
-  name:'Fried Rice',
-  price:4500,
-  image:'fried-sweet-ans-sour-chicken-with-steamed-rice-close-up_177613-3387.jpg'
-})">
-            Add to Cart
-        </div>
-
-        <div class="food-card">
-          <img
-            src="grilled-whole-fish-with-yellow-sauce-vegetable-salad-lemon-pomegranate-seeds-white-plate_114579-10.jpg">
-          <h3>BBQ Croaker Fish</h3>
-          <p class="price">₦5,000</p>
-          <button onclick="addToCart({
-  id:'BBQ Croaker Fish-f',
-  name:'BBQ Croaker Fish',
-  price:5000,
-  image:'grilled-whole-fish-with-yellow-sauce-vegetable-salad-lemon-pomegranate-seeds-white-plate_114579-10.jpg'
-})">
-            Add to Cart
-
-        </div>
-
-        <div class="food-card">
-          <img
-            src="https://i.ytimg.com/vi/6ASUNzB_6Kw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAQZtDMbfr8nmNcIWlapE4oIeCS7Q">
-          <h3>Edikaikong Soup</h3>
-          <p class="price">₦8000</p>
-          <button onclick="addToCart({
-  id:'Edikaikong Soup-f',
-  name:'Edikaikong Soup',
-  price:8000,
-  image:'edikaikong.jpg'
-})">
-            Add to Cart
-
-        </div>
-
-
-      </div>
-    </section>
+  <section class="popular-section" id="popularSection">
+    <h2>Popular This Week ⭐</h2>
+    <div class="popular-grid" id="popularGrid">
+      <div class="food-card skeleton-box" style="height:260px"></div>
+      <div class="food-card skeleton-box" style="height:260px"></div>
+      <div class="food-card skeleton-box" style="height:260px"></div>
+    </div>
+  </section>
 
 
     
@@ -1066,6 +1005,89 @@
 
   
 
+  /* ================= Menu (loaded from Firestore) =================
+     Everything here is managed in the admin panel: dishes, categories,
+     extras, deals and delivery settings. See menu-service.js. */
+
+  let menu = null; // { foods, categories, settings, findFood, foodsIn }
+
+  function cardAttrs(food) {
+    return `data-food-id="${tlEsc(food.id)}" tabindex="0" role="link" aria-label="View details for ${tlEsc(food.name)}"`;
+  }
+
+  function addButton(food, className = "") {
+    return `<button type="button" class="${className}" data-add="${tlEsc(food.id)}"
+      aria-label="Add ${tlEsc(food.name)} to cart">Add to Cart</button>`;
+  }
+
+  function foodImg(food) {
+    return `<img src="${tlEsc(food.img || "taste-lounge-logo.png")}" alt="${tlEsc(food.name)}" loading="lazy" onerror="${TL_IMG_FALLBACK}">`;
+  }
+
+  function renderDeals(deals) {
+    const section = document.getElementById("dealsSection");
+    const track = document.getElementById("dealsTrack");
+    section.hidden = deals.length === 0;
+    track.innerHTML = deals.map(text => `<div class="deal-card">${tlEsc(text)}</div>`).join("");
+    track.classList.toggle("is-sliding", deals.length > 1);
+    // slide until the last deal is in view, ~7.5s per deal
+    track.style.setProperty("--slide-to", `calc(${deals.length - 1} * (-80% - 15px))`);
+    track.style.setProperty("--slide-time", `${Math.max(10, deals.length * 7.5)}s`);
+  }
+
+  function renderCategories(categories) {
+    const box = document.getElementById("catContainer");
+    if (!categories.length) {
+      box.innerHTML = `<p class="modal-empty">No categories yet.</p>`;
+      return;
+    }
+    box.innerHTML = categories.map(c => `
+      <div class="cat-box" role="button" tabindex="0" data-category="${tlEsc(c.id)}">${tlEsc(c.name)}</div>`).join("");
+  }
+
+  function renderTrending(foods) {
+    document.getElementById("trendingSection").hidden = foods.length === 0;
+    document.getElementById("trendingTrack").innerHTML = foods.map(f => `
+      <div class="trend-card" ${cardAttrs(f)}>
+        ${foodImg(f)}
+        <p class="name">${tlEsc(f.name)}</p>
+        ${tlRatingBadge(f.rating)}
+        <p class="price">${tlFormat(f.price)}</p>
+        ${addButton(f)}
+      </div>`).join("");
+  }
+
+  function renderPopular(foods) {
+    document.getElementById("popularSection").hidden = foods.length === 0;
+    document.getElementById("popularGrid").innerHTML = foods.map(f => `
+      <div class="food-card" ${cardAttrs(f)}>
+        ${foodImg(f)}
+        <h3>${tlEsc(f.name)}</h3>
+        ${tlRatingBadge(f.rating)}
+        <p class="price">${tlFormat(f.price)}</p>
+        ${addButton(f)}
+      </div>`).join("");
+  }
+
+  async function loadMenu() {
+    try {
+      menu = await tlLoadMenu(db);
+      const available = menu.foods.filter(f => f.available);
+      renderDeals(menu.settings.deals);
+      renderCategories(menu.categories);
+      renderTrending(available.filter(f => f.trending));
+      renderPopular(available.filter(f => f.popular));
+      if (document.getElementById("search").value.trim()) seek();
+    } catch (err) {
+      console.error("Error loading menu:", err);
+      const msg = document.getElementById("menuError");
+      msg.textContent = "We couldn't load the menu. Please check your connection and refresh the page.";
+      msg.style.display = "block";
+      ["trendingSection", "popularSection"].forEach(id => (document.getElementById(id).hidden = true));
+      document.getElementById("catContainer").innerHTML = "";
+    }
+  }
+
   function seek() {
     const value = document.getElementById("search").value.trim().toLowerCase();
     const resultsDiv = document.getElementById("results");
@@ -1073,28 +1095,18 @@
 
     resultsDiv.innerHTML = "";
 
-    
-    if (value === "") {
+    if (value === "" || !menu) {
       resultsDiv.style.display = "none";
       noResults.style.display = "none";
       return;
     }
 
-    const matches = allFoods.filter(food => {
-      const price = Number(food.price.replace(/₦|,/g, ""));
-
-      if (!isNaN(value)) {
-        return price <= Number(value);
-      }
-
-      return (
-        food.name.toLowerCase().includes(value) ||
-        food.category.toLowerCase().includes(value)
-      );
-    });
-
-
-
+    // A number means "show me meals within this budget".
+    const isBudget = !isNaN(value);
+    const matches = menu.foods.filter(food => food.available && (isBudget
+      ? food.price <= Number(value)
+      : [food.name, tlCategoryLabel(food), food.badge, food.trending ? "trending" : "", food.popular ? "popular" : ""]
+          .join(" ").toLowerCase().includes(value)));
 
     if (matches.length === 0) {
       noResults.style.display = "block";
@@ -1105,144 +1117,36 @@
     noResults.style.display = "none";
     resultsDiv.style.display = "grid";
 
-    matches.forEach(food => {
-      resultsDiv.innerHTML += `
-      <div class="food-card">
-        <img src="${food.img}">
-        <h3>${highlight(food.name, value)}</h3>
-        <p>${food.category}</p>
-        <p class="price">${food.price}</p>
-
-        <button onclick="addToCart({
-          id:'${food.name.replace(/\s+/g, "_")}',
-          name:'${food.name}',
-          price:${food.price.replace(/₦|,/g, "")},
-          image:'${food.img}'
-        })">
-          Add to Cart
-        </button>
-      </div>
-    `;
-    });
+    resultsDiv.innerHTML = matches.map(food => `
+      <div class="food-card" ${cardAttrs(food)}>
+        ${foodImg(food)}
+        <h3>${highlight(food.name, isBudget ? "" : value)}</h3>
+        ${tlRatingBadge(food.rating)}
+        <p>${tlEsc(tlCategoryLabel(food))}</p>
+        <p class="price">${tlFormat(food.price)}</p>
+        ${addButton(food)}
+      </div>`).join("");
   }
 
-  
+  function openFoodModal(categoryId) {
+    if (!menu) return;
+    const category = menu.categories.find(c => c.id === categoryId);
+    const foods = menu.foodsIn(categoryId);
 
-  const naijaFoods = [
-    { name: "Asun Jollof Rice", price: "₦6000", img: "https://t4.ftcdn.net/jpg/08/86/88/03/360_F_886880307_8CLg4L9mXWDDCQxgKN5feoXyasoeX08a.jpg" },
-    { name: "Pasta Spaghetti with shrimps", price: "₦6000", img: "pasta-spaghetti-with-shrimps-tomato-sauce-served-plate-dark-surface-closeup_1220-5409.jpg" },
-    { name: "Ofada Rice & Ayamase", price: "₦5000", img: "https://i.pinimg.com/736x/a9/7e/64/a97e640b8f51b9f9e1787a2cee6472a3.jpg" },
-    { name: "Oha Soup", price: "₦5000", img: "https://i.pinimg.com/1200x/33/54/4a/33544a780071ea22ffe18f73f3b3b3e5.jpg" },
-    { name: "Semo & Egusi", price: "₦5000", img: "https://www.sugarcaneglasgow.co.uk/wp-content/uploads/2022/12/pounded-yam.jpg" },
-    { name: "Asun", price: "₦5000", img: "https://abovelifestyle.com/ikotun/wp-content/uploads/2025/04/1653690949.jpg" },
-    { name: "Iyan & Efo", price: "₦4000", img: "https://www.willflyforfood.net/wp-content/uploads/2021/06/nigerian-food-afang-soup.jpg.webp" },
-    { name: "Moi Moi", price: "₦3500", img: "https://i.pinimg.com/736x/99/e0/fb/99e0fb1068b452a4eea8fa33e8d9bbdf.jpg" },
-    { name: "Fried Yam & Sauce", price: "₦5500", img: "https://i.pinimg.com/1200x/29/f6/4e/29f64e32144c085df04b883bc29cd98f.jpg" },
-    { name: "Ewa Agoyin", price: "₦4000", img: "https://simshomekitchen.com/wp-content/uploads/2025/08/Nigerian-ewaagoyin-in-a-white-bowl.jpg" }
-  ];
-
-  const continentalFoods = [
-    { name: "Medium Chessy Pizza", price: "₦10000", img: "pizza.jpg" },
-    { name: "Mayonnaise Coleslaw", price: "₦8000", img: "https://i.pinimg.com/736x/73/37/06/733706aea11fb0e94bfe87ff45b46e99.jpg" },
-    { name: "Burritos", price: "₦8000", img: "burritos.jpg" },
-    { name: "Chicken Tikka", price: "₦7600", img: "chicken-tikka.jpg" },
-    { name: "Omelette Veg", price: "₦6000", img: "omelette.jpg" },
-    { name: "American Breakfast", price: "₦9500", img: "https://i.pinimg.com/1200x/8a/da/c3/8adac3fef90a5ee5ae4165e5019e6c73.jpg" }
-  ];
-
-  const burgerFoods = [
-    { name: "Boneless Chicken", price: "₦3200", img: "nugget.jpg" },
-    { name: "Golden French Fries", price: "₦3000", img: "golden-crispy-french-fries-basket_23-2151997993.jpg" },
-    { name: "Beef Sharwama", price: "₦4000", img: "delicious-beef-shawarma-wrap-with-fresh-vegetables_822916-5469.jpg" },
-    { name: "(10) Chicken Drum", price: "₦14000", img: "https://i.pinimg.com/736x/5b/d5/05/5bd505f837ab3aa00ac51eea9ce3c5a4.jpg" },
-    { name: "Fried Potato", price: "₦3000", img: "https://i.pinimg.com/1200x/e7/25/ce/e725cecd22c102bbc2ec74240dc4b5a8.jpg" },
-    { name: "Gizdodo", price: "4300", img: "https://i.pinimg.com/736x/d7/df/92/d7df920321679e76281db5b4cd4d463a.jpg" },
-    { name: "Hot Puffpuff", price: "₦1500", img: "https://i.pinimg.com/1200x/63/6c/0c/636c0c3e609cb4aa8b5c1155f3608056.jpg" }
-  ];
-
-  const riceFoods = [
-    { name: "Chinese Rice", price: "₦11000", img: "https://i.pinimg.com/736x/a9/03/82/a903822f6c0f32162676db6a9e2e72a3.jpg" },
-    { name: "Coconut Rice", price: "₦5000", img: "appetizing-healthy-rice-with-vegetables-white-plate-wooden-table_2829-19768.jpg" },
-    { name: "Jambalaya Rice", price: "₦13000", img: "https://i.pinimg.com/1200x/77/56/68/7756683ae3962e9f9ca209cb66e10b0a.jpg" },
-    { name: "Native Rice", price: "₦6000", img: "https://i.pinimg.com/736x/57/ad/12/57ad126612bf922320a466bbe2b3c76d.jpg" },
-    { name: "Rice Pudding", price: "₦5000", img: "https://i.pinimg.com/1200x/ce/09/a1/ce09a13799719bc7e1d66c7c0cf4d24d.jpg" }
-  ];
-
-  const drinksFoods = [
-    
-    { name: "Don Julio 1942", price: "₦380,000", img: "https://bottleking.ng/_next/image?url=https%3A%2F%2Fdnk1kazq09utu.cloudfront.net%2Fproduct-don-julio-1942-1761324445023.png&w=2048&q=75"},
-    { name: "Virgin Mojito", price: "₦2500", img: "https://i.pinimg.com/1200x/57/cd/dd/57cddd925ee9c23164c2cfb69faf0e92.jpg" },
-    { name: "Table Water", price: "₦1000", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfdsK3pXJn7OeqYYzbSJd1AM5s-SSc680XNA&s" },
-    { name: "Soda", price: "₦1500", img: "https://media.fiveguys.com/us/2025/05/drink-bottle-coke.png" },
-    { name: "Parfait", price: "₦3500", img: "https://foolproofliving.com/wp-content/uploads/2017/12/Greek-Yogurt-Parfait-Recipe.jpg" },
-    { name: "Strawberry Smoothie", price: "₦6000", img: "https://gimmedelicious.com/wp-content/uploads/2024/08/Strawberry-Banana-Smoothie-SQ.jpg" },
-    { name: "Milkshake", price: "₦4000", img: "vertical-shot-delicious-mix-berry-milkshake-with-different-berries-bowl-it_181624-2298.jpg" },
-  ];
-
-  const trendingFoods = [
-    { name: "Jollof Turkey Deluxe", price: "₦3800", img: "home-jollof.jpg" },
-    { name: "Ratatouille", price: "₦14000", img: "ratatouilee.jpg" },
-    { name: "Nkwobi", price: "₦5000", img: "nkwobi.jpg" },
-    { name: "Iyan & Efo-Riro", price: "₦6500", img: "garri-pounded-yam-served-with-efo-riro-vegetable-soup_539365-1068.jpg" },
-    { name: "Chicken & Chips", price: "₦4000", img: "fried-chicken-with-french-fries-nuggets-meal_1339-78221.jpg" },
-    { name: "Classic Burger", price: "₦3500", img: "burger.jpg" },
-    { name: "Egusi & Beef", price: "₦4500", img: "Egusi.jpg" }
-  ];
-
-  const popularFoods = [
-    { name: "Milkshake", price: "₦3000", img: "two-milkshakes-with-chocolate-strawberry_140725-68.jpg" },
-    { name: "Assorted Pepper Soup", price: "₦4000", img: "download.jpg" },
-    { name: "Fried Rice", price: "₦4500", img: "fried-sweet-ans-sour-chicken-with-steamed-rice-close-up_177613-3387.jpg" },
-    { name: "BBQ Croaker Fish", price: "₦5000", img: "grilled-whole-fish-with-yellow-sauce-vegetable-salad-lemon-pomegranate-seeds-white-plate_114579-10.jpg" },
-    { name: "Edikaikong Soup", price: "₦8000", img: "edikaikong.jpg" }
-  ];
-
-
-  
-
-  const allFoods = [
-    ...naijaFoods.map(f => ({ ...f, category: "Nigerian Dishes 🇳🇬" })),
-    ...continentalFoods.map(f => ({ ...f, category: "Continental 🌐" })),
-    ...burgerFoods.map(f => ({ ...f, category: "Burgers & Fries 🍔" })),
-    ...riceFoods.map(f => ({ ...f, category: "Rice Bowls 🍚" })),
-    ...drinksFoods.map(f => ({ ...f, category: "Drinks & Smoothies 🧃" })),
-
-    ...trendingFoods.map(f => ({ ...f, category: "Trending 🔥" })),
-    ...popularFoods.map(f => ({ ...f, category: "Popular ⭐" }))
-  ];
-
-
-
-  function openFoodModal(foodArray, titleText) {
-    const list = document.getElementById("naijaList");
-    const title = document.getElementById("modalTitle");
-
-    title.textContent = titleText;
-    list.innerHTML = "";
-
-    foodArray.forEach(meal => {
-
-      list.innerHTML += `
-  <div class="meal-card">
-    <img src="${meal.img}" alt="${meal.name}">
-    
-    <div class="meal-info">
-      <h4>${meal.name}</h4>
-      <p>${meal.price}</p>
-
-        <button onclick="addToCart({
-          id: '${meal.name.replace(/\s+/g, '_')}', 
-          name: '${meal.name}', 
-          price: ${meal.price.replace(/₦|,/g, '')}, 
-          image: '${meal.img}'
-        })">Add to Cart</button>
-
-    </div>
-  </div>
-`;
-
-    });
-
+    document.getElementById("modalTitle").textContent = category ? `${category.name} ${category.emoji}`.trim() : "Foods";
+    document.getElementById("naijaList").innerHTML = foods.length
+      ? foods.map(meal => `
+        <div class="meal-card" ${cardAttrs(meal)}>
+          ${foodImg(meal)}
+          <div class="meal-info">
+            <h4>${tlEsc(meal.name)}</h4>
+            ${tlRatingBadge(meal.rating)}
+            <p>${tlFormat(meal.price)}</p>
+            ${addButton(meal, "add-btn")}
+            <div class="view-details">View details <i class="fa-solid fa-arrow-right"></i></div>
+          </div>
+        </div>`).join("")
+      : `<p class="modal-empty">No dishes in this category yet — check back soon!</p>`;
 
     document.getElementById("naijaModal").style.display = "block";
     document.getElementById("naijaBackdrop").style.display = "block";
@@ -1250,9 +1154,10 @@
   }
 
   function highlight(text, keyword) {
-    if (!keyword) return text;
-    const regex = new RegExp(`(${keyword})`, "gi");
-    return text.replace(regex, `<mark>$1</mark>`);
+    const safe = tlEsc(text);
+    if (!keyword) return safe;
+    const pattern = tlEsc(keyword).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return safe.replace(new RegExp(`(${pattern})`, "gi"), "<mark>$1</mark>");
   }
 
   function closeNaija() {
@@ -1260,6 +1165,54 @@
     document.getElementById("naijaBackdrop").style.display = "none";
     document.body.style.overflow = "auto";
   }
+
+  // Card click opens the details page; "Add to Cart" adds without leaving;
+  // a category opens its pop-up.
+  document.addEventListener("click", (e) => {
+    const addBtn = e.target.closest("[data-add]");
+    if (addBtn) {
+      quickAdd(addBtn.dataset.add);
+      return;
+    }
+    const card = e.target.closest("[data-food-id]");
+    if (card) {
+      location.href = tlDetailsUrl(card.dataset.foodId);
+      return;
+    }
+    const cat = e.target.closest("[data-category]");
+    if (cat) openFoodModal(cat.dataset.category);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    if (e.target.matches("[data-food-id]")) {
+      e.preventDefault();
+      location.href = tlDetailsUrl(e.target.dataset.foodId);
+    } else if (e.target.matches("[data-category]")) {
+      e.preventDefault();
+      openFoodModal(e.target.dataset.category);
+    }
+  });
+
+  // Quick add uses the dish's first portion and no extras — the same cart line
+  // as adding it with default options on the details page.
+  function quickAdd(id) {
+    const food = menu && menu.findFood(id);
+    if (!food) return;
+    const size = food.sizes[0];
+    addToCart({
+      id: food.id,
+      foodId: food.id,
+      name: food.name,
+      price: food.price + (size ? size.price : 0),
+      image: food.img,
+      size: size ? size.label : null,
+      extras: [],
+      note: "",
+    });
+  }
+
+  loadMenu();
 
 
 
@@ -1272,7 +1225,18 @@
     saveCartToFirebase();
   }
 
+  // Re-read storage so items added on food-details.html aren't overwritten
+  function reloadCart() {
+    try {
+      const stored = JSON.parse(localStorage.getItem("cart"));
+      cart = Array.isArray(stored) ? stored : [];
+    } catch (e) {
+      cart = [];
+    }
+  }
+
   function addToCart(item) {
+    reloadCart();
     const existing = cart.find(c => c.id === item.id);
     if (existing) {
       existing.quantity += 1;
@@ -1330,4 +1294,10 @@
   }
 
   updateCartBadge();
+
+  // Coming back from food-details.html (back button / bfcache): refresh the badge
+  window.addEventListener("pageshow", () => {
+    reloadCart();
+    updateCartBadge();
+  });
 </script>
