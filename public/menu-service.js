@@ -162,3 +162,121 @@ function tlDetailsUrl(id) {
 
 // Placeholder shown when a dish has no image or the image fails to load.
 const TL_IMG_FALLBACK = "this.onerror=null;this.src='taste-lounge-logo.png';this.classList.add('img-fallback')";
+
+/* ---------------- Cart lines & "Order again" ---------------- */
+
+function tlReadCart() {
+  try {
+    const cart = JSON.parse(localStorage.getItem("cart"));
+    return Array.isArray(cart) ? cart : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+// Same line shape as the dish page: same dish + same options = same cart line,
+// and the default options use the plain dish id (so it merges with quick "Add to Cart").
+function tlCartLine(food, size, picked = [], quantity = 1, note = "") {
+  if (!size && food.sizes.length) size = food.sizes[0];
+  const isDefault = !size || !food.sizes.length || size.id === food.sizes[0].id;
+  const id = [food.id, ...(isDefault ? [] : [size.id]), ...picked.map((e) => e.id).sort()].join("__");
+  let name = food.name;
+  if (!isDefault) name += ` (${size.label})`;
+  if (picked.length) name += " + " + picked.map((e) => e.name).join(", ");
+  return {
+    id,
+    foodId: food.id,
+    name,
+    price: food.price + (size ? size.price : 0) + picked.reduce((sum, e) => sum + e.price, 0),
+    image: food.img,
+    quantity,
+    size: size ? size.label : null,
+    extras: picked.map((e) => e.name),
+    note: note || "",
+  };
+}
+
+// Put a past order's dishes back in the cart at today's prices. Dishes that were
+// removed or are sold out are skipped. Returns { added, skipped: [names] }.
+async function tlReorder(db, uid, items, menu = null) {
+  menu = menu || (await tlLoadMenu(db));
+  const cart = tlReadCart();
+  let added = 0;
+  const skipped = [];
+
+  (items || []).forEach((item) => {
+    const food = menu.findFood(item.foodId || String(item.id || "").split("__")[0]);
+    if (!food || !food.available) {
+      skipped.push(item.name || "A dish");
+      return;
+    }
+    const size = food.sizes.find((s) => s.label === item.size) || null;
+    const picked = food.extras.filter((e) => (item.extras || []).includes(e.name));
+    const qty = Math.max(1, Number(item.quantity ?? item.qty) || 1);
+    const line = tlCartLine(food, size, picked, qty, item.note);
+    const existing = cart.find((c) => c.id === line.id);
+    if (existing) {
+      existing.quantity = (Number(existing.quantity) || 0) + qty;
+      existing.price = line.price;
+    } else {
+      cart.push(line);
+    }
+    added += qty;
+  });
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  if (uid) await db.collection("users").doc(uid).set({ cart }, { merge: true });
+  return { added, skipped };
+}
+
+/* ---------------- Payment methods ----------------
+   Paystack's payment channels. Admin → Store Settings picks which ones customers
+   can use (settings.paymentChannels); none picked = whatever Paystack allows. */
+const TL_PAYMENT_CHANNELS = {
+  card: { icon: "💳", label: "Card" },
+  bank_transfer: { icon: "🏦", label: "Bank transfer" },
+  ussd: { icon: "📱", label: "USSD" },
+  bank: { icon: "🏛️", label: "Pay with bank app" },
+  qr: { icon: "🔳", label: "QR code" },
+  mobile_money: { icon: "📲", label: "Mobile money" },
+};
+
+function tlPaymentChannels(settings) {
+  const list = Array.isArray(settings && settings.paymentChannels) ? settings.paymentChannels : [];
+  return list.filter((c) => TL_PAYMENT_CHANNELS[c]);
+}
+
+/* ---------------- Loyalty points (Admin → Store Settings) ----------------
+   settings.loyalty = { enabled, earnPerAmount, pointValue, minRedeem }
+     earnPerAmount: ₦ spent for 1 point      pointValue: ₦ one point is worth
+   Each order stores loyalty = { earned, redeemed }. Earned points count once the
+   order is marked "delivered"; points spent count straight away (unless cancelled). */
+
+function tlLoyaltyConfig(settings) {
+  const l = (settings && settings.loyalty) || {};
+  const cfg = {
+    earnPerAmount: Number(l.earnPerAmount) || 0,
+    pointValue: Number(l.pointValue) || 0,
+    minRedeem: Math.max(0, Math.floor(Number(l.minRedeem) || 0)),
+  };
+  cfg.enabled = l.enabled === true && cfg.earnPerAmount > 0 && cfg.pointValue > 0;
+  return cfg;
+}
+
+function tlPointsFor(amount, cfg) {
+  return cfg && cfg.enabled ? Math.max(0, Math.floor(Number(amount || 0) / cfg.earnPerAmount)) : 0;
+}
+
+// orders: array of order documents (data) for one customer
+function tlLoyaltyBalance(orders) {
+  let earned = 0, pending = 0, redeemed = 0;
+  (orders || []).forEach((o) => {
+    const status = (o.status && o.status.current) || "paid";
+    if (status === "cancelled") return;
+    const l = o.loyalty || {};
+    if (status === "delivered") earned += Number(l.earned) || 0;
+    else pending += Number(l.earned) || 0;
+    redeemed += Number(l.redeemed) || 0;
+  });
+  return { balance: Math.max(0, earned - redeemed), pending, earned, redeemed };
+}

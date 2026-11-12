@@ -17,6 +17,7 @@
   <script src="auto-logout.js"></script>
   <script src="micro-interactions.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="store-hours.js"></script>
 
   <style>
     :root {
@@ -322,6 +323,33 @@
       transform: scale(1.01);
     }
 
+    #hove:disabled {
+      background: #bdbdbd;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* kitchen closed / orders paused (Admin → Store Settings) */
+    .closed-note {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 10px 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #1A1A1A;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .closed-note b {
+      color: #FBC02D;
+      display: block;
+    }
+
     @media (max-width: 900px) {
       .desktop-nav {
         display: none;
@@ -416,6 +444,13 @@
       color: white !important;
     }
   </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
 </head>
 
 <body>
@@ -478,18 +513,20 @@
   // Store settings (delivery fee, free-delivery amount) are managed in the admin panel
   const store = { deliveryFee: 0, freeDeliveryOver: 0 };
   let storeLoaded = false;
-  db.collection("settings").doc("store").get()
-    .then((snap) => {
-      if (snap.exists) {
-        store.deliveryFee = Number(snap.data().deliveryFee) || 0;
-        store.freeDeliveryOver = Number(snap.data().freeDeliveryOver) || 0;
-      }
-    })
-    .catch((err) => console.error("Could not load store settings:", err))
-    .finally(() => {
-      storeLoaded = true;
-      renderCart();
-    });
+  let storeStatus = { canOrder: true };
+  // live, so pausing orders in the admin shows up here straight away
+  db.collection("settings").doc("store").onSnapshot((snap) => {
+    const s = snap.exists ? snap.data() : {};
+    store.deliveryFee = Number(s.deliveryFee) || 0;
+    store.freeDeliveryOver = Number(s.freeDeliveryOver) || 0;
+    storeStatus = tlStoreStatus(s);
+    storeLoaded = true;
+    renderCart();
+  }, (err) => {
+    console.error("Could not load store settings:", err);
+    storeLoaded = true;
+    renderCart();
+  });
 
   auth.onAuthStateChanged((user) => {
     if (!user) {
@@ -630,7 +667,12 @@
         ${isFree ? `<p style="color: #4caf50; font-size: 14px;">✓ Free delivery for orders over ₦${freeOver.toLocaleString()}!</p>` : ''}
         ${storeLoaded && !isFree && freeOver > 0 ? `<p style="font-size: 14px; opacity: .8;">Spend over ₦${freeOver.toLocaleString()} for free delivery</p>` : ''}
         <h2>Total: ₦${total.toLocaleString()}</h2>
-        <button id="hove" onclick="checkout()">Checkout</button>
+        ${storeStatus.canOrder ? "" : `
+          <div class="closed-note" role="status">
+            <span aria-hidden="true">🕘</span>
+            <div><b>${storeStatus.paused ? "Orders are paused" : "We're closed right now"}</b>${escapeText(storeStatus.paused ? storeStatus.message : storeStatus.nextOpen || "Please check back later.")} Your cart is saved.</div>
+          </div>`}
+        <button id="hove" onclick="checkout()" ${storeStatus.canOrder ? "" : "disabled"}>Checkout</button>
       `;
   }
 
@@ -677,7 +719,14 @@
     saveCart();
   }
 
+  function escapeText(text) {
+    const div = document.createElement("div");
+    div.textContent = text || "";
+    return div.innerHTML;
+  }
+
   function checkout() {
+    if (!storeStatus.canOrder) return;
     location.href = "checkout.html";
   }
 

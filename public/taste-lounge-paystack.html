@@ -118,7 +118,14 @@
         }
       }
     </style>
-  </head>
+    <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
+</head>
 
   <body>
     <canvas
@@ -172,6 +179,16 @@
 
   let loggedInUser = null;
 
+  // Payment methods picked in Admin → Store Settings (none = whatever Paystack allows)
+  const PAYSTACK_CHANNELS = ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"];
+  let paymentChannels = [];
+  db.collection("settings").doc("store").get()
+    .then((snap) => {
+      const list = snap.exists && Array.isArray(snap.data().paymentChannels) ? snap.data().paymentChannels : [];
+      paymentChannels = list.filter((c) => PAYSTACK_CHANNELS.includes(c));
+    })
+    .catch((err) => console.warn("Payment methods unavailable:", err.message));
+
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
       loggedInUser = user;
@@ -203,9 +220,10 @@
     const handler = PaystackPop.setup({
       key: "pk_test_7dd9e5a2b95884c8f99582ea5a6653007b338e6f",
       email: loggedInUser.email,
-      amount: totalAmount * 100,
+      amount: Math.round(totalAmount * 100),
       currency: "NGN",
       ref: "TL_" + Date.now(),
+      ...(paymentChannels.length ? { channels: paymentChannels } : {}),
 
       callback: function (response) {
         console.log("PAYMENT SUCCESS:", response.reference);
@@ -234,12 +252,13 @@
       // dishes in this order — lets the customer review them later ("verified order")
       const foodIds = [...new Set((pending.items || []).map((i) => i.foodId).filter(Boolean))];
 
-      await db.collection("orders").add({
+      const order = {
         userId: user.uid,
         items: pending.items,
         foodIds,
         pricing: pending.pricing,
         delivery: pending.delivery,
+        deliveryType: pending.deliveryType || "standard",
 
         payment: {
           reference: res.reference,
@@ -249,7 +268,33 @@
 
         status: { current: "paid" },
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+      };
+      if (pending.promo) order.promo = pending.promo;
+      if (pending.loyalty) {
+        order.loyalty = {
+          earned: Math.max(0, Math.floor(Number(pending.loyalty.earned) || 0)),
+          redeemed: Math.max(0, Math.floor(Number(pending.loyalty.redeemed) || 0)),
+          pointValue: Number(pending.loyalty.pointValue) || 0,
+        };
+      }
+
+      try {
+        await db.collection("orders").add(order);
+      } catch (err) {
+        // The money is already paid, so never lose the order: if the points
+        // settings changed while paying, save it without the points earned.
+        if (err.code !== "permission-denied" || !order.loyalty || !order.loyalty.earned) throw err;
+        console.warn("Saving order without loyalty points:", err.message);
+        order.loyalty.earned = 0;
+        await db.collection("orders").add(order);
+      }
+
+      // count this use of the promo code (Admin → Promo codes shows it)
+      if (pending.promo && pending.promo.code) {
+        await db.collection("promos").doc(pending.promo.code)
+          .update({ usedCount: firebase.firestore.FieldValue.increment(1) })
+          .catch((err) => console.warn("Promo count not updated:", err.message));
+      }
 
       localStorage.removeItem("cart");
       localStorage.removeItem("cartTotal");

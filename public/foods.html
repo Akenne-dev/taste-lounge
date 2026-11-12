@@ -16,6 +16,7 @@
   <script src="auto-logout.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="menu-service.js"></script>
+  <script src="store-hours.js"></script>
 
 
 
@@ -666,6 +667,135 @@
       padding: 15px;
     }
 
+    /* ---------- open / closed banner (Admin → Store Settings) ---------- */
+    .store-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 900px;
+      margin: 0 auto 18px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: #1A1A1A;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
+    }
+
+    .store-banner[hidden] {
+      display: none;
+    }
+
+    .store-banner .sb-icon {
+      flex: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--yellow);
+      color: #1A1A1A;
+      font-size: 16px;
+    }
+
+    .store-banner b {
+      display: block;
+      color: var(--yellow);
+    }
+
+    /* ---------- menu filters ---------- */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 15px 6px;
+      margin: -12px auto 12px;
+      max-width: 900px;
+      scrollbar-width: none;
+      justify-content: safe center;
+    }
+
+    .filter-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-bar[hidden] {
+      display: none;
+    }
+
+    .f-chip,
+    .f-select {
+      flex: none;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1.5px solid #e6d6bf;
+      background: #fff;
+      color: #1A1A1A;
+      font: 500 14px Poppins, sans-serif;
+      cursor: pointer;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+
+    .f-select {
+      padding-right: 10px;
+    }
+
+    .f-chip:hover,
+    .f-select:hover {
+      border-color: var(--red);
+    }
+
+    .f-chip[aria-pressed="true"],
+    .f-select.is-set {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    .f-chip:focus-visible,
+    .f-select:focus-visible {
+      outline: 3px solid var(--yellow);
+      outline-offset: 2px;
+    }
+
+    .results-info {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .results-info[hidden] {
+      display: none;
+    }
+
+    .results-info button {
+      border: 0;
+      background: none;
+      color: var(--red);
+      font: 600 14px Poppins, sans-serif;
+      cursor: pointer;
+      padding: 6px 0;
+    }
+
+    body.dark .f-chip:not([aria-pressed="true"]),
+    body.dark .f-select:not(.is-set) {
+      background: #1e1e1e;
+      color: #eee;
+      border-color: #444;
+    }
+
+    body.dark .results-info {
+      color: #bbb;
+    }
+
     mark {
       background: yellow;
       padding: 0 3px;
@@ -858,11 +988,18 @@
       color: #777;
     }
   </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
 </head>
 
-<body>
+<body data-install-banner>
 
-  
+
   <header class="header">
     <div class="logo">Foods</div>
 
@@ -889,10 +1026,23 @@
 
   
   
+  <!-- Opening hours / "pause orders" come from Admin → Store Settings -->
+  <div class="store-banner" id="storeBanner" role="status" hidden>
+    <span class="sb-icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
+    <div><b id="storeBannerTitle"></b><span id="storeBannerText"></span></div>
+  </div>
+
   <section class="search-section">
     <input type="text" placeholder="What are you craving?" class="search-input" id="search" oninput="seek()">
 
   </section>
+
+  <!-- Filters are built from the menu itself (only filters that match some dishes are shown) -->
+  <div class="filter-bar" id="filterBar" role="group" aria-label="Filter the menu" hidden></div>
+  <div class="results-info" id="resultsInfo" hidden>
+    <span id="resultsCount"></span>
+    <button type="button" id="clearFilters">Clear filters</button>
+  </div>
   <section class="search-results" id="results"></section>
 
 
@@ -1077,6 +1227,7 @@
       renderCategories(menu.categories);
       renderTrending(available.filter(f => f.trending));
       renderPopular(available.filter(f => f.popular));
+      renderFilters(available);
       if (document.getElementById("search").value.trim()) seek();
     } catch (err) {
       console.error("Error loading menu:", err);
@@ -1088,25 +1239,107 @@
     }
   }
 
+  /* ================= Filters (vegetarian, spicy, price, sort) =================
+     Built from the dishes themselves — a filter only appears if some dish matches it. */
+  const filters = { veg: false, spicy: false, maxPrice: 0, sort: "recommended" };
+
+  const filtersActive = () => filters.veg || filters.spicy || filters.maxPrice > 0 || filters.sort !== "recommended";
+
+  // round a price up to a "nice" number for the price filter
+  function nicePrice(n) {
+    const step = n >= 10000 ? 2000 : n >= 3000 ? 1000 : 500;
+    return Math.ceil(n / step) * step;
+  }
+
+  function renderFilters(foods) {
+    const bar = document.getElementById("filterBar");
+    if (!foods.length) {
+      bar.hidden = true;
+      return;
+    }
+    const prices = foods.map(f => f.price).sort((a, b) => a - b);
+    const pick = (q) => nicePrice(prices[Math.min(prices.length - 1, Math.floor(prices.length * q))]);
+    const priceSteps = [...new Set([pick(0.33), pick(0.66)])].filter(p => p > prices[0] && p < prices[prices.length - 1]);
+
+    const parts = [];
+    if (foods.some(f => f.vegetarian)) parts.push(`<button type="button" class="f-chip" data-filter="veg" aria-pressed="false">🥗 Vegetarian</button>`);
+    if (foods.some(f => Number(f.spice) > 0)) parts.push(`<button type="button" class="f-chip" data-filter="spicy" aria-pressed="false">🌶️ Spicy</button>`);
+    if (priceSteps.length) {
+      parts.push(`<select class="f-select" id="fPrice" aria-label="Price">
+        <option value="0">💰 Any price</option>
+        ${priceSteps.map(p => `<option value="${p}">Under ${tlFormat(p)}</option>`).join("")}
+      </select>`);
+    }
+    parts.push(`<select class="f-select" id="fSort" aria-label="Sort dishes">
+      <option value="recommended">↕ Recommended</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      ${foods.some(f => f.rating) ? `<option value="rating">Top rated</option>` : ""}
+    </select>`);
+    bar.innerHTML = parts.join("");
+    bar.hidden = false;
+  }
+
+  document.getElementById("filterBar").addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-filter]");
+    if (!chip) return;
+    filters[chip.dataset.filter] = !filters[chip.dataset.filter];
+    chip.setAttribute("aria-pressed", String(filters[chip.dataset.filter]));
+    seek();
+  });
+
+  document.getElementById("filterBar").addEventListener("change", (e) => {
+    if (e.target.id === "fPrice") filters.maxPrice = Number(e.target.value) || 0;
+    if (e.target.id === "fSort") filters.sort = e.target.value;
+    e.target.classList.toggle("is-set", e.target.selectedIndex > 0);
+    seek();
+  });
+
+  document.getElementById("clearFilters").addEventListener("click", () => {
+    Object.assign(filters, { veg: false, spicy: false, maxPrice: 0, sort: "recommended" });
+    document.querySelectorAll("#filterBar [data-filter]").forEach(c => c.setAttribute("aria-pressed", "false"));
+    document.querySelectorAll("#filterBar select").forEach(s => { s.selectedIndex = 0; s.classList.remove("is-set"); });
+    document.getElementById("search").value = "";
+    seek();
+  });
+
+  function sortFoods(list) {
+    const sorted = [...list];
+    if (filters.sort === "price-asc") sorted.sort((a, b) => a.price - b.price);
+    if (filters.sort === "price-desc") sorted.sort((a, b) => b.price - a.price);
+    if (filters.sort === "rating") sorted.sort((a, b) => (b.rating ? b.rating.avg : 0) - (a.rating ? a.rating.avg : 0) || (b.rating ? b.rating.count : 0) - (a.rating ? a.rating.count : 0));
+    return sorted;
+  }
+
   function seek() {
     const value = document.getElementById("search").value.trim().toLowerCase();
     const resultsDiv = document.getElementById("results");
     const noResults = document.getElementById("noResults");
+    const info = document.getElementById("resultsInfo");
 
     resultsDiv.innerHTML = "";
 
-    if (value === "" || !menu) {
+    if ((value === "" && !filtersActive()) || !menu) {
       resultsDiv.style.display = "none";
       noResults.style.display = "none";
+      info.hidden = true;
       return;
     }
 
     // A number means "show me meals within this budget".
-    const isBudget = !isNaN(value);
-    const matches = menu.foods.filter(food => food.available && (isBudget
-      ? food.price <= Number(value)
-      : [food.name, tlCategoryLabel(food), food.badge, food.trending ? "trending" : "", food.popular ? "popular" : ""]
-          .join(" ").toLowerCase().includes(value)));
+    const isBudget = value !== "" && !isNaN(value);
+    const matches = sortFoods(menu.foods.filter(food => food.available
+      && (value === "" || (isBudget
+        ? food.price <= Number(value)
+        : [food.name, tlCategoryLabel(food), food.badge, food.trending ? "trending" : "", food.popular ? "popular" : ""]
+            .join(" ").toLowerCase().includes(value)))
+      && (!filters.veg || food.vegetarian)
+      && (!filters.spicy || Number(food.spice) > 0)
+      && (!filters.maxPrice || food.price < filters.maxPrice)));
+
+    info.hidden = false;
+    document.getElementById("resultsCount").textContent =
+      `${matches.length} ${matches.length === 1 ? "dish" : "dishes"}`;
 
     if (matches.length === 0) {
       noResults.style.display = "block";
@@ -1213,6 +1446,31 @@
   }
 
   loadMenu();
+
+  /* ================= Open / closed banner =================
+     Live: updates the moment the kitchen pauses orders in the admin. */
+  let storeSettings = null;
+
+  function renderStoreBanner() {
+    if (!storeSettings) return;
+    const banner = document.getElementById("storeBanner");
+    const st = tlStoreStatus(storeSettings);
+    if (st.canOrder) {
+      banner.hidden = true;
+      return;
+    }
+    document.getElementById("storeBannerTitle").textContent = st.paused ? "Orders are paused" : "We're closed right now";
+    document.getElementById("storeBannerText").textContent =
+      (st.paused ? st.message + " " : st.nextOpen ? `${st.nextOpen}. ` : "") +
+      "You can still browse the menu and fill your cart.";
+    banner.hidden = false;
+  }
+
+  db.collection("settings").doc("store").onSnapshot((snap) => {
+    storeSettings = snap.exists ? snap.data() : {};
+    renderStoreBanner();
+  }, (err) => console.warn("Store status unavailable:", err.message));
+  setInterval(renderStoreBanner, 60000);
 
 
 

@@ -12,26 +12,55 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
+    // Staff (added in Admin → Staff) handle orders but can't touch the menu or prices.
+    function isStaff() {
+      return isAdmin() || (isSignedIn()
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid))
+        && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.get("active", true) == true);
+    }
+
+    function storeSettings() {
+      return exists(/databases/$(database)/documents/settings/store)
+        ? get(/databases/$(database)/documents/settings/store).data : {};
+    }
+
+    // Loyalty points on a new order: points only count once an admin/staff marks the
+    // order "delivered", and the points earned can't be more than the order is worth.
+    function loyaltyOk(d) {
+      let l = d.get("loyalty", {});
+      let earned = l.get("earned", 0);
+      let redeemed = l.get("redeemed", 0);
+      let cfg = storeSettings().get("loyalty", {});
+      return earned is int && redeemed is int && earned >= 0 && redeemed >= 0
+        && (earned == 0 || (cfg.get("enabled", false) == true
+              && cfg.get("earnPerAmount", 0) > 0
+              && earned * cfg.get("earnPerAmount", 0) <= d.get("pricing", {}).get("total", 0)));
+    }
+
     // ================= ORDERS =================
     match /orders/{orderId} {
 
-      // User creates own order (can't create orders for someone else)
+      // Customer creates their own order, always starting as "paid"
+      // (only admins/staff move it on, e.g. to "delivered").
       allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.get("status", {}).get("current", "paid") == "paid"
+        && loyaltyOk(request.resource.data);
 
-      // User reads own orders
+      // Customer reads own orders
       allow read: if isSignedIn()
         && resource.data.userId == request.auth.uid;
 
-      // Admin reads ALL orders
-      allow read: if isAdmin();
+      // Admins and staff read ALL orders
+      allow read: if isStaff();
 
-      // Admin updates order status
+      // Admins can change anything; staff only the order status
       allow update: if isAdmin();
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "updatedAt"]);
 
-      // User deletes own order
-      allow delete: if isSignedIn()
-        && resource.data.userId == request.auth.uid;
+      // Orders are kept (points and sales reports depend on them)
+      allow delete: if isAdmin();
     }
 
     // ================= USERS =================
@@ -63,10 +92,42 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // settings/store: delivery fees, free-delivery amount, deals banner
+    // settings/store: delivery fees, deals banner, opening hours, pause switch,
+    // loyalty points, payment methods
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
+
+      // staff can pause/resume orders during busy times
+      allow update: if docId == "store" && isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(["ordersPaused", "pauseMessage", "pausedAt", "pausedBy"]);
+    }
+
+    // ================= PROMO CODES (Admin → Promo codes) =================
+    // promos/{CODE}: a customer can look up a code they typed, but can't list them.
+    match /promos/{code} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create, delete: if isAdmin();
+
+      // admins edit; a customer's checkout only adds 1 to usedCount (within the limit)
+      allow update: if isAdmin() || (isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["usedCount"])
+        && request.resource.data.usedCount == resource.data.get("usedCount", 0) + 1
+        && (resource.data.get("usageLimit", 0) == 0
+            || request.resource.data.usedCount <= resource.data.get("usageLimit", 0)));
+    }
+
+    // ================= STAFF & ADMIN-ONLY CONFIG =================
+    match /staff/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if isAdmin();
+    }
+
+    // adminConfig/media: photo-upload (Cloudinary) settings
+    match /adminConfig/{docId} {
+      allow read, write: if isAdmin();
     }
 
     // ================= WEBSITE CONTENT (landing pages) =================
@@ -200,7 +261,8 @@ service cloud.firestore {
 
     // ================= ADMINS =================
     match /admins/{adminId} {
-      allow read: if isAdmin();
+      // anyone signed in may check whether *they* are an admin (staff login needs this)
+      allow read: if isSignedIn() && (request.auth.uid == adminId || isAdmin());
       allow write: if false; // NO frontend writes
     }
   }

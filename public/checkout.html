@@ -16,6 +16,8 @@
   <script src="auto-logout.js"></script>
   <script src="micro-interactions.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="menu-service.js"></script>
+  <script src="store-hours.js"></script>
 
   <style>
     :root {
@@ -348,7 +350,253 @@
       background: #121212;
       color: red;
     }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    /* ---------- summary lines ---------- */
+    .sum-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    .sum-row.discount {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+
+    .sum-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 22px;
+      font-weight: 800;
+      margin-top: 12px;
+    }
+
+    .earn-note {
+      margin: 10px 0 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff8e1;
+      color: #7a5a00;
+      font-size: 14px;
+    }
+
+    body.dark .earn-note {
+      background: #3a3000;
+      color: #ffe082;
+    }
+
+    /* ---------- promo code & points ---------- */
+    .promo-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .promo-row input {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .small-btn {
+      flex: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 0 20px;
+      background: var(--black);
+      color: #fff;
+      font: 700 15px Inter, system-ui, sans-serif;
+      cursor: pointer;
+    }
+
+    .small-btn:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .small-btn:focus-visible,
+    .chip-btn:focus-visible,
+    .points-toggle input:focus-visible {
+      outline: 3px solid #FBC02D;
+      outline-offset: 2px;
+    }
+
+    .promo-msg {
+      min-height: 20px;
+      margin: 8px 0 0;
+      font-size: 14px;
+    }
+
+    .promo-msg.error {
+      color: #c62828;
+    }
+
+    .promo-applied {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px dashed #2e7d32;
+      background: #e8f5e9;
+      color: #1b5e20;
+      font-size: 15px;
+    }
+
+    .promo-applied button {
+      border: 0;
+      background: none;
+      color: #c62828;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .points-box {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+      font-size: 15px;
+    }
+
+    .points-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .points-toggle input {
+      width: 22px;
+      height: 22px;
+      margin: 0;
+      accent-color: var(--red);
+      flex: none;
+    }
+
+    .muted-text {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ---------- saved addresses ---------- */
+    .addr-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+    }
+
+    .chip-btn {
+      flex: none;
+      max-width: 220px;
+      text-align: left;
+      border: 1.5px solid #eee;
+      border-radius: 12px;
+      padding: 8px 12px;
+      background: #fff;
+      cursor: pointer;
+      font: 500 13px Inter, system-ui, sans-serif;
+      color: var(--black);
+    }
+
+    .chip-btn b {
+      display: block;
+      font-size: 14px;
+    }
+
+    .chip-btn span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+    }
+
+    .chip-btn.on {
+      border-color: var(--red);
+      background: #fff5f5;
+    }
+
+    .save-addr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .save-addr input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: var(--red);
+    }
+
+    body.dark .chip-btn {
+      background: #2a2a2a;
+      color: #eee;
+      border-color: #444;
+    }
+
+    /* ---------- payment methods ---------- */
+    .pay-methods {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pay-methods span {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #f5f5f5;
+      font-size: 14px;
+    }
+
+    body.dark .pay-methods span {
+      background: #2a2a2a;
+    }
+
+    /* ---------- closed / paused ---------- */
+    .closed-note {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      border-radius: 14px;
+      background: #1A1A1A;
+      color: #fff;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .closed-note b {
+      display: block;
+      color: #FBC02D;
+    }
+
+    .pay-btn:disabled {
+      background: #9e9e9e;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
   </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
 </head>
 
 <body>
@@ -357,10 +605,26 @@
       <h2>Order Summary</h2>
       <div id="summary"></div>
       <hr />
-      <p>Subtotal: ₦<span id="subtotal">0</span></p>
-      <p>Delivery: <span id="deliveryDisplay">…</span></p>
-      <h3>Total: ₦<span id="total">0</span></h3>
+      <div class="sum-row"><span>Subtotal</span><span id="subtotal">₦0</span></div>
+      <div class="sum-row discount" id="promoRow" hidden><span id="promoLabel">Promo</span><span id="promoAmount"></span></div>
+      <div class="sum-row"><span>Delivery</span><span id="deliveryDisplay">…</span></div>
+      <div class="sum-row discount" id="pointsRow" hidden><span id="pointsLabel">Points</span><span id="pointsAmount"></span></div>
+      <div class="sum-total"><span>Total</span><span id="total">₦0</span></div>
+      <p class="earn-note" id="earnNote" hidden></p>
       <a href="cart.html">← Back to Cart</a>
+    </div>
+
+    <!-- Promo codes come from Admin → Promo codes; points from Admin → Store Settings -->
+    <div class="card">
+      <h2>Promo code</h2>
+      <form id="promoForm" class="promo-row" autocomplete="off">
+        <input id="promoInput" placeholder="Enter promo code" maxlength="30" aria-label="Promo code" />
+        <button type="submit" class="small-btn" id="promoBtn">Apply</button>
+      </form>
+      <div id="promoApplied" class="promo-applied" hidden></div>
+      <p class="promo-msg" id="promoMsg" role="status"></p>
+
+      <div class="points-box" id="pointsBox" hidden></div>
     </div>
 
     <div class="card">
@@ -384,20 +648,28 @@
 
     <div class="card">
       <h2>Delivery Details</h2>
-      <input id="name" placeholder="Full name" />
-      <input id="phone" placeholder="Phone number" />
-      <textarea id="address" placeholder="Delivery address"></textarea>
+      <!-- Saved addresses from Profile → Saved Addresses -->
+      <div class="addr-chips" id="addrChips" hidden></div>
+      <input id="name" placeholder="Full name" autocomplete="name" />
+      <input id="phone" placeholder="Phone number" autocomplete="tel" inputmode="tel" />
+      <textarea id="address" placeholder="Delivery address" autocomplete="street-address"></textarea>
+      <label class="save-addr" id="saveAddrRow" hidden>
+        <input type="checkbox" id="saveAddr" checked /> Save this address for next time
+      </label>
     </div>
 
     <div class="card">
       <h2>Payment Method</h2>
       <div class="option">
         <input type="radio" checked />
-        <label>💳 Paystack (Secure 🔒)</label>
+        <label>🔒 Paystack — secure checkout</label>
       </div>
+      <div class="pay-methods" id="payMethods"></div>
     </div>
 
-    <button class="pay-btn" onclick="submitOrder()">Place Order</button>
+    <div class="closed-note" id="closedNote" role="status" hidden></div>
+
+    <button class="pay-btn" id="placeOrderBtn" onclick="submitOrder()">Place Order</button>
   </div>
 </body>
 
@@ -416,12 +688,18 @@
 
   const db = firebase.firestore();
   const auth = firebase.auth();
+  const $ = (id) => document.getElementById(id);
 
-  const nameInput = document.getElementById("name");
-  const phoneInput = document.getElementById("phone");
-  const addressInput = document.getElementById("address");
+  // Paystack won't take a payment smaller than this, so discounts stop here.
+  const MIN_PAYMENT = 100;
 
-  const saved = JSON.parse(localStorage.getItem("deliveryDraft"));
+  const nameInput = $("name");
+  const phoneInput = $("phone");
+  const addressInput = $("address");
+
+  const saved = (() => {
+    try { return JSON.parse(localStorage.getItem("deliveryDraft")); } catch (e) { return null; }
+  })();
   if (saved) {
     nameInput.value = saved.name || "";
     phoneInput.value = saved.phone || "";
@@ -430,116 +708,195 @@
 
   [nameInput, phoneInput, addressInput].forEach((i) => {
     i.addEventListener("input", () => {
-      localStorage.setItem(
-        "deliveryDraft",
-        JSON.stringify({
-          name: nameInput.value,
-          phone: phoneInput.value,
-          address: addressInput.value,
-        }),
-      );
+      localStorage.setItem("deliveryDraft", JSON.stringify({
+        name: nameInput.value, phone: phoneInput.value, address: addressInput.value,
+      }));
+      renderAddressChips();
     });
   });
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const cart = (() => {
+    try { return JSON.parse(localStorage.getItem("cart")) || []; } catch (e) { return []; }
+  })();
 
-  // Delivery prices are managed in Admin → Store Settings
+  // Everything below comes from the admin panel (Store Settings, Promo codes)
   const store = { deliveryFee: 0, expressFee: 0, freeDeliveryOver: 0 };
+  let settings = {};
   let storeLoaded = false;
+  let storeStatus = { canOrder: true };
+  let loyalty = tlLoyaltyConfig({});
   let deliveryChoice = "standard";
-  let deliveryFee = 0;
 
-  const naira = (n) => "₦" + Number(n || 0).toLocaleString();
+  let currentUser = null;
+  let userData = {};
+  let myOrders = [];
+  let promo = null;       // the applied promo code document
+  let usePoints = false;
+  let placing = false;
 
-  db.collection("settings").doc("store").get()
-    .then((snap) => {
-      if (snap.exists) {
-        const s = snap.data();
-        store.deliveryFee = Number(s.deliveryFee) || 0;
-        store.expressFee = Number(s.expressFee) || 0;
-        store.freeDeliveryOver = Number(s.freeDeliveryOver) || 0;
+  const naira = (n) => tlFormat(Math.round(Number(n) || 0));
+
+  /* ---------------- store settings (live) ---------------- */
+  db.collection("settings").doc("store").onSnapshot((snap) => {
+    settings = snap.exists ? snap.data() : {};
+    store.deliveryFee = Number(settings.deliveryFee) || 0;
+    store.expressFee = Number(settings.expressFee) || 0;
+    store.freeDeliveryOver = Number(settings.freeDeliveryOver) || 0;
+    loyalty = tlLoyaltyConfig(settings);
+    storeStatus = tlStoreStatus(settings);
+    storeLoaded = true;
+
+    $("standardFee").textContent = store.deliveryFee ? naira(store.deliveryFee) : "Free";
+    $("expressFee").textContent = naira(store.expressFee);
+    $("freeOver").textContent = store.freeDeliveryOver.toLocaleString();
+    // hide Express if the admin hasn't set a price for it
+    $("deliveryOption2").style.display = store.expressFee > 0 ? "" : "none";
+    if (store.expressFee <= 0 && deliveryChoice === "express") deliveryChoice = "standard";
+
+    renderPayMethods();
+    renderSummary();
+  }, (err) => {
+    console.error("Could not load store settings:", err);
+    storeLoaded = true;
+    renderSummary();
+  });
+  setInterval(() => {
+    if (storeLoaded) {
+      storeStatus = tlStoreStatus(settings);
+      renderClosed();
+    }
+  }, 60000);
+
+  /* ---------------- the signed-in customer ---------------- */
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      location.href = "log-in.html";
+      return;
+    }
+    currentUser = user;
+    try {
+      const [userSnap, ordersSnap] = await Promise.all([
+        db.collection("users").doc(user.uid).get(),
+        db.collection("orders").where("userId", "==", user.uid).get(),
+      ]);
+      userData = userSnap.exists ? userSnap.data() : {};
+      myOrders = ordersSnap.docs.map((d) => d.data());
+    } catch (err) {
+      console.error("Could not load your account:", err);
+    }
+    // No draft? Start from the default saved address.
+    if (!saved) {
+      const def = savedAddresses().find((a) => a.isDefault) || savedAddresses()[0];
+      if (def) fillAddress(def);
+      else if (userData.address) {
+        nameInput.value = userData.name || userData.username || "";
+        phoneInput.value = userData.phone || "";
+        addressInput.value = userData.address || "";
       }
-    })
-    .catch((err) => console.error("Could not load store settings:", err))
-    .finally(() => {
-      storeLoaded = true;
-      document.getElementById("standardFee").textContent = store.deliveryFee ? naira(store.deliveryFee) : "Free";
-      document.getElementById("expressFee").textContent = naira(store.expressFee);
-      document.getElementById("freeOver").textContent = store.freeDeliveryOver.toLocaleString();
-      // hide Express if the admin hasn't set a price for it
-      document.getElementById("deliveryOption2").style.display = store.expressFee > 0 ? "" : "none";
-      renderSummary();
-    });
+    }
+    renderAddressChips();
+    renderSummary();
+  });
 
-  function renderSummary() {
-    let subtotal = 0;
-    summary.innerHTML = "";
+  /* ---------------- totals ---------------- */
+  function computeTotals() {
+    const subtotal = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0);
 
-    cart.forEach((item) => {
-      subtotal += item.price * item.quantity;
-      summary.innerHTML += `
-      <div class="item">
-        <span>${item.name} x${item.quantity}</span>
-        <span>₦${item.price * item.quantity}</span>
-      </div>`;
-    });
-
-    subtotalEl.innerText = subtotal;
-
-    const isFree = store.freeDeliveryOver > 0 && subtotal > store.freeDeliveryOver;
-    if (!storeLoaded) {
-      deliveryFee = 0;
-      document.getElementById("deliveryDisplay").textContent = "…";
-    } else if (isFree) {
-      deliveryFee = 0;
-      deliveryChoice = "standard";
-      document.getElementById("deliveryDisplay").innerHTML = '<span style="color: #4caf50; font-weight: 600;">FREE</span>';
-      disableDeliveryOptions();
-    } else {
-      enableDeliveryOptions();
-      deliveryFee = deliveryChoice === "express" ? store.expressFee : store.deliveryFee;
-      document.getElementById("deliveryDisplay").textContent = deliveryFee ? naira(deliveryFee) : "FREE";
+    // promo code
+    let promoDiscount = 0;
+    let freeDeliveryByPromo = false;
+    if (promo) {
+      if (promo.type === "percent") {
+        promoDiscount = Math.round((subtotal * (Number(promo.value) || 0)) / 100);
+        if (Number(promo.maxDiscount) > 0) promoDiscount = Math.min(promoDiscount, Number(promo.maxDiscount));
+      } else if (promo.type === "fixed") {
+        promoDiscount = Number(promo.value) || 0;
+      } else if (promo.type === "free_delivery") {
+        freeDeliveryByPromo = true;
+      }
     }
 
-    total.innerText = subtotal + deliveryFee;
-    localStorage.setItem("cartTotal", subtotal + deliveryFee);
+    // delivery
+    const freeByAmount = store.freeDeliveryOver > 0 && subtotal > store.freeDeliveryOver;
+    const deliveryFree = freeByAmount || freeDeliveryByPromo;
+    const delivery = !storeLoaded || deliveryFree ? 0 : deliveryChoice === "express" ? store.expressFee : store.deliveryFee;
+
+    // a discount can't make the order free (there'd be nothing to pay with Paystack)
+    promoDiscount = Math.max(0, Math.min(promoDiscount, subtotal, subtotal + delivery - MIN_PAYMENT));
+
+    // loyalty points
+    const points = tlLoyaltyBalance(myOrders);
+    let pointsUsed = 0;
+    let pointsDiscount = 0;
+    const beforePoints = subtotal - promoDiscount + delivery;
+    const canUsePoints = loyalty.enabled && points.balance >= Math.max(1, loyalty.minRedeem);
+    if (usePoints && canUsePoints) {
+      const room = Math.max(0, beforePoints - MIN_PAYMENT);
+      pointsUsed = Math.min(points.balance, Math.floor(room / loyalty.pointValue));
+      pointsDiscount = pointsUsed * loyalty.pointValue;
+    }
+
+    const total = Math.max(0, beforePoints - pointsDiscount);
+    // points are earned on the food, after discounts (not on delivery)
+    const earned = tlPointsFor(subtotal - promoDiscount - pointsDiscount, loyalty);
+
+    return {
+      subtotal, promoDiscount, freeByAmount, freeDeliveryByPromo, deliveryFree, delivery,
+      points, canUsePoints, pointsUsed, pointsDiscount, total, earned,
+    };
   }
 
-  function disableDeliveryOptions() {
-    const deliverySection = document.getElementById("deliverySection");
-    const freeDeliveryMsg = document.getElementById("freeDeliveryMsg");
-    const deliveryOptions = document.querySelectorAll("#deliverySection .option");
+  function renderSummary() {
+    const summary = $("summary");
+    summary.innerHTML = cart.map((item) => `
+      <div class="item">
+        <span>${tlEsc(item.name)} x${Number(item.quantity) || 0}</span>
+        <span>${naira((Number(item.price) || 0) * (Number(item.quantity) || 0))}</span>
+      </div>`).join("") || `<p class="muted-text">Your cart is empty.</p>`;
 
-    // Grey out the delivery options
-    deliveryOptions.forEach((option) => {
-      option.classList.add("disabled-delivery");
-      option.querySelectorAll("input").forEach((input) => {
-        input.disabled = true;
-      });
-    });
+    const t = computeTotals();
+    $("subtotal").textContent = naira(t.subtotal);
 
-    // Show the free delivery message
-    freeDeliveryMsg.style.display = "block";
+    // promo line
+    $("promoRow").hidden = !promo || (t.promoDiscount === 0 && !t.freeDeliveryByPromo);
+    if (promo) {
+      $("promoLabel").textContent = `Promo (${promo.code})`;
+      $("promoAmount").textContent = t.freeDeliveryByPromo && !t.promoDiscount ? "Free delivery" : "−" + naira(t.promoDiscount);
+    }
 
-    // Reset to standard (first option)
-    document.getElementById("standard").checked = true;
+    // delivery line + options
+    if (!storeLoaded) {
+      $("deliveryDisplay").textContent = "…";
+    } else if (t.deliveryFree) {
+      $("deliveryDisplay").innerHTML = '<span style="color:#4caf50;font-weight:600;">FREE</span>';
+      toggleDeliveryOptions(false, t.freeByAmount);
+    } else {
+      toggleDeliveryOptions(true, false);
+      $("deliveryDisplay").textContent = t.delivery ? naira(t.delivery) : "FREE";
+    }
+
+    // points line
+    $("pointsRow").hidden = !t.pointsDiscount;
+    $("pointsLabel").textContent = `Points (${t.pointsUsed.toLocaleString()})`;
+    $("pointsAmount").textContent = "−" + naira(t.pointsDiscount);
+
+    $("total").textContent = naira(t.total);
+    localStorage.setItem("cartTotal", t.total);
+
+    $("earnNote").hidden = !(loyalty.enabled && t.earned > 0);
+    $("earnNote").textContent = `⭐ You'll earn ${t.earned.toLocaleString()} points with this order (added once it's delivered).`;
+
+    renderPoints(t);
+    renderClosed();
   }
 
-  function enableDeliveryOptions() {
-    const deliverySection = document.getElementById("deliverySection");
-    const freeDeliveryMsg = document.getElementById("freeDeliveryMsg");
-    const deliveryOptions = document.querySelectorAll("#deliverySection .option");
-
-    // Enable the delivery options
-    deliveryOptions.forEach((option) => {
-      option.classList.remove("disabled-delivery");
-      option.querySelectorAll("input").forEach((input) => {
-        input.disabled = false;
-      });
+  function toggleDeliveryOptions(enabled, showFreeMsg) {
+    document.querySelectorAll("#deliverySection .option").forEach((option) => {
+      option.classList.toggle("disabled-delivery", !enabled);
+      option.querySelectorAll("input").forEach((input) => (input.disabled = !enabled));
     });
-
-    // Hide the free delivery message
-    freeDeliveryMsg.style.display = "none";
+    $("freeDeliveryMsg").style.display = showFreeMsg ? "block" : "none";
+    if (!enabled) $("standard").checked = true;
   }
 
   function setDelivery(choice) {
@@ -547,53 +904,244 @@
     renderSummary();
   }
 
-  async function submitOrder() {
-    if (!cart.length) return alert("Cart is empty");
-    if (!storeLoaded) return alert("Still loading delivery prices — please try again in a moment.");
-    if (!nameInput.value || !phoneInput.value || !addressInput.value)
-      return alert("Please fill all details");
-
-    const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-
-    const user = auth.currentUser;
-    if (!user) {
-      alert("Please login again");
-      return;
-    }
-
-    await db.collection("users").doc(user.uid).set(
-      {
-        name: nameInput.value,
-        phone: phoneInput.value,
-        address: addressInput.value,
-        email: user.email,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
-
-    localStorage.setItem(
-      "pendingOrder",
-      JSON.stringify({
-        items: cart,
-        pricing: {
-          subtotal,
-          delivery: deliveryFee,
-          total: subtotal + deliveryFee,
-        },
-        delivery: {
-          name: nameInput.value,
-          phone: phoneInput.value,
-          address: addressInput.value,
-        },
-      }),
-    );
-
-    window.location.href = "taste-lounge-paystack.html";
+  /* ---------------- promo codes ---------------- */
+  function promoMessage(text, isError) {
+    $("promoMsg").textContent = text;
+    $("promoMsg").className = "promo-msg" + (isError ? " error" : "");
   }
 
-  const summary = document.getElementById("summary");
-  const subtotalEl = document.getElementById("subtotal");
+  // Returns an error message, or "" when the code can be used on this cart.
+  function promoProblem(p, subtotal) {
+    const now = Date.now();
+    const ms = (ts) => (ts && ts.toMillis ? ts.toMillis() : 0);
+    if (!p || p.active === false) return "That code isn't valid.";
+    if (ms(p.startsAt) && ms(p.startsAt) > now) return "That code isn't active yet.";
+    if (ms(p.expiresAt) && ms(p.expiresAt) < now) return "That code has expired.";
+    if (Number(p.usageLimit) > 0 && (Number(p.usedCount) || 0) >= Number(p.usageLimit)) return "That code has been fully used.";
+    if (Number(p.minOrder) > 0 && subtotal < Number(p.minOrder)) return `Spend ${naira(p.minOrder)} or more on food to use this code.`;
+    if (p.oncePerCustomer && myOrders.some((o) => o.promo && o.promo.code === p.code && (o.status && o.status.current) !== "cancelled")) {
+      return "You've already used this code.";
+    }
+    return "";
+  }
+
+  async function fetchPromo(code) {
+    const snap = await db.collection("promos").doc(code).get();
+    return snap.exists ? { ...snap.data(), code: snap.id } : null;
+  }
+
+  $("promoForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = $("promoInput").value.trim().toUpperCase().replace(/\s+/g, "");
+    if (!code) return promoMessage("Type a promo code first.", true);
+    $("promoBtn").disabled = true;
+    promoMessage("Checking…");
+    try {
+      const p = await fetchPromo(code);
+      const problem = promoProblem(p, computeTotals().subtotal);
+      if (problem) {
+        promoMessage(problem, true);
+        return;
+      }
+      promo = p;
+      promoMessage("");
+      renderPromo();
+      renderSummary();
+    } catch (err) {
+      console.error("Promo lookup failed:", err);
+      promoMessage("Couldn't check that code. Please try again.", true);
+    } finally {
+      $("promoBtn").disabled = false;
+    }
+  });
+
+  function renderPromo() {
+    $("promoForm").hidden = !!promo;
+    $("promoApplied").hidden = !promo;
+    if (!promo) return;
+    const what = promo.type === "percent" ? `${promo.value}% off`
+      : promo.type === "fixed" ? `${naira(promo.value)} off`
+      : "Free delivery";
+    $("promoApplied").innerHTML = `
+      <span>✓ <b>${tlEsc(promo.code)}</b> — ${tlEsc(promo.description || what)}</span>
+      <button type="button" id="removePromo">Remove</button>`;
+    $("removePromo").onclick = () => {
+      promo = null;
+      $("promoInput").value = "";
+      renderPromo();
+      renderSummary();
+      $("promoInput").focus();
+    };
+  }
+
+  /* ---------------- loyalty points ---------------- */
+  function renderPoints(t) {
+    const box = $("pointsBox");
+    if (!loyalty.enabled || !currentUser) {
+      box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+    const worth = naira(t.points.balance * loyalty.pointValue);
+    if (t.canUsePoints) {
+      box.innerHTML = `
+        <label class="points-toggle">
+          <input type="checkbox" id="usePoints" ${usePoints ? "checked" : ""}>
+          <span><b>Use my points</b><br><span class="muted-text">You have ${t.points.balance.toLocaleString()} points (worth ${worth})</span></span>
+        </label>`;
+      $("usePoints").onchange = (e) => {
+        usePoints = e.target.checked;
+        renderSummary();
+      };
+    } else {
+      const need = Math.max(1, loyalty.minRedeem);
+      box.innerHTML = `<span class="muted-text">⭐ You have ${t.points.balance.toLocaleString()} points${t.points.pending ? ` (+${t.points.pending.toLocaleString()} on the way)` : ""}. ${t.points.balance < need ? `You can use them once you have ${need.toLocaleString()}.` : ""}</span>`;
+    }
+  }
+
+  /* ---------------- saved addresses ---------------- */
+  function savedAddresses() {
+    return Array.isArray(userData.addresses) ? userData.addresses.filter((a) => a && a.address) : [];
+  }
+
+  const sameAddress = (a) => a.address.trim().toLowerCase() === addressInput.value.trim().toLowerCase();
+
+  function fillAddress(a) {
+    nameInput.value = a.name || nameInput.value;
+    phoneInput.value = a.phone || phoneInput.value;
+    addressInput.value = a.address || "";
+    localStorage.setItem("deliveryDraft", JSON.stringify({
+      name: nameInput.value, phone: phoneInput.value, address: addressInput.value,
+    }));
+  }
+
+  function renderAddressChips() {
+    const list = savedAddresses();
+    const box = $("addrChips");
+    box.hidden = !list.length;
+    box.innerHTML = list.map((a, i) => `
+      <button type="button" class="chip-btn ${sameAddress(a) ? "on" : ""}" data-addr="${i}">
+        <b>${a.isDefault ? "★ " : ""}${tlEsc(a.label || "Address")}</b><span>${tlEsc(a.address)}</span>
+      </button>`).join("");
+    const isNew = currentUser && addressInput.value.trim() && !list.some(sameAddress);
+    $("saveAddrRow").hidden = !isNew;
+  }
+
+  $("addrChips").addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-addr]");
+    if (!chip) return;
+    fillAddress(savedAddresses()[Number(chip.dataset.addr)]);
+    renderAddressChips();
+  });
+
+  /* ---------------- payment methods & closed notice ---------------- */
+  function renderPayMethods() {
+    const channels = tlPaymentChannels(settings);
+    $("payMethods").innerHTML = channels.map((c) =>
+      `<span>${TL_PAYMENT_CHANNELS[c].icon} ${tlEsc(TL_PAYMENT_CHANNELS[c].label)}</span>`).join("");
+  }
+
+  function renderClosed() {
+    const note = $("closedNote");
+    const blocked = storeLoaded && !storeStatus.canOrder;
+    note.hidden = !blocked;
+    $("placeOrderBtn").disabled = blocked || placing;
+    if (blocked) {
+      note.innerHTML = `<span aria-hidden="true">🕘</span><div><b>${storeStatus.paused ? "Orders are paused" : "We're closed right now"}</b>${tlEsc(storeStatus.paused ? storeStatus.message : storeStatus.nextOpen || "Please check back later.")} Your cart is saved.</div>`;
+    }
+  }
+
+  /* ---------------- place order ---------------- */
+  async function submitOrder() {
+    if (placing) return;
+    if (!cart.length) return alert("Cart is empty");
+    if (!storeLoaded) return alert("Still loading delivery prices — please try again in a moment.");
+    storeStatus = tlStoreStatus(settings);
+    if (!storeStatus.canOrder) {
+      renderClosed();
+      return alert(storeStatus.message);
+    }
+    if (!nameInput.value.trim() || !phoneInput.value.trim() || !addressInput.value.trim()) {
+      return alert("Please fill all details");
+    }
+    const user = auth.currentUser;
+    if (!user) return alert("Please login again");
+
+    placing = true;
+    renderClosed();
+    try {
+      // check the promo code again in case it expired or ran out meanwhile
+      if (promo) {
+        const fresh = await fetchPromo(promo.code);
+        const problem = promoProblem(fresh, computeTotals().subtotal);
+        if (problem) {
+          promo = null;
+          renderPromo();
+          renderSummary();
+          promoMessage(problem + " It has been removed.", true);
+          throw new Error("promo");
+        }
+        promo = fresh;
+      }
+
+      const t = computeTotals();
+      const delivery = {
+        name: nameInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        address: addressInput.value.trim(),
+      };
+
+      const profile = {
+        name: delivery.name,
+        phone: delivery.phone,
+        address: delivery.address,
+        email: user.email,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+      // remember a new address (Profile → Saved Addresses)
+      const list = savedAddresses();
+      if (!$("saveAddrRow").hidden && $("saveAddr").checked && !list.some(sameAddress)) {
+        profile.addresses = [...list, {
+          id: "a" + Date.now().toString(36),
+          label: list.length ? "Address " + (list.length + 1) : "Home",
+          ...delivery,
+          isDefault: list.length === 0,
+        }];
+      }
+      await db.collection("users").doc(user.uid).set(profile, { merge: true });
+
+      localStorage.setItem("pendingOrder", JSON.stringify({
+        items: cart,
+        pricing: {
+          subtotal: t.subtotal,
+          discount: t.promoDiscount,
+          delivery: t.delivery,
+          pointsDiscount: t.pointsDiscount,
+          total: t.total,
+        },
+        delivery,
+        deliveryType: deliveryChoice,
+        promo: promo ? {
+          code: promo.code,
+          type: promo.type,
+          value: Number(promo.value) || 0,
+          discount: t.promoDiscount,
+          freeDelivery: t.freeDeliveryByPromo,
+        } : null,
+        loyalty: loyalty.enabled ? { earned: t.earned, redeemed: t.pointsUsed, pointValue: loyalty.pointValue } : null,
+      }));
+      localStorage.setItem("cartTotal", t.total);
+
+      window.location.href = "taste-lounge-paystack.html";
+    } catch (err) {
+      if (err.message !== "promo") {
+        console.error("Checkout failed:", err);
+        alert("Something went wrong. Please try again.");
+      }
+      placing = false;
+      renderClosed();
+    }
+  }
 
   renderSummary();
 </script>

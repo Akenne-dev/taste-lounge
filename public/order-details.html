@@ -14,6 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="auto-logout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="menu-service.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -161,7 +162,14 @@
         }
       }
     </style>
-  </head>
+    <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
+</head>
   <body>
     <div class="receipt" id="receipt">
       <div>X</div>
@@ -245,9 +253,9 @@
     <hr>
 
     
-    <p><strong>Name:</strong> ${delivery.name || "-"}</p>
-    <p><strong>Phone:</strong> ${delivery.phone || "-"}</p>
-    <p><strong>Address:</strong> ${delivery.address || "-"}</p>
+    <p><strong>Name:</strong> ${tlEsc(delivery.name || "-")}</p>
+    <p><strong>Phone:</strong> ${tlEsc(delivery.phone || "-")}</p>
+    <p><strong>Address:</strong> ${tlEsc(delivery.address || "-")}</p>
 
     <hr>
 
@@ -265,8 +273,8 @@
           : "";
         return `
         <div class="row">
-          <span>${i.name} × ${qty}${rate}</span>
-          <span>₦${total}</span>
+          <span>${tlEsc(i.name)} × ${qty}${rate}</span>
+          <span>${tlFormat(total)}</span>
         </div>
       `;
       })
@@ -277,18 +285,35 @@
     
     <div class="row">
       <span>Subtotal</span>
-      <span>₦${Number(o.pricing?.subtotal) || 0}</span>
+      <span>${tlFormat(o.pricing?.subtotal)}</span>
     </div>
+
+    ${Number(o.pricing?.discount) > 0 ? `
+    <div class="row" style="color:#2e7d32;">
+      <span>Promo${o.promo?.code ? " (" + tlEsc(o.promo.code) + ")" : ""}</span>
+      <span>−${tlFormat(o.pricing.discount)}</span>
+    </div>` : ""}
 
     <div class="row">
       <span>Delivery</span>
-      <span>₦${Number(o.pricing?.delivery) || 0}</span>
+      <span>${Number(o.pricing?.delivery) ? tlFormat(o.pricing.delivery) : "Free"}</span>
     </div>
+
+    ${Number(o.pricing?.pointsDiscount) > 0 ? `
+    <div class="row" style="color:#2e7d32;">
+      <span>Points used (${Number(o.loyalty?.redeemed || 0).toLocaleString()})</span>
+      <span>−${tlFormat(o.pricing.pointsDiscount)}</span>
+    </div>` : ""}
 
     <div class="row total">
       <span>Total</span>
-      <span>₦${Number(o.pricing?.total) || 0}</span>
+      <span>${tlFormat(o.pricing?.total)}</span>
     </div>
+
+    ${Number(o.loyalty?.earned) > 0 && o.status?.current !== "cancelled" ? `
+    <p style="margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#fff8e1;color:#7a5a00;font-size:14px;">
+      ⭐ ${o.status?.current === "delivered" ? "You earned" : "You'll earn"} ${Number(o.loyalty.earned).toLocaleString()} points with this order${o.status?.current === "delivered" ? "" : " once it's delivered"}.
+    </p>` : ""}
 
     <br>
 
@@ -298,8 +323,8 @@
   <button class="btn btn-primary" onclick="downloadPDF()">
     ⬇ Download PDF
   </button>
-  <button class="btn btn-secondary" onclick="reOrder()">
-    🔁 Re-order
+  <button class="btn btn-secondary" id="reorderBtn" onclick="reOrder()">
+    🔁 Order again
   </button>
 </div>
 
@@ -310,18 +335,23 @@
     window.location.href = "orders.html";
   }
 
-  function reOrder() {
-    if (!window.currentOrder) return;
-
-    const cartItems = window.currentOrder.items.map((i) => ({
-      name: i.name,
-      price: Number(i.price),
-      quantity: i.qty ?? i.quantity ?? 1,
-    }));
-
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-
-    window.location.href = "cart.html";
+  // Same dishes and options at today's prices (see tlReorder in menu-service.js)
+  async function reOrder() {
+    const user = auth.currentUser;
+    if (!window.currentOrder || !user) return;
+    const btn = document.getElementById("reorderBtn");
+    btn.disabled = true;
+    try {
+      const { added, skipped } = await tlReorder(db, user.uid, window.currentOrder.items);
+      if (!added) return alert("Sorry — none of these dishes are available right now.");
+      if (skipped.length) alert(`Added to your cart. Not available right now: ${skipped.join(", ")}.`);
+      window.location.href = "cart.html";
+    } catch (err) {
+      console.error("Re-order failed:", err);
+      alert("Couldn't add these dishes to your cart. Please try again.");
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   function formatMoney(n) {
@@ -419,7 +449,18 @@
 
     pdf.text("Delivery", 10, y);
 
-    pdf.text(`NGN ${formatMoney(p.subtotal) || 0}`, 190, y, { align: "right" });
+    pdf.text(`NGN ${formatMoney(p.delivery)}`, 190, y, { align: "right" });
+
+    if (Number(p.discount) > 0) {
+      y += 6;
+      pdf.text("Promo discount", 10, y);
+      pdf.text(`- NGN ${formatMoney(p.discount)}`, 190, y, { align: "right" });
+    }
+    if (Number(p.pointsDiscount) > 0) {
+      y += 6;
+      pdf.text("Points used", 10, y);
+      pdf.text(`- NGN ${formatMoney(p.pointsDiscount)}`, 190, y, { align: "right" });
+    }
 
     y += 6;
 

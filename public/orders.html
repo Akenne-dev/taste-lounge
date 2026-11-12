@@ -18,6 +18,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="auto-logout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="menu-service.js"></script>
 
     <style>
       :root {
@@ -411,6 +412,52 @@
 
       .view-btn:active {
         transform: scale(0.96);
+      }
+
+      .order-status.cancelled {
+        background: #eeeeee;
+        color: #757575;
+      }
+
+      /* "Order again" — puts the same dishes back in the cart at today's prices */
+      .reorder-btn {
+        margin-top: 10px;
+        margin-left: 8px;
+        padding: 12px 18px;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #ff0000;
+        color: #fff;
+        border: 2px solid #ff0000;
+        transition: all 0.25s ease;
+        min-width: 140px;
+      }
+
+      .reorder-btn:hover {
+        background: #d50000;
+        border-color: #d50000;
+        transform: translateY(-2px);
+      }
+
+      .reorder-btn:disabled {
+        opacity: 0.6;
+        cursor: wait;
+        transform: none;
+      }
+
+      .reorder-btn:focus-visible {
+        outline: 3px solid #fbc02d;
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 480px) {
+        .reorder-btn {
+          width: 100%;
+          margin-left: 0;
+          font-size: 14px;
+        }
       }
 
       .delete-btn:focus,
@@ -828,7 +875,14 @@
         transition: stroke-dashoffset 0.1s linear;
       }
     </style>
-  </head>
+    <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
+</head>
 
   <body>
     <header class="header">
@@ -987,6 +1041,7 @@
         empty.style.display = "none";
 
         snapshot.forEach((doc) => {
+          ordersById[doc.id] = doc.data();
           list.innerHTML += renderOrder(doc.id, doc.data());
         });
 
@@ -1038,7 +1093,34 @@
     </div>
 
     <button class="view-btn" onclick="viewOrder('${id}')">View details</button>
+    ${(o.items || []).length ? `<button class="reorder-btn" onclick="reorder('${id}', this)">↻ Order again</button>` : ""}
   </div>`;
+  }
+
+  /* "Order again": same dishes and options, today's prices (see menu-service.js) */
+  const ordersById = {};
+
+  async function reorder(orderId, btn) {
+    const order = ordersById[orderId];
+    const user = auth.currentUser;
+    if (!order || !user) return;
+    btn.disabled = true;
+    btn.textContent = "Adding…";
+    try {
+      const { added, skipped } = await tlReorder(db, user.uid, order.items);
+      if (!added) {
+        alert("Sorry — none of these dishes are available right now.");
+        return;
+      }
+      if (skipped.length) alert(`Added to your cart. Not available right now: ${skipped.join(", ")}.`);
+      location.href = "cart.html";
+    } catch (err) {
+      console.error("Re-order failed:", err);
+      alert("Couldn't add these dishes to your cart. Please try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "↻ Order again";
+    }
   }
 
   const activeTimers = {};
@@ -1049,6 +1131,14 @@
 
     if (data.status?.current === "delivered") {
       settleOrder(card, false);
+      return;
+    }
+
+    // cancelled by the kitchen (Admin → Orders)
+    if (data.status?.current === "cancelled") {
+      const status = card.querySelector(".order-status");
+      status.textContent = "Cancelled";
+      status.className = "order-status cancelled";
       return;
     }
 

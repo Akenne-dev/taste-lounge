@@ -1,0 +1,394 @@
+/* Profile page sheets: Edit profile, Change password, Saved addresses,
+   Payment methods, Loyalty points (see account.js) */
+
+[hidden] {
+  display: none !important;
+}
+
+.tl-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050; /* above the WhatsApp/support buttons (9999) */
+  background: rgba(0, 0, 0, .5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: tlFade .2s ease;
+}
+
+@media (min-width: 700px) {
+  .tl-sheet-backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+}
+
+.tl-sheet {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  color: #1A1A1A;
+  border-radius: 22px 22px 0 0;
+  padding: 22px 20px 28px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, .2);
+  animation: tlUp .28s cubic-bezier(.2, .8, .2, 1);
+  font-family: Inter, Poppins, system-ui, sans-serif;
+}
+
+@media (min-width: 700px) {
+  .tl-sheet {
+    border-radius: 22px;
+  }
+}
+
+.tl-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tl-sheet-head h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #ff0000;
+}
+
+.tl-sheet-close {
+  border: 0;
+  background: #f3f3f3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+}
+
+.tl-field {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.tl-field span {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.tl-field input,
+.tl-field textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid #e2e2e2;
+  border-radius: 12px;
+  font: 15px Inter, Poppins, system-ui, sans-serif;
+  background: #fff;
+  color: #1A1A1A;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.tl-field input:focus,
+.tl-field textarea:focus {
+  outline: none;
+  border-color: #ff0000;
+  box-shadow: 0 0 0 4px rgba(255, 0, 0, .1);
+}
+
+.tl-field input[readonly] {
+  background: #f6f6f6;
+  color: #777;
+}
+
+.tl-field small {
+  display: block;
+  margin-top: 6px;
+  color: #777;
+  font-size: 12px;
+}
+
+.tl-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.tl-btn {
+  flex: 1;
+  border: 0;
+  border-radius: 999px;
+  padding: 13px 18px;
+  font: 700 15px Inter, Poppins, system-ui, sans-serif;
+  cursor: pointer;
+  background: #ff0000;
+  color: #fff;
+  transition: transform .15s, opacity .2s;
+}
+
+.tl-btn:active {
+  transform: scale(.98);
+}
+
+.tl-btn:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.tl-btn.ghost {
+  background: #f3f3f3;
+  color: #1A1A1A;
+}
+
+.tl-btn.small {
+  flex: none;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.tl-btn:focus-visible,
+.tl-sheet-close:focus-visible,
+.tl-link:focus-visible {
+  outline: 3px solid #FBC02D;
+  outline-offset: 2px;
+}
+
+.tl-link {
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: #ff0000;
+  font: 600 14px Inter, Poppins, system-ui, sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.tl-msg {
+  min-height: 18px;
+  font-size: 14px;
+  margin: 4px 0 10px;
+}
+
+.tl-msg.error {
+  color: #c62828;
+}
+
+.tl-msg.ok {
+  color: #2e7d32;
+}
+
+.tl-note {
+  padding: 14px;
+  border-radius: 14px;
+  background: #FFF6E9;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.tl-empty {
+  text-align: center;
+  color: #777;
+  padding: 18px 0;
+  font-size: 14px;
+}
+
+/* saved addresses */
+.tl-addr {
+  border: 1.5px solid #eee;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.tl-addr.is-default {
+  border-color: #ff0000;
+  background: #fff8f8;
+}
+
+.tl-addr-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tl-addr-top b {
+  font-size: 15px;
+}
+
+.tl-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ff0000;
+  color: #fff;
+}
+
+.tl-addr p {
+  margin: 6px 0 10px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.45;
+}
+
+.tl-addr-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* payment methods & loyalty */
+.tl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 16px;
+}
+
+.tl-chips span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f5f5f5;
+  font-size: 14px;
+}
+
+.tl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tl-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.tl-list li small {
+  display: block;
+  color: #888;
+  font-size: 12px;
+}
+
+.tl-sub {
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 18px 0 6px;
+}
+
+.tl-points-hero {
+  text-align: center;
+  padding: 20px 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff0000, #c62828);
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.tl-points-hero strong {
+  display: block;
+  font-size: 2.4rem;
+  line-height: 1.1;
+}
+
+.tl-points-hero span {
+  opacity: .9;
+  font-size: 14px;
+}
+
+.tl-plus {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.tl-minus {
+  color: #c62828;
+  font-weight: 700;
+}
+
+.tl-points-row {
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.tl-points-row:hover #statPoints {
+  text-decoration: underline;
+}
+
+.tl-points-row:focus-visible {
+  outline: 3px solid #FBC02D;
+  outline-offset: 2px;
+}
+
+/* dark theme */
+body.dark .tl-sheet {
+  background: #1e1e1e;
+  color: #eee;
+}
+
+body.dark .tl-field input,
+body.dark .tl-field textarea {
+  background: #2a2a2a;
+  color: #eee;
+  border-color: #444;
+}
+
+body.dark .tl-field span,
+body.dark .tl-addr p {
+  color: #bbb;
+}
+
+body.dark .tl-note,
+body.dark .tl-chips span,
+body.dark .tl-btn.ghost,
+body.dark .tl-sheet-close {
+  background: #2a2a2a;
+  color: #eee;
+}
+
+body.dark .tl-addr {
+  border-color: #3a3a3a;
+}
+
+body.dark .tl-addr.is-default {
+  background: #2a1a1a;
+}
+
+body.dark .tl-list li {
+  border-color: #333;
+}
+
+@keyframes tlUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes tlFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

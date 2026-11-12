@@ -19,6 +19,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="auto-logout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="menu-service.js"></script>
+    <script src="account.js"></script>
+    <link rel="stylesheet" href="account.css" />
     <style>
       :root {
         --yellow: #fbc02d;
@@ -874,7 +877,14 @@
         background-color: beige;
       }
     </style>
-  </head>
+    <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
+</head>
 
   <body>
     <header class="header">
@@ -953,13 +963,18 @@
             <span>Email Alerts</span>
             <div class="toggle" data-setting="email"></div>
           </div>
+
+          <div class="setting-item" id="installRow" hidden>
+            <span>📲 Install the app</span>
+            <button type="button" class="btn btn-primary" id="installBtn" style="padding:8px 14px">Install</button>
+          </div>
         </div>
 
         <div class="card">
           <h3><i class="fa fa-shield"></i> Account</h3>
           <div class="btn-group">
-            <button class="btn btn-outline">Edit Profile</button>
-            <button class="btn btn-outlines">Change Password</button>
+            <button class="btn btn-outline" id="editProfileBtn">Edit Profile</button>
+            <button class="btn btn-outlines" id="changePasswordBtn">Change Password</button>
 
             <button class="btn btn-primary"
               onclick="openRatingModal()"
@@ -1030,43 +1045,6 @@
       >
     </nav>
 
-    <div id="addressModal" class="address-modal">
-      <div class="address-sheet">
-        <div class="sheet-header">
-          <h3>Saved Addresses</h3>
-          <span class="close-sheet">&times;</span>
-        </div>
-
-        <div class="address-card">
-          <p class="label">Profile Address:</p>
-          <br />
-          <p id="profileAddressModal" class="value">-</p>
-        </div>
-
-        <div class="address-card">
-          <div class="label">Last delivery address:</div>
-          <br />
-          <div class="value" id="lastAddress">-</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-overlay" id="editProfileModal">
-      <div class="modal">
-        <h3>Edit Profile</h3>
-
-        <input id="editUsername" placeholder="Username" />
-        <input id="editPhone" placeholder="Phone number" />
-        <textarea id="editAddress" placeholder="Address"></textarea>
-
-        <div class="modal-actions">
-          <button class="btn btn-outline" onclick="closeEditProfile()">
-            Cancel
-          </button>
-          <button class="btn btn-primary" onclick="saveProfile()">Save</button>
-        </div>
-      </div>
-    </div>
   </body>
 </html>
 
@@ -1200,80 +1178,17 @@
       (count) => count >= 2,
     ).length;
 
-    const loyaltyPoints = Math.floor(totalSpent / 5000);
 
     document.getElementById("statOrders").textContent = totalOrders;
     document.getElementById("statFavorites").textContent = favoriteMeals;
-    document.getElementById("statPoints").textContent = loyaltyPoints;
 
-    document.querySelectorAll(".quick-actions button").forEach((btn) => {
-      btn.onclick = async () => {
-        const action = btn.dataset.action;
-
-        if (action === "orders") {
-          location.href = "orders.html";
-        }
-
-        if (action === "address") {
-          location.href = "addresses.html";
-        }
-
-        if (action === "payment") {
-          location.href = "checkout.html";
-        }
-
-        if (action === "reorder") {
-          location.href = "foods.html";
-        }
-      };
-    });
-
-    const modal = document.getElementById("addressModal");
-    const openBtn = document.querySelector('[data-action="address"]');
-    const closeBtn = document.querySelector(".close-sheet");
-
-    openBtn.onclick = async () => {
-      modal.classList.add("show");
-
-      document.getElementById("profileAddressModal").textContent = address
-        ? address.charAt(0).toUpperCase() + address.slice(1).toLowerCase()
-        : "-";
-      document.getElementById("lastAddress").textContent =
-        window.lastDeliveryAddress
-          ? window.lastDeliveryAddress.charAt(0).toUpperCase() +
-            window.lastDeliveryAddress.slice(1).toLowerCase()
-          : "-";
-
-      const snap = await db
-        .collection("orders")
-        .where("userId", "==", user.uid)
-        .where("deleted", "!=", true)
-        .orderBy("createdAt", "desc")
-        .limit(1)
-        .get();
-
-      let checkoutAddress = "-";
-      if (!snap.empty) {
-        checkoutAddress = snap.docs[0].data()?.delivery?.address || "-";
-      }
-
-      document.getElementById("checkoutAddressModal").textContent =
-        checkoutAddress;
-    };
-
-    closeBtn.onclick = () => modal.classList.remove("show");
-
-    document.querySelectorAll(".use-btn").forEach((btn) => {
-      btn.onclick = () => {
-        const type = btn.dataset.use;
-        const value =
-          type === "profile"
-            ? document.getElementById("profileAddressModal").textContent
-            : document.getElementById("checkoutAddressModal").textContent;
-
-        localStorage.setItem("preferredAddress", value);
-        modal.classList.remove("show");
-      };
+    // Edit profile, change password, saved addresses, payment methods,
+    // loyalty points and re-order live in account.js
+    tlAccount.init({
+      user,
+      db,
+      data: { ...(snap.exists ? snap.data() : {}), username },
+      orders: ordersSnap.docs.map((d) => ({ id: d.id, ...d.data() })),
     });
 
     const WHATSAPP_NUMBER = "2348071953554";
@@ -1346,24 +1261,6 @@ I need assistance.
       };
     }
 
-    const editModal = document.getElementById("editProfileModal");
-
-    document.querySelector(".btn-outline").onclick = () => {
-      openEditProfile();
-    };
-    document.querySelector(".btn-outlines").onclick = () => {
-      changepassword();
-    };
-
-    function openEditProfile() {
-      alert(
-        "This feature is currently under development. Please check back later.",
-      );
-    }
-
-    function changepassword() {
-      alert("Coming soon 🚧");
-    }
   });
 
   function logout() {

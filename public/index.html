@@ -13,6 +13,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore-compat.js"></script>
     <script src="site-content.js"></script>
+    <script src="store-hours.js"></script>
 
   <script src="auto-logout.js"></script>
   <script src="micro-interactions.js"></script>
@@ -20,6 +21,13 @@
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=Abril+Fatface&family=Playfair+Display:wght@600&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff0000">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Taste Lounge">
+  <script src="pwa.js" defer></script>
 </head>
 
 <body>
@@ -170,17 +178,20 @@
     menuPanel.classList.remove("open");
   });
 
-  // Open/Closed badge uses the opening hours from Admin → Website → General
+  // Open/Closed badge uses the opening hours and "pause orders" switch from Admin → Store Settings
   const status = document.querySelector(".status");
-  window.siteContent.then(({ general }) => {
-    const open = Number(general.openHour), close = Number(general.closeHour);
-    if (!Number.isFinite(open) || !Number.isFinite(close) || general.openHour === "" || general.closeHour === "") return;
-    const hour = new Date().getHours();
-    const isOpen = open < close ? hour >= open && hour < close : hour >= open || hour < close;
-    status.textContent = isOpen ? "● Open Now" : "● Closed";
-    status.className = isOpen ? "status open" : "status closed";
-    status.style.display = "";
-  });
+  window.siteContent
+    .then(() => firebase.app("site").firestore().collection("settings").doc("store").get())
+    .then((snap) => {
+      const s = snap.exists ? snap.data() : {};
+      if (!tlHasHours(s.hours) && !s.ordersPaused) return; // no hours set: no badge
+      const st = tlStoreStatus(s);
+      status.textContent = st.canOrder ? "● Open Now" : st.paused ? "● Not taking orders" : "● Closed";
+      status.className = st.canOrder ? "status open" : "status closed";
+      status.title = st.canOrder ? (st.closesAt ? "Open until " + st.closesAt : "") : st.message;
+      status.style.display = "";
+    })
+    .catch((err) => console.warn("Opening hours unavailable:", err.message));
 
   // Hero videos come from Admin → Website → Home
   const videoList = { desktop: [], mobile: [] };
